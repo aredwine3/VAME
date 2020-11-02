@@ -39,27 +39,6 @@ else:
     
 projectPath = '/'.join(config.split('/')[:-1])
 
-###Convert h5s to egocentric CSVs:
-h5Directory = os.path.join(directory, 'h5s')
-files = os.listdir(h5Directory)
-for f in files:
-    if f.endswith('.h5'):
-        h5Path = os.path.join(h5Directory, f)
-        hf.makeEgocentricCSV_Center(h5Path, 'nose', 'tail-base', drop=None)
-
-
-###Convert all CSVs to numpy arrays:
-csvs = []
-csvDirectory = os.path.join(h5Directory, 'egocentric/')
-files = os.listdir(csvDirectory)
-for f in files:
-    if f.endswith('.csv'):
-        fullpath = os.path.join(csvDirectory, f)
-        csvs.append(fullpath)
-
-for f in csvs:
-    hf.csv_to_numpy(projectPath, f, pcutoff=0.9)
-
 
 #Egocentric alignment:  
 #Optional drop one of each forelimb & highlimb, keeping whichever has highest likelihood:
@@ -79,8 +58,8 @@ for file in poseFiles:
             egocentric_time_series = av.alignVideo(projectPath, sampleName, file_format, crop_size, 
                                                    use_video=False, check_video=False)
             np.save(projectPath+'/data/'+sampleName+'/'+sampleName+'-PE-seq.npy', egocentric_time_series)
-  
-    
+ 
+
 #Create training dataset:
 vame.create_trainset(config)
 
