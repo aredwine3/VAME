@@ -21,6 +21,11 @@ from vame.analysis.videowriter import motif_videos
 project = 'VAME_Operant_NoCue'
 directory = '/d1/studies/VAME/VAME_NoCue/'
 videoDirectory = os.path.join(directory, 'videos')
+
+#Initialize Project:
+project = 'OperantDLC_Vame'
+directory = '/d1/studies/VAME/Vame_Project/'
+videoDirectory = '/d1/studies/VAME/Vame_Project/videos/'
 vids = []
 files = os.listdir(videoDirectory)
 for f in files:
@@ -35,6 +40,23 @@ else:
     print("Loaded config from " + os.path.join(directory, project + '-' + creationDate + 'config.yaml'))
     
 projectPath = '/'.join(config.split('/')[:-1])
+
+###Convert h5s to egocentric CSVs:
+h5Directory = os.path.join(directory, 'data/h5s')
+files = os.listdir(h5Directory)
+for f in files:
+    if f.endswith('.h5'):
+        h5Path = os.path.join(h5Directory, f)
+        hf.makeEgocentricCSV_MouseCenter(h5Path, 'forepaw_r', 'forepaw_l', drop='cueLight')
+
+###Convert all CSVs to numpy arrays:
+csvs = []
+csvDirectory = '/d1/studies/VAME/Vame_Project/data/'
+files = os.listdir(csvDirectory)
+for f in files:
+    if f.endswith('.csv'):
+        fullpath = os.path.join(csvDirectory, f)
+        csvs.append(fullpath)
 
 #Egocentric alignment:  
 #Optional drop one of each forelimb & highlimb, keeping whichever has highest likelihood:
@@ -145,6 +167,4 @@ cko['cko_sem']=(np.std(cko, axis=1)/np.sqrt((cko.shape[1]-1)))
 
 comb = pd.concat([ctrl, cko], axis=1)
 comb.to_csv(os.path.join(directory, 'CombinedResults_20Clusters.csv'))
-
-
 
