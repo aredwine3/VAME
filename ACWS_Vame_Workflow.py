@@ -41,10 +41,9 @@ for f in files:
         h5Path = os.path.join(h5Directory, f)
         hf.makeEgocentricCSV_Center(h5Path, 'nose', 'tail-base', drop=None)
 
-
 ###Convert all CSVs to numpy arrays:
 csvs = []
-csvDirectory = os.path.join(h5Directory, 'egocentric/')
+csvDirectory = '/d1/studies/VAME/Vame_Project/data/'
 files = os.listdir(csvDirectory)
 for f in files:
     if f.endswith('.csv'):
@@ -53,6 +52,7 @@ for f in files:
 
 for f in csvs:
     hf.csv_to_numpy(projectPath, f, pcutoff=0.9)
+
 
 #Create training dataset:
 vame.create_trainset(config)
@@ -145,6 +145,7 @@ cko_p1.to_csv(os.path.join(directory, 'cKO_Phase1_30clusters.csv'))
 
 results = pd.concat([ctrl_p1, cko_p1], axis=1)
 results.to_csv(os.path.join(directory, 'Combined_Phase1_30clusters_Results.csv'))
+
 
 
 
