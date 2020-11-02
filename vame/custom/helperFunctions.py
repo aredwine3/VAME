@@ -67,8 +67,9 @@ def makeEgocentricCSV_Center(h5Path, bodyPart1, bodyPart2, drop=None):
         os.mkdir(os.path.join(directory, 'egocentric/'))
     df_ego.to_csv(os.path.join(directory, 'egocentric/' + f + '_egocentric_centered.csv'))
 
-    
-def csv_to_numpy(projectPath, csvPath, pcutoff=.99):
+
+def csv_to_numpy(projectPath, csvPath):
+
     """
     This is a demo function to show how a conversion from the resulting pose-estimation.csv file
     to a numpy array can be implemented. 
@@ -79,6 +80,11 @@ def csv_to_numpy(projectPath, csvPath, pcutoff=.99):
     f, e = os.path.splitext(fileName)
     # Read in your .csv file, skip the first two rows and create a numpy array
     data = pd.read_csv(csvPath, skiprows = 1)
+    directory = '/'.join(csvPath.split('/')[:-1])
+    fileName = csvPath.split('/')[-1].split('DLC')[0]
+    f, e = os.path.splitext(fileName)
+    # Read in your .csv file, skip the first two rows and create a numpy array
+    data = pd.read_csv(csvPath, skiprows = 2)
     data_mat = pd.DataFrame.to_numpy(data)
     data_mat = data_mat[:,1:] 
     
@@ -164,4 +170,11 @@ def combineBehavior(config, save=True, n_cluster=30):
     if save:
         df2.to_csv(os.path.join(project_path, 'results/Motif_Usage_Combined_' + str(n_cluster) + 'clusters.csv'))
     return(df2)
+        seq[con_arr[idx,:]<.99] = np.NaN
+        body_position_nan.append(seq)
+    
+    final_positions = np.array(body_position_nan)
+    
+    # save the final_positions array with np.save()
+    np.save(os.path.join(projectPath, 'data/' + f + '/' + f + "-PE-seq.npy"), final_positions)
 
