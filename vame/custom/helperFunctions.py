@@ -68,17 +68,20 @@ def makeEgocentricCSV_Center(h5Path, bodyPart1, bodyPart2, drop=None):
     df_ego.to_csv(os.path.join(directory, 'egocentric/' + f + '_egocentric_centered.csv'))
 
     
-def csv_to_numpy(projectPath, csvPath, pcutoff=.99):
+
+def csv_to_numpy(projectPath, csvPath):
     """
     This is a demo function to show how a conversion from the resulting pose-estimation.csv file
     to a numpy array can be implemented. 
     Note that this code is only useful for data which is a priori egocentric, i.e. head-fixed
     or otherwise restrained animals. 
     """
+    directory = '/'.join(csvPath.split('/')[:-1])
     fileName = csvPath.split('/')[-1].split('DLC')[0]
     f, e = os.path.splitext(fileName)
     # Read in your .csv file, skip the first two rows and create a numpy array
-    data = pd.read_csv(csvPath, skiprows = 1)
+    data = pd.read_csv(csvPath, skiprows = 2)
+
     data_mat = pd.DataFrame.to_numpy(data)
     data_mat = data_mat[:,1:] 
     
