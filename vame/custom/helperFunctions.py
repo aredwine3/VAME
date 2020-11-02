@@ -9,6 +9,7 @@ Created on Wed May 20 13:52:04 2020
 import numpy as np
 import pandas as pd
 import os
+<<<<<<< HEAD
 os.chdir('/d1/studies/VAME')
 from pathlib import Path
 from vame.util.auxiliary import read_config
@@ -74,6 +75,7 @@ def csv_to_numpy(projectPath, csvPath, pcutoff=.99):
     Note that this code is only useful for data which is a priori egocentric, i.e. head-fixed
     or otherwise restrained animals. 
     """
+    directory = '/'.join(csvPath.split('/')[:-1])
     fileName = csvPath.split('/')[-1].split('DLC')[0]
     f, e = os.path.splitext(fileName)
     # Read in your .csv file, skip the first two rows and create a numpy array
@@ -412,4 +414,11 @@ def dropBodyParts(projectPath, bodyParts):
                 dropList.append(tup3)
             df.drop(labels=dropList, axis=1, inplace=True)
             df.to_csv(os.path.join(projectPath, 'videos/pose_estimation/' + file))
+        seq[con_arr[idx,:]<.99] = np.NaN
+        body_position_nan.append(seq)
+    
+    final_positions = np.array(body_position_nan)
+    
+    # save the final_positions array with np.save()
+    np.save(os.path.join(projectPath, 'data/' + f + '/' + f + "-PE-seq.npy"), final_positions)
 
