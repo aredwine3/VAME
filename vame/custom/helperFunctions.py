@@ -9,11 +9,9 @@ Created on Wed May 20 13:52:04 2020
 import numpy as np
 import pandas as pd
 import os
-<<<<<<< HEAD
 os.chdir('/d1/studies/VAME')
 from pathlib import Path
 from vame.util.auxiliary import read_config
-
 
 def makeEgocentricCSV(h5Path, bodyPart):
     directory = '/'.join(h5Path.split('/')[:-1])
@@ -75,11 +73,10 @@ def csv_to_numpy(projectPath, csvPath, pcutoff=.99):
     Note that this code is only useful for data which is a priori egocentric, i.e. head-fixed
     or otherwise restrained animals. 
     """
-    directory = '/'.join(csvPath.split('/')[:-1])
     fileName = csvPath.split('/')[-1].split('DLC')[0]
     f, e = os.path.splitext(fileName)
     # Read in your .csv file, skip the first two rows and create a numpy array
-    data = pd.read_csv(csvPath, skiprows = 2)
+    data = pd.read_csv(csvPath, skiprows = 1)
     data_mat = pd.DataFrame.to_numpy(data)
     data_mat = data_mat[:,1:] 
     
