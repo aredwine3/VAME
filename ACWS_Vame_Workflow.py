@@ -9,6 +9,7 @@ Created on Mon Nov  2 11:46:40 2020
 import os
 import numpy as np
 import pandas as pd
+<<<<<<< HEAD
 os.chdir('/d1/studies/VAME/')
 import vame
 from vame.custom import helperFunctions as hf
@@ -32,9 +33,9 @@ for f in files:
         
 if new:
     config = vame.init_new_project(project=project, videos=vids, working_directory=directory, videotype='.mp4')
-
-config = '/d1/studies/VAME/VAME_NoCue/VAME_Operant_NoCue-Nov6-2020/config.yaml'
-projectPath = '/'.join(config.split('/')[:-1])
+elif not new:
+    config = '/d1/studies/VAME/Vame_Project/OperantDLC_Vame-Nov2-2020/config.yaml'
+    projectPath = '/'.join(config.split('/')[:-1])
     
     
 ###Convert h5s to egocentric CSVs:
@@ -47,7 +48,7 @@ for f in files:
 
 ###Convert all CSVs to numpy arrays:
 csvs = []
-csvDirectory = '/d1/studies/VAME/Vame_Project/data/'
+csvDirectory = '/d1/studies/VAME/Vame_Project/data/h5s/egocentric/'
 files = os.listdir(csvDirectory)
 for f in files:
     if f.endswith('.csv'):
