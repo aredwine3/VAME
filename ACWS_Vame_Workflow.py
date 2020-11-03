@@ -9,6 +9,7 @@ Created on Mon Nov  2 11:46:40 2020
 import os
 import numpy as np
 import pandas as pd
+<<<<<<< HEAD
 os.chdir('/d1/studies/VAME/')
 import vame
 from vame.custom import helperFunctions as hf
@@ -38,6 +39,7 @@ if not os.path.exists(os.path.join(directory, project + '-' + creationDate + '/c
 else:
     config = os.path.join(directory, project + '-' + creationDate + '/config.yaml')
     print("Loaded config from " + os.path.join(directory, project + '-' + creationDate + 'config.yaml'))
+
     
 projectPath = '/'.join(config.split('/')[:-1])
 
@@ -51,7 +53,7 @@ for f in files:
 
 ###Convert all CSVs to numpy arrays:
 csvs = []
-csvDirectory = '/d1/studies/VAME/Vame_Project/data/'
+csvDirectory = '/d1/studies/VAME/Vame_Project/data/h5s/egocentric/'
 files = os.listdir(csvDirectory)
 for f in files:
     if f.endswith('.csv'):
