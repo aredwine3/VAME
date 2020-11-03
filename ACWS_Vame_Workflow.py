@@ -9,11 +9,18 @@ Created on Mon Nov  2 11:46:40 2020
 import os
 import numpy as np
 import pandas as pd
+<<<<<<< HEAD
 os.chdir('/d1/studies/VAME/')
 import vame
 from vame.custom import helperFunctions as hf
 
 new = False #Set to True to create new project, False to load config file
+=======
+import vame
+from vame.custom import helperFunctions as hf
+
+new = False
+>>>>>>> Added workflow
 #Initialize Project:
 project = 'VAME_CombinedNPW'
 directory = '/d1/studies/VAME/VAME_CombinedNPW'
@@ -28,10 +35,10 @@ for f in files:
         
 if new:
     config = vame.init_new_project(project=project, videos=vids, working_directory=directory, videotype='.mp4')
+elif not new:
+    config = '/d1/studies/VAME/Vame_Project/OperantDLC_Vame-Nov2-2020/config.yaml'
+    projectPath = '/'.join(config.split('/')[:-1])
 
-config = '/d1/studies/VAME/VAME_CombinedNPW/VAME_CombinedNPW-Nov11-2020/config.yaml'
-projectPath = '/'.join(config.split('/')[:-1])
-    
     
 ###Convert h5s to egocentric CSVs:
 h5Directory = os.path.join(directory, 'h5s')
@@ -43,7 +50,7 @@ for f in files:
 
 ###Convert all CSVs to numpy arrays:
 csvs = []
-csvDirectory = '/d1/studies/VAME/Vame_Project/data/'
+csvDirectory = '/d1/studies/VAME/Vame_Project/data/h5s/egocentric/'
 files = os.listdir(csvDirectory)
 for f in files:
     if f.endswith('.csv'):
@@ -145,7 +152,13 @@ cko_p1.to_csv(os.path.join(directory, 'cKO_Phase1_30clusters.csv'))
 
 results = pd.concat([ctrl_p1, cko_p1], axis=1)
 results.to_csv(os.path.join(directory, 'Combined_Phase1_30clusters_Results.csv'))
+=======
+vame.rnn_model(config, model_name='VAME_OperantDLC', pretrained_weights=False, pretrained_model=None)
+#Evaluate RNN:
+vame.evaluate_model(config, model_name='VAME_OperantDLC')
 
+#Segment Behaviors:
+vame.behavior_segmentation(config, model_name='VAME_OperantDLC', cluster_method='kmeans', n_cluster=10)
 
 
 
