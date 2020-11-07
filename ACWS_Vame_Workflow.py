@@ -9,23 +9,16 @@ Created on Mon Nov  2 11:46:40 2020
 import os
 import numpy as np
 import pandas as pd
-<<<<<<< HEAD
 os.chdir('/d1/studies/VAME/')
 import vame
 from vame.custom import helperFunctions as hf
 
-new = False #Set to True to create new project, False to load config file
-=======
-import vame
-from vame.custom import helperFunctions as hf
 
-new = False
->>>>>>> Added workflow
+new = False #Set to True to create new project, False to load config file
 #Initialize Project:
-project = 'VAME_CombinedNPW'
-directory = '/d1/studies/VAME/VAME_CombinedNPW'
-modelName = 'VAME_CombinedNPW'
-videoDirectory = os.path.join(directory, 'mp4s')
+project = 'VAME_Operant_NoCue'
+directory = '/d1/studies/VAME/VAME_NoCue/'
+videoDirectory = os.path.join(directory, 'videos')
 vids = []
 files = os.listdir(videoDirectory)
 for f in files:
@@ -35,22 +28,21 @@ for f in files:
         
 if new:
     config = vame.init_new_project(project=project, videos=vids, working_directory=directory, videotype='.mp4')
-elif not new:
-    config = '/d1/studies/VAME/Vame_Project/OperantDLC_Vame-Nov2-2020/config.yaml'
-    projectPath = '/'.join(config.split('/')[:-1])
 
-    
+
+
 ###Convert h5s to egocentric CSVs:
-h5Directory = os.path.join(directory, 'h5s')
+h5Directory = os.path.join(directory, 'data/h5s')
 files = os.listdir(h5Directory)
 for f in files:
     if f.endswith('.h5'):
         h5Path = os.path.join(h5Directory, f)
         hf.makeEgocentricCSV_Center(h5Path, 'nose', 'tail-base', drop=None)
 
+
 ###Convert all CSVs to numpy arrays:
 csvs = []
-csvDirectory = '/d1/studies/VAME/Vame_Project/data/h5s/egocentric/'
+csvDirectory = os.path.join(h5Directory, 'egocentric/')
 files = os.listdir(csvDirectory)
 for f in files:
     if f.endswith('.csv'):
@@ -59,7 +51,6 @@ for f in files:
 
 for f in csvs:
     hf.csv_to_numpy(projectPath, f, pcutoff=0.9)
-
 
 #Create training dataset:
 vame.create_trainset(config)
@@ -152,13 +143,69 @@ cko_p1.to_csv(os.path.join(directory, 'cKO_Phase1_30clusters.csv'))
 
 results = pd.concat([ctrl_p1, cko_p1], axis=1)
 results.to_csv(os.path.join(directory, 'Combined_Phase1_30clusters_Results.csv'))
-=======
-vame.rnn_model(config, model_name='VAME_OperantDLC', pretrained_weights=False, pretrained_model=None)
-#Evaluate RNN:
-vame.evaluate_model(config, model_name='VAME_OperantDLC')
 
-#Segment Behaviors:
-vame.behavior_segmentation(config, model_name='VAME_OperantDLC', cluster_method='kmeans', n_cluster=10)
+from vame.analysis.videowriter import motif_videos
+
+motif_videos(config, model_name='VAME_OperantModel2', cluster_method="kmeans", n_cluster=[10])
+
+samples = os.listdir('/d1/studies/VAME/VAME_OperantModel2/VAME_OperantModel2-Nov4-2020/results/')
+cat = pd.DataFrame()
+for sample in samples:
+    clu_arr = np.load('/d1/studies/VAME/VAME_OperantModel2/VAME_OperantModel2-Nov4-2020/results/' + sample + '/VAME_OperantModel2/kmeans-20/behavior_quantification/motif_usage.npy')
+    clu = pd.DataFrame(clu_arr)
+    clu.columns=[sample]
+    cat = pd.concat([cat, clu], axis=1)
+cat.to_csv('VAME_OperantModel2_10clusters_results.csv')
+
+
+cat.columns
+
+phase1 = pd.DataFrame()
+phase2 = pd.DataFrame()
+phase3 = pd.DataFrame()
+sal = pd.DataFrame()
+acute = pd.DataFrame()
+
+for col in cat.columns:
+    if col.endswith('Phase1'):
+        phase1[col]=cat[col]
+    if col.endswith('Phase2'):
+        phase2[col]=cat[col]
+    if col.endswith('Phase3'):
+        phase3[col]=cat[col]
+    if col.endswith('Saline'):
+        sal[col]=cat[col]
+    if col.endswith('5mgkg'):
+        acute[col]=cat[col]
+
+combined=pd.concat([sal, acute, phase1, phase2, phase3], axis=1)
+
+ctrl_mice = ['C1-RT', 'C3-RB', 'C5-NP', 'C5-RT', 'C9_LT', 'C12_NP', 'C13_RT', 'C14_LT', 'C14_LB', 'C15_RT',]
+cko_mice = ['C2-RB', 'C3-LT', 'C4-NP', 'C4-RT', 'C10_NP', 'C12_RT', 'C13_NP', 'C14_RT', 'C15_NP',]
+ctrl=pd.DataFrame()
+cko = pd.DataFrame()
+
+
+for col in combined.columns:
+    if col[:5] in ctrl_mice:
+        ctrl[col]=combined[col]
+    elif col[:6] in ctrl_mice:
+        ctrl[col]=combined[col]
+    elif col[:5] in cko_mice:
+        cko[col]=combined[col]
+    elif col[:6] in cko_mice:
+        cko[col]=combined[col]
+    else:
+        print(str(col) + " not found in either")
+
+ctrl['control_mean'] = np.mean(ctrl, axis=1)
+ctrl['control_sem']=(np.std(ctrl, axis=1)/np.sqrt((ctrl.shape[1]-1)))
+cko['cko_mean'] = np.mean(cko, axis=1)
+cko['cko_sem']=(np.std(cko, axis=1)/np.sqrt((cko.shape[1]-1)))
+
+comb = pd.concat([ctrl, cko], axis=1)
+comb.to_csv(os.path.join(directory, 'CombinedResults_20Clusters.csv'))
+
 
 
 
