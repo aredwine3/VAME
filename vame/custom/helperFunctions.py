@@ -13,6 +13,7 @@ os.chdir('/d1/studies/VAME')
 from pathlib import Path
 from vame.util.auxiliary import read_config
 
+
 def makeEgocentricCSV(h5Path, bodyPart):
     directory = '/'.join(h5Path.split('/')[:-1])
     fileName = h5Path.split('/')[-1]#.split('DLC')[0]
@@ -31,8 +32,7 @@ def makeEgocentricCSV(h5Path, bodyPart):
     for bp in bodyParts_norm: #normalize bodyparts by subtracting one from all 
         df_ego[(scorerName, bp, 'x')] = df_ego[(scorerName, bp, 'x')] - df_ego[(scorerName, bodyPart, 'x')] #for x position
         df_ego[(scorerName, bp, 'y')] = df_ego[(scorerName, bp, 'y')] - df_ego[(scorerName, bodyPart, 'y')] #for y position
-    df_ego[(bodyPart, 'x')] = df_ego[(bodyPart, 'x')] - df_ego[(bodyPart, 'x')]  
-    df_ego[(bodyPart, 'y')] = df_ego[(bodyPart, 'y')] - df_ego[(bodyPart, 'y')]  
+
     if not os.path.exists(os.path.join(directory, 'egocentric/')):
         os.mkdir(os.path.join(directory, 'egocentric/'))
     df_ego.to_csv(os.path.join(directory, 'egocentric/' + f + '_egocentric.csv'))
@@ -415,7 +415,62 @@ def dropBodyParts(projectPath, bodyParts):
         body_position_nan.append(seq)
     
     final_positions = np.array(body_position_nan)
-    
     # save the final_positions array with np.save()
     np.save(os.path.join(projectPath, 'data/' + f + '/' + f + "-PE-seq.npy"), final_positions)
+
+def combineBehavior(config, save=True, n_cluster=30):
+    config_file = Path(config).resolve()
+    cfg = read_config(config_file)
+    project_path = cfg['project_path']
+    files = []
+    if cfg['all_data'] == 'No':
+        all_flag = input("Do you want to write motif videos for your entire dataset? \n"
+                     "If you only want to use a specific dataset type filename: \n"
+                     "yes/no/filename ")
+    else: 
+        all_flag = 'yes'
+        
+    if all_flag == 'yes' or all_flag == 'Yes':
+        for file in cfg['video_sets']:
+            files.append(file)
+            
+    elif all_flag == 'no' or all_flag == 'No':
+        for file in cfg['video_sets']:
+            use_file = input("Do you want to quantify " + file + "? yes/no: ")
+            if use_file == 'yes':
+                files.append(file)
+            if use_file == 'no':
+                continue
+    else:
+        files.append(all_flag)
+    
+    cat = pd.DataFrame()
+    for file in files:
+        arr = np.load(os.path.join(project_path, 'results/' + file + '/VAME_NPW/kmeans-' + str(n_cluster) + '/behavior_quantification/motif_usage.npy'))
+        df = pd.DataFrame(arr, columns=[file])
+        cat = pd.concat([cat, df], axis=1)
+
+    phases=[]
+    mice=[]
+    for col in cat.columns:
+        phase = col.split('_')[1]
+        phases.append(phase)
+        mouse = col.split('_')[0]
+        mice.append(mouse)
+    lz = list(zip(mice, phases))    
+    lz = sorted(lz)
+    joined = []
+    for pair in lz:
+        j = '_'.join(pair)
+        joined.append(j)
+    ind = sorted(lz)
+    ind = pd.MultiIndex.from_tuples(ind)
+    df2 = pd.DataFrame()
+    for sample in joined:
+        df2[sample] = cat[sample]
+    df2.columns=ind
+    
+    if save:
+        df2.to_csv(os.path.join(project_path, 'results/Motif_Usage_Combined_' + str(n_cluster) + 'clusters.csv'))
+    return(df2)
 
