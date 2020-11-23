@@ -57,8 +57,8 @@ def temporal_traindata(cfg, files, testfraction, num_features, savgol_filter):
     for i, file in enumerate(files):
         np.save(cfg['project_path']+'data/'+file+'/'+file+'-PE-seq-clean.npy', X_med[:,pos[i]:pos[i+1]])
     
-    print('Lenght of train data: %d' %len(z_train.T))
-    print('Lenght of test data: %d' %len(z_test.T))
+    print('Length of train data: %d' %len(z_train.T))
+    print('Length of test data: %d' %len(z_test.T))
     
     
 def create_trainset(config):
