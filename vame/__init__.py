@@ -26,4 +26,4 @@ from vame.util.csv_to_npy import csv_to_numpy
 from vame.util.align_egocentrical import egocentric_alignment
 from vame.util import auxiliary
 from vame.util.auxiliary import update_config
-
+from vame.custom import helperFunctions as hf
