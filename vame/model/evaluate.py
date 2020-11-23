@@ -28,12 +28,9 @@ else:
     torch.device("cpu")
 
 
-def plot_reconstruction(filepath, test_loader, seq_len_half, model, model_name,
-                        FUTURE_DECODER, FUTURE_STEPS):
-=======
+
 def plot_reconstruction(filepath, test_loader, seq_len_half, model, model_name, 
                         FUTURE_DECODER, FUTURE_STEPS, suffix=None):
->>>>>>> Added plot suffix
     x = test_loader.__iter__().next()
     x = x.permute(0,2,1)
     if use_gpu:
@@ -59,7 +56,6 @@ def plot_reconstruction(filepath, test_loader, seq_len_half, model, model_name,
     data_tilde = data_tilde.detach().numpy()
 
     if FUTURE_DECODER:
-<<<<<<< HEAD
         fig, axs = plt.subplots(2, 5)
         fig.suptitle('Reconstruction [top] and future prediction [bottom] of input sequence')
         for i in range(5):
@@ -71,20 +67,6 @@ def plot_reconstruction(filepath, test_loader, seq_len_half, model, model_name,
         axs[0,0].set(xlabel='time steps', ylabel='reconstruction')
         axs[1,0].set(xlabel='time steps', ylabel='predction')
         fig.savefig(os.path.join(filepath,"evaluate",'Future_Reconstruction.png'))
-
-=======
-        fig, (ax1, ax2) = plt.subplots(1, 2)
-        fig.suptitle('Reconstruction and future prediction of input sequence')
-        ax1.plot(data_orig[1,...], color='k', label='Sequence Data')
-        ax1.plot(data_tilde[1,...], color='r', linestyle='dashed', label='Sequence Reconstruction')
-        ax2.plot(fut_orig[1,...], color='k')
-        ax2.plot(fut[1,...], color='r', linestyle='dashed')
-        if suffix:
-            fig.savefig(filepath+'evaluate/'+'Future_Reconstruction' + model_name + '_' + suffix + '.png') 
-        elif not suffix:
-            fig.savefig(filepath+'evaluate/'+'Future_Reconstruction' + model_name + '.png') 
->>>>>>> Added plot suffix
-
     else:
         fig, ax1 = plt.subplots(1, 5)
         for i in range(5):
