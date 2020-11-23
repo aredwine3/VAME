@@ -47,7 +47,7 @@ def plot_reconstruction(filepath, test_loader, seq_len_half, model, model_name,
         fig, (ax1, ax2) = plt.subplots(1, 2)
         fig.suptitle('Reconstruction and future prediction of input sequence')
         ax1.plot(data_orig[1,...], color='k', label='Sequence Data')
-        ax1.plot(data_tilde[1,...], color='r', linestyle='dashed', label='Sequence Reconstruction') 
+        ax1.plot(data_tilde[1,...], color='r', linestyle='dashed', label='Sequence Reconstruction')
         ax2.plot(fut_orig[1,...], color='k')
         ax2.plot(fut[1,...], color='r', linestyle='dashed')
         fig.savefig(filepath+'evaluate/'+'Future_Reconstruction.png') 
