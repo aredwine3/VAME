@@ -18,3 +18,4 @@ from vame.model import evaluate_model
 from vame.analysis import behavior_segmentation
 from vame.analysis import behavior_quantification
 from vame.analysis import motif_videos
+from vame.custom import helperFunctions as hf
