@@ -20,7 +20,7 @@ def makeEgocentricCSV(h5Path, bodyPart):
     f, e = os.path.splitext(fileName)
     df = pd.read_hdf(h5Path)
     cols = df.columns
-    newCols = cols.droplevel(level=0) #drops the 'scorer' level from the DLC data MultiIndex
+    newCols = cols.droplevel(level=0) #drops the 'scorer' level from the h5 MultiIndex
     df.columns = newCols
     bodyParts = []
     for col in newCols:
@@ -31,10 +31,10 @@ def makeEgocentricCSV(h5Path, bodyPart):
     bodyParts_norm = bodyParts
     bodyParts_norm.remove(bodyPart)
     for bp in bodyParts_norm: #normalize bodyparts by subtracting one from all 
-        df_ego[(bp, 'x')] = df_ego[(bp, 'x')] - df_ego[(bodyPart, 'x')]
-        df_ego[(bp, 'y')] = df_ego[(bp, 'y')] - df_ego[(bodyPart, 'y')]
-    df_ego[(bodyPart, 'x')] = df_ego[(bodyPart, 'x')] - df_ego[(bodyPart, 'x')] 
-    df_ego[(bodyPart, 'y')] = df_ego[(bodyPart, 'y')] - df_ego[(bodyPart, 'y')]
+        df_ego[(bp, 'x')] = df_ego[(bp, 'x')] - df_ego[(bodyPart, 'x')] #for x position
+        df_ego[(bp, 'y')] = df_ego[(bp, 'y')] - df_ego[(bodyPart, 'y')] #for y position
+    df_ego[(bodyPart, 'x')] = df_ego[(bodyPart, 'x')] - df_ego[(bodyPart, 'x')]  
+    df_ego[(bodyPart, 'y')] = df_ego[(bodyPart, 'y')] - df_ego[(bodyPart, 'y')]  
     if not os.path.exists(os.path.join(directory, 'egocentric/')):
         os.mkdir(os.path.join(directory, 'egocentric/'))
     df_ego.to_csv(os.path.join(directory, 'egocentric/' + f + '_egocentric.csv'))
