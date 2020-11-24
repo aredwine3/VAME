@@ -165,3 +165,77 @@ def combineBehavior(config, save=True, n_cluster=30):
         df2.to_csv(os.path.join(project_path, 'results/Motif_Usage_Combined_' + str(n_cluster) + 'clusters.csv'))
     return(df2)
 
+def extractResults(projectPath, group1, group2, modelName, n_clusters, phases):
+    samples = os.listdir(os.path.join(projectPath, 'results/'))
+    cat = pd.DataFrame()
+    for sample in samples:
+        clu_arr = np.load(os.path.join(projectPath, 'results/' + sample + '/VAME_CombinedNPW2/kmeans-' + str(n_clusters) + '/behavior_quantification/motif_usage.npy'))
+        clu = pd.DataFrame(clu_arr)
+        clu.columns=[sample]
+        cat = pd.concat([cat, clu], axis=1)
+ #   cat.to_csv(os.path.join(projectPath, modelName + '_Results.csv'))
+
+    df1=pd.DataFrame()
+    df2=pd.DataFrame()
+
+
+    for col in cat.columns:
+        if col[:6] in group1:
+            df1[col]=cat[col]
+        elif col[:5] in group1:
+            df1[col]=cat[col]
+        elif col[:6] in group2:
+            df2[col]=cat[col]
+        elif col[:5] in group2:
+            df2[col]=cat[col]
+        else:
+            print(str(col) + " not found in either")
+
+    df1['Group1_mean'] = np.mean(df1, axis=1)
+    df1['Group1_sem']=(np.std(df1, axis=1)/np.sqrt((df1.shape[1]-1)))
+    df2['Group2_mean'] = np.mean(df2, axis=1)
+    df2['Group2_sem']=(np.std(df2, axis=1)/np.sqrt((df2.shape[1]-1)))
+    
+    df1.to_csv(os.path.join(projectPath, 'Group1_' + modelName + '_' + str(n_clusters) + 'Clusters.csv'))
+    df2.to_csv(os.path.join(projectPath, 'Group2_' + modelName + '_' + str(n_clusters) + 'Clusters.csv'))
+    comb = pd.concat([df1, df2], axis=1)
+    comb.to_csv(os.path.join(projectPath, 'Combined_' + modelName + '_' + str(n_clusters) + 'Clusters_Results.csv'))
+
+    cols = list(df1.columns)
+    for col in cols:
+        if col.endswith('_2020-11-09'):
+            newCol = '_'.join(col.split('_')[:-1])
+            i = cols.index(col)
+            cols.remove(col)
+            cols.insert(i, newCol)
+    df1.columns=cols
+    
+    cols = list(df2.columns)
+    for col in cols:
+        if col.endswith('_2020-11-09'):
+            newCol = '_'.join(col.split('_')[:-1])
+            i = cols.index(col)
+            cols.remove(col)
+            cols.insert(i, newCol)
+    df2.columns=cols
+
+    for phase in phases:
+        df1_split = pd.DataFrame()
+        for col in df1.columns:
+            if col.endswith(phase):
+                df1_split[col]=df1[col]
+        df1_split['Group1_mean'] = np.mean(df1_split, axis=1)
+        df1_split['Group1_sem']=(np.std(df1_split, axis=1)/np.sqrt((df1_split.shape[1]-1)))
+        df1_split.to_csv(os.path.join(projectPath, 'Group1_' + phase + '_' + modelName + '_' + str(n_clusters) + 'Clusters_Results.csv'))
+                
+        df2_split = pd.DataFrame()
+        for col in df2.columns:
+            if col.endswith(phase):
+                df2_split[col]=df2[col]
+        df2_split['Group2_mean'] = np.mean(df2_split, axis=1)
+        df2_split['Group2_sem']=(np.std(df2_split, axis=1)/np.sqrt((df2_split.shape[1]-1)))
+        df2_split.to_csv(os.path.join(projectPath, 'Group2_' + phase + '_' + modelName + '_' + str(n_clusters) + 'Clusters_Results.csv'))
+           
+        results = pd.concat([df1_split, df2_split], axis=1)
+        results.to_csv(os.path.join(projectPath, 'Combined_' + phase + '_' + modelName + '_' + str(n_clusters) + 'Clusters_Results.csv'))
+                       
