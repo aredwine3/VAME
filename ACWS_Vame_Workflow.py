@@ -16,11 +16,10 @@ from vame.custom import alignVideos as av
 from vame.analysis.videowriter import motif_videos
 
 
-
 #Initialize Project:
-project = 'VAME_CombinedNPW'
+project = 'VAME_CombinedNPW_Zdim20'
 directory = '/d1/studies/VAME/VAME_CombinedNPW'
-modelName = 'VAME_CombinedNPW'
+modelName = 'VAME_CombinedNPW_Zdim20'
 videoDirectory = os.path.join(directory, 'mp4s')
 vids = []
 files = os.listdir(videoDirectory)
@@ -102,19 +101,16 @@ for n_clusters in clus:
                      
 hf.extractResults(projectPath, group1, group2, modelName, n_clusters, phases)
 
-
-from vame.analysis.videowriter import motif_videos
-
 motif_videos(config, model_name=modelName, cluster_method="kmeans", n_cluster=[30])
 
 samples = os.listdir(os.path.join(projectPath, 'results/'))
 cat = pd.DataFrame()
 for sample in samples:
-    clu_arr = np.load(os.path.join(projectPath, 'results/' + sample + '/VAME_CombinedNPW/kmeans-10/behavior_quantification/motif_usage.npy'))
+    clu_arr = np.load(os.path.join(projectPath, 'results/' + sample + '/VAME_CombinedNPW_NewAlignment/kmeans-30/behavior_quantification/motif_usage.npy'))
     clu = pd.DataFrame(clu_arr)
     clu.columns=[sample]
     cat = pd.concat([cat, clu], axis=1)
-cat.to_csv(os.path.join(directory, 'VAME_Operant_NPW_Test_30clusters_results.csv'))
+cat.to_csv(os.path.join(directory, 'VAME_NPW_NewAlignment_Test_30clusters_results.csv'))
 
 
 cat.columns
@@ -147,10 +143,10 @@ ctrl['control_sem']=(np.std(ctrl, axis=1)/np.sqrt((ctrl.shape[1]-1)))
 cko['cko_mean'] = np.mean(cko, axis=1)
 cko['cko_sem']=(np.std(cko, axis=1)/np.sqrt((cko.shape[1]-1)))
 
-ctrl.to_csv(os.path.join(directory, 'Control_CombinedNPW_30Clusters.csv'))
-cko.to_csv(os.path.join(directory, 'cKO_CombinedNPW_30Clusters.csv'))
+ctrl.to_csv(os.path.join(directory, 'Control_CombinedNPW_NewAlignment_30Clusters.csv'))
+cko.to_csv(os.path.join(directory, 'cKO_CombinedNPW_NewAlignment_30Clusters.csv'))
 comb = pd.concat([ctrl, cko], axis=1)
-comb.to_csv(os.path.join(directory, 'CombinedResults_30Clusters.csv'))
+comb.to_csv(os.path.join(directory, 'CombinedResults_NewAlignment_30Clusters.csv'))
 
 cols = list(ctrl.columns)
 for col in cols:
@@ -169,18 +165,18 @@ cko_p1 = pd.DataFrame()
 cko_p2 = pd.DataFrame()
 cko_p3 = pd.DataFrame()
 for col in ctrl.columns:
-    if col.endswith('Phase1'):
-        ctrl_p1[col]=ctrl[col]
+    if col.endswith('Phase2'):
+        ctrl_p2[col]=ctrl[col]
 
 for col in cko.columns:
-    if col.endswith('Phase1'):
-        cko_p1[col]=cko[col]
+    if col.endswith('Phase2'):
+        cko_p2[col]=cko[col]
 
-ctrl_p1.to_csv(os.path.join(directory, 'Ctrl_Phase1_30clusters.csv'))
-cko_p1.to_csv(os.path.join(directory, 'cKO_Phase1_30clusters.csv'))
+ctrl_p2.to_csv(os.path.join(directory, 'Ctrl_NewAlignment_Phase2_30clusters.csv'))
+cko_p2.to_csv(os.path.join(directory, 'cKO_NewAlignment_Phase2_30clusters.csv'))
 
 results = pd.concat([ctrl_p1, cko_p1], axis=1)
-results.to_csv(os.path.join(directory, 'Combined_Phase1_30clusters_Results.csv'))
+results.to_csv(os.path.join(directory, 'Combined_NewAlignment_Phase2_30clusters_Results.csv'))
 
 
 
