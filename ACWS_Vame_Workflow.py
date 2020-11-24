@@ -16,9 +16,9 @@ from vame.custom import alignVideos as av
 
 new = True #Set to True to create new project, False to load config file
 #Initialize Project:
-project = 'VAME_CombinedNPW_Zdim20'
+project = 'VAME_CombinedNPW3'
 directory = '/d1/studies/VAME/VAME_CombinedNPW'
-modelName = 'VAME_CombinedNPW_Zdim20'
+modelName = 'VAME_CombinedNPW3'
 videoDirectory = os.path.join(directory, 'mp4s')
 vids = []
 files = os.listdir(videoDirectory)
@@ -30,7 +30,7 @@ for f in files:
 if new:
     config = vame.init_new_project(project=project, videos=vids, working_directory=directory, videotype='.mp4')
 
-config = '/d1/studies/VAME/VAME_CombinedNPW/VAME_CombinedNPW_Zdim20-Nov24-2020/config.yaml'
+config = '/d1/studies/VAME/VAME_CombinedNPW/VAME_CombinedNPW3-Nov24-2020/config.yaml'
 projectPath = '/'.join(config.split('/')[:-1])
     
     
