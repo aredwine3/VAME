@@ -19,7 +19,8 @@ from vame.analysis.videowriter import motif_videos
 #Initialize Project:
 project = 'VAME_CombinedNPW3'
 directory = '/d1/studies/VAME/VAME_CombinedNPW'
-modelName = 'VAME_CombinedNPW3'
+modelName = 'VAME_CombinedNPW'
+
 videoDirectory = os.path.join(directory, 'mp4s')
 vids = []
 files = os.listdir(videoDirectory)
