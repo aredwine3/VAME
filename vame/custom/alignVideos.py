@@ -234,7 +234,8 @@ def play_aligned_video(a, n, frame_count, path_to_file, filename, crop_size, sav
             crop_size,
             isColor=True
         )
-    
+def play_aligned_video(a, n, frame_count):
+    colors = [(255,0,0),(0,255,0),(0,0,255),(255,255,0),(255,0,255),(0,255,255),(0,0,0),(255,255,255),(125,0,125),(125,125,125)]
     for i in range(frame_count):
         # Capture frame-by-frame
         ret, frame = True,a[i]
@@ -247,6 +248,7 @@ def play_aligned_video(a, n, frame_count, path_to_file, filename, crop_size, sav
           
           for c,j in enumerate(n[i]):
               cv.circle(im_color,(j[0], j[1]), 5, colors[c], -1)
+
           if not save:
               cv.imshow('Frame',im_color)
               if cv.waitKey(25) & 0xFF == ord('q'): # Press Q on keyboard to  exit
@@ -282,9 +284,8 @@ def alignVideo(path_to_file, filename, file_format, crop_size, use_video=False, 
     save : bool (optional, default False)
         Whether to save the result video. Check video must also be true.
     """
-    
     #read out data
-    data = pd.read_csv(path_to_file+'/videos/pose_estimation/'+filename+'-DC.csv', skiprows = 2)
+    data = pd.read_csv(path_to_file+'videos/pose_estimation/'+filename+'-DC.csv', skiprows = 2)
     data_mat = pd.DataFrame.to_numpy(data)
     data_mat = data_mat[:,1:] 
     
@@ -318,7 +319,7 @@ def alignVideo(path_to_file, filename, file_format, crop_size, use_video=False, 
     
     a,n, ego_time_series = align_mouse(path_to_file, filename, file_format, crop_size, pose_list, pose_ref_index,
                       pose_flip_ref, bg, frame_count, use_video)
-    
+
     if check_video and not save:
         play_aligned_video(a, n, frame_count, path_to_file, filename, crop_size, save=False)
     elif check_video and save:

@@ -17,9 +17,9 @@ from vame.analysis.videowriter import motif_videos
 
 
 #Initialize Project:
-project = 'VAME_CombinedNPW_Zdim20'
+project = 'VAME_CombinedNPW3'
 directory = '/d1/studies/VAME/VAME_CombinedNPW'
-modelName = 'VAME_CombinedNPW_Zdim20'
+modelName = 'VAME_CombinedNPW3'
 videoDirectory = os.path.join(directory, 'mp4s')
 vids = []
 files = os.listdir(videoDirectory)
@@ -35,6 +35,7 @@ else:
     print("Loaded config from " + os.path.join(directory, project + '-' + creationDate + 'config.yaml'))
 
 projectPath = '/'.join(config.split('/')[:-1])
+
 
 ###Convert h5s to egocentric CSVs:
 h5Directory = os.path.join(directory, 'h5s')
