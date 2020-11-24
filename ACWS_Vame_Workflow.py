@@ -14,13 +14,13 @@ import vame
 from vame.custom import helperFunctions as hf
 from vame.custom import alignVideos as av
 
-
 new = False #Set to True to create new project, False to load config file
 
 #Initialize Project:
 project = 'VAME_CombinedNPW3'
 directory = '/d1/studies/VAME/VAME_CombinedNPW'
-modelName = 'VAME_CombinedNPW3'
+modelName = 'VAME_CombinedNPW'
+
 videoDirectory = os.path.join(directory, 'mp4s')
 vids = []
 files = os.listdir(videoDirectory)
@@ -68,6 +68,7 @@ vame.evaluate_model(config, model_name=modelName)
 vame.behavior_segmentation(config, model_name=modelName, cluster_method='kmeans', n_cluster=[10,20,30])
 #Quantify behaviors:
 vame.behavior_quantification(config, model_name=modelName, cluster_method='kmeans', n_cluster=30)
+
 
 from vame.analysis.videowriter import motif_videos
 
