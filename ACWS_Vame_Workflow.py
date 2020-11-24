@@ -18,9 +18,9 @@ from vame.custom import alignVideos as av
 new = False #Set to True to create new project, False to load config file
 
 #Initialize Project:
-project = 'VAME_CombinedNPW_Zdim20'
+project = 'VAME_CombinedNPW3'
 directory = '/d1/studies/VAME/VAME_CombinedNPW'
-modelName = 'VAME_CombinedNPW_Zdim20'
+modelName = 'VAME_CombinedNPW3'
 videoDirectory = os.path.join(directory, 'mp4s')
 vids = []
 files = os.listdir(videoDirectory)
@@ -34,6 +34,7 @@ if new:
 elif not new:
     config = '/d1/studies/VAME/Vame_Project/OperantDLC_Vame-Nov2-2020/config.yaml'
     projectPath = '/'.join(config.split('/')[:-1])
+
 
 ###Convert h5s to egocentric CSVs:
 h5Directory = os.path.join(directory, 'h5s')
