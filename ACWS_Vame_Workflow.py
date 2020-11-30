@@ -87,10 +87,6 @@ vame.evaluate_model(config, model_name=modelName)
 
 #Segment Behaviors:
 vame.behavior_segmentation(config, model_name=modelName, cluster_method='kmeans', n_cluster=[15,30,45])
-#Quantify behaviors:
-vame.behavior_quantification(config, model_name=modelName, cluster_method='kmeans', n_cluster=10)
-#Make Example Videos:
-motif_videos(config, model_name=modelName, cluster_method="kmeans", n_cluster=[10])
 
 #Define groups & experimental setup:
 group1 = ['C1-RT', 'C3-RB', 'C5-NP', 'C5-RT', 'C9_LT', 'C12_NP', 'C13_RT', 'C14_LT', 'C14_LB', 'C15_RT', 'C16_RB']
@@ -104,6 +100,21 @@ for n_clusters in clus:
     hf.extractResults(projectPath, group1, group2, modelName, n_clusters, phases)
                      
 hf.extractResults(projectPath, group1, group2, modelName, n_clusters, phases)
+
+ctrl_mice = ['C1-RT', 'C3-RB', 'C5-NP', 'C5-RT', 'C9_LT', 'C12_NP', 'C13_RT', 'C14_LT', 'C14_LB', 'C15_RT', 'C16_RB']
+cko_mice = ['C2-RB', 'C3-LT', 'C4-NP', 'C4-RT', 'C10_NP', 'C12_RT', 'C13_NP', 'C14_RT', 'C15_NP', 'C16_NP']
+phases=['Saline', 'Phase1', 'Phase2', 'Phase3']
+
+group1=ctrl_mice
+group2=cko_mice
+n_clusters=20
+
+
+clus = [7,10,20,30]
+
+for n_clusters in clus:
+    vame.behavior_quantification(config, model_name=modelName, cluster_method='kmeans', n_cluster=n_clusters)
+    hf.extractResults(projectPath, group1, group2, modelName, n_clusters, phases)
 
 motif_videos(config, model_name=modelName, cluster_method="kmeans", n_cluster=[30])
 
