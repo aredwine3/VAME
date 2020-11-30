@@ -86,7 +86,7 @@ def plot_loss(cfg, filepath, model_name):
     ax1.plot(km_losses, label='KMeans-Loss')
     ax1.plot(kl_loss, label='KL-Loss')
     ax1.plot(fut_loss, label='Prediction-Loss')
-    ax1.legend()
+    ax1.legend(loc='upper right')
     fig.savefig(filepath+'evaluate/'+'MSE-and-KL-Loss'+model_name+'.png')
     
     
