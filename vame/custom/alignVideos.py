@@ -285,7 +285,7 @@ def alignVideo(path_to_file, filename, file_format, crop_size, use_video=False, 
         Whether to save the result video. Check video must also be true.
     """
     #read out data
-    data = pd.read_csv(path_to_file+'videos/pose_estimation/'+filename+'-DC.csv', skiprows = 2)
+    data = pd.read_csv(path_to_file+'/videos/pose_estimation/'+filename+'-DC.csv', skiprows = 2)
     data_mat = pd.DataFrame.to_numpy(data)
     data_mat = data_mat[:,1:] 
     
