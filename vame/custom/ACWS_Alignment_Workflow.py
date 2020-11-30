@@ -30,7 +30,6 @@ plt.plot(egocentric_time_series.T)
 plt.savefig(os.path.join(path_to_file, 'data/' + filename + '/' + filename + '_aligned.tif'))
 
 
-
 poseFiles = os.listdir('/d1/studies/VAME/VAME_CombinedNPW/VAME_CombinedNPW3-Nov24-2020/videos/pose_estimation/')
 
 for file in poseFiles:
