@@ -20,7 +20,6 @@ from vame.util.auxiliary import read_config
 from vame.model.rnn_vae import RNN_VAE
 from vame.model.dataloader import SEQUENCE_DATASET
 
-<<<<<<< HEAD
 use_gpu = torch.cuda.is_available()
 if use_gpu:
     pass
@@ -109,8 +108,7 @@ def plot_loss(cfg, filepath, model_name):
     fig.savefig(os.path.join(filepath,"evaluate",'MSE-and-KL-Loss'+model_name+'.png'))
 
 
-    
-def eval_temporal(cfg, use_gpu, model_name, suffix=None):
+def eval_temporal(cfg, use_gpu, model_name):
     SEED = 19
     ZDIMS = cfg['zdims']
     FUTURE_DECODER = cfg['prediction_decoder']
