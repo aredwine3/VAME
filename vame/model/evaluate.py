@@ -109,8 +109,7 @@ def plot_loss(cfg, filepath, model_name):
     fig.savefig(os.path.join(filepath,"evaluate",'MSE-and-KL-Loss'+model_name+'.png'))
 
 
-def eval_temporal(cfg, use_gpu, model_name, legacy):
-
+def eval_temporal(cfg, use_gpu, model_name):
     SEED = 19
     ZDIMS = cfg['zdims']
     FUTURE_DECODER = cfg['prediction_decoder']
