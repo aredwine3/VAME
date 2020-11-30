@@ -12,6 +12,8 @@ import os
 os.chdir('/d1/studies/VAME')
 from pathlib import Path
 from vame.util.auxiliary import read_config
+from scipy.stats import ttest_ind
+from statsmodels.stats.multitest import multipletests
 
 
 def makeEgocentricCSV(h5Path, bodyPart):
@@ -487,7 +489,7 @@ def extractResults(projectPath, group1, group2, modelName, n_clusters, phases):
     samples = os.listdir(os.path.join(projectPath, 'results/'))
     cat = pd.DataFrame()
     for sample in samples:
-        clu_arr = np.load(os.path.join(projectPath, 'results/' + sample + '/VAME_CombinedNPW2/kmeans-' + str(n_clusters) + '/behavior_quantification/motif_usage.npy'))
+        clu_arr = np.load(os.path.join(projectPath, 'results/' + sample + '/' + modelName + '/kmeans-' + str(n_clusters) + '/behavior_quantification/motif_usage.npy'))
         clu = pd.DataFrame(clu_arr)
         clu.columns=[sample]
         cat = pd.concat([cat, clu], axis=1)
@@ -555,5 +557,26 @@ def extractResults(projectPath, group1, group2, modelName, n_clusters, phases):
         df2_split.to_csv(os.path.join(projectPath, 'Group2_' + phase + '_' + modelName + '_' + str(n_clusters) + 'Clusters_Results.csv'))
            
         results = pd.concat([df1_split, df2_split], axis=1)
+        
+        df1_arr = np.array(df1_split)
+        df2_arr = np.array(df2_split)
+        pvals = np.array([ttest_ind(df1_arr[i,:], df2_arr[i,:])[1] for i in range(df1_arr.shape[0])], nan_policy='omit')
+        fdr_pass,qvals,_,_ = multipletests(pvals, method='fdr_bh',alpha=0.05)
+
+        results['p-value'] = pvals
+        results['q-value'] = qvals
         results.to_csv(os.path.join(projectPath, 'Combined_' + phase + '_' + modelName + '_' + str(n_clusters) + 'Clusters_Results.csv'))
-                       
+        
+        summary = pd.DataFrame()
+        summary['Group1_Mean'] = df1_split['Group1_mean']
+        summary['Group1_SEM'] = df1_split['Group1_sem']
+        summary['Group2_Mean'] = df2_split['Group2_mean']
+        summary['Group2_SEM'] = df2_split['Group2_sem']
+        summary['p-value'] = results['p-value']
+        summary['q-value'] = results['q-value']
+        summary.to_csv(os.path.join(projectPath, phase + '_SummmaryStatistics_' + str(n_clusters) + 'clusters.csv'))
+        
+
+
+
+
