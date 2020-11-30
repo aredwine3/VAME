@@ -232,6 +232,9 @@ def combineBehavior(config, save=True, n_cluster=30):
     return(df2)
 
 def extractResults(projectPath, group1, group2, modelName, n_clusters, phases):
+    if not os.path.exists(os.path.join(projectPath, str(n_clusters) + 'Clusters/')):
+        os.mkdir(os.path.join(projectPath, str(n_clusters) + 'Clusters/'))
+    saveDir = os.path.join(projectPath, str(n_clusters) + 'Clusters/')
     samples = os.listdir(os.path.join(projectPath, 'results/'))
     cat = pd.DataFrame()
     for sample in samples:
@@ -262,10 +265,10 @@ def extractResults(projectPath, group1, group2, modelName, n_clusters, phases):
     df2['Group2_mean'] = np.mean(df2, axis=1)
     df2['Group2_sem']=(np.std(df2, axis=1)/np.sqrt((df2.shape[1]-1)))
     
-    df1.to_csv(os.path.join(projectPath, 'Group1_' + modelName + '_' + str(n_clusters) + 'Clusters.csv'))
-    df2.to_csv(os.path.join(projectPath, 'Group2_' + modelName + '_' + str(n_clusters) + 'Clusters.csv'))
+    df1.to_csv(os.path.join(saveDir, 'Group1_' + modelName + '_' + str(n_clusters) + 'Clusters.csv'))
+    df2.to_csv(os.path.join(saveDir, 'Group2_' + modelName + '_' + str(n_clusters) + 'Clusters.csv'))
     comb = pd.concat([df1, df2], axis=1)
-    comb.to_csv(os.path.join(projectPath, 'Combined_' + modelName + '_' + str(n_clusters) + 'Clusters_Results.csv'))
+    comb.to_csv(os.path.join(saveDir, 'Combined_' + modelName + '_' + str(n_clusters) + 'Clusters_Results.csv'))
 
     cols = list(df1.columns)
     for col in cols:
@@ -292,7 +295,7 @@ def extractResults(projectPath, group1, group2, modelName, n_clusters, phases):
                 df1_split[col]=df1[col]
         df1_split['Group1_mean'] = np.mean(df1_split, axis=1)
         df1_split['Group1_sem']=(np.std(df1_split, axis=1)/np.sqrt((df1_split.shape[1]-1)))
-        df1_split.to_csv(os.path.join(projectPath, 'Group1_' + phase + '_' + modelName + '_' + str(n_clusters) + 'Clusters_Results.csv'))
+        df1_split.to_csv(os.path.join(saveDir, 'Group1_' + phase + '_' + modelName + '_' + str(n_clusters) + 'Clusters_Results.csv'))
                 
         df2_split = pd.DataFrame()
         for col in df2.columns:
@@ -300,18 +303,18 @@ def extractResults(projectPath, group1, group2, modelName, n_clusters, phases):
                 df2_split[col]=df2[col]
         df2_split['Group2_mean'] = np.mean(df2_split, axis=1)
         df2_split['Group2_sem']=(np.std(df2_split, axis=1)/np.sqrt((df2_split.shape[1]-1)))
-        df2_split.to_csv(os.path.join(projectPath, 'Group2_' + phase + '_' + modelName + '_' + str(n_clusters) + 'Clusters_Results.csv'))
+        df2_split.to_csv(os.path.join(saveDir, 'Group2_' + phase + '_' + modelName + '_' + str(n_clusters) + 'Clusters_Results.csv'))
            
         results = pd.concat([df1_split, df2_split], axis=1)
         
         df1_arr = np.array(df1_split)
         df2_arr = np.array(df2_split)
-        pvals = np.array([ttest_ind(df1_arr[i,:], df2_arr[i,:])[1] for i in range(df1_arr.shape[0])], nan_policy='omit')
+        pvals = np.array([ttest_ind(df1_arr[i,:], df2_arr[i,:], nan_policy='omit')[1] for i in range(df1_arr.shape[0])])
         fdr_pass,qvals,_,_ = multipletests(pvals, method='fdr_bh',alpha=0.05)
 
         results['p-value'] = pvals
         results['q-value'] = qvals
-        results.to_csv(os.path.join(projectPath, 'Combined_' + phase + '_' + modelName + '_' + str(n_clusters) + 'Clusters_Results.csv'))
+        results.to_csv(os.path.join(saveDir, 'Combined_' + phase + '_' + modelName + '_' + str(n_clusters) + 'Clusters_Results.csv'))
         
         summary = pd.DataFrame()
         summary['Group1_Mean'] = df1_split['Group1_mean']
@@ -320,7 +323,7 @@ def extractResults(projectPath, group1, group2, modelName, n_clusters, phases):
         summary['Group2_SEM'] = df2_split['Group2_sem']
         summary['p-value'] = results['p-value']
         summary['q-value'] = results['q-value']
-        summary.to_csv(os.path.join(projectPath, phase + '_SummmaryStatistics_' + str(n_clusters) + 'clusters.csv'))
+        summary.to_csv(os.path.join(saveDir, phase + '_SummmaryStatistics_' + str(n_clusters) + 'clusters.csv'))
         
 
 
