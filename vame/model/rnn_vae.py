@@ -325,8 +325,8 @@ def train_model(config):
     optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE, amsgrad=True)
 
     if optimizer_scheduler:
-        print('Scheduler step size: %d, Scheduler gamma: %.2f\n' %(scheduler_step_size, cfg['scheduler_gamma']))
-        scheduler = StepLR(optimizer, step_size=scheduler_step_size, gamma=cfg['scheduler_gamma'], last_epoch=-1)
+        print('Scheduler step size: %d, Scheduler gamma: %.2f\n' %(scheduler_step_size, GAMMA))
+        scheduler = StepLR(optimizer, step_size=STEP_SIZE, gamma=GAMMA, last_epoch=-1)
     else:
         scheduler = StepLR(optimizer, step_size=scheduler_step_size, gamma=1, last_epoch=-1)
     

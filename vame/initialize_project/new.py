@@ -108,19 +108,14 @@ def init_new_project(project, videos, working_directory=None, videotype='.mp4'):
     cfg_file['all_data']='yes'
     cfg_file['load_data']='-PE-seq-clean'
     cfg_file['anneal_function']='linear'
-<<<<<<< HEAD
-    cfg_file['batch_size']=256
-    cfg_file['max_epochs']=500
-=======
     cfg_file['batch_size']=512
     cfg_file['max_epochs']=1000 
->>>>>>> Implemented easier file finding with renaming
     cfg_file['transition_function']='GRU'
     cfg_file['beta']=1
     cfg_file['zdims']=30
     cfg_file['learning_rate']=5e-4
-    cfg_file['step_size']=20
-    cfg_file['gamma']=0.666
+    cfg_file['step_size']=100
+    cfg_file['gamma']=0.2
     cfg_file['time_window']=30
     cfg_file['prediction_decoder']=1
     cfg_file['prediction_steps']=15
