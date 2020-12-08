@@ -60,7 +60,9 @@ def create_config_template():
     beta:
     zdims:
     learning_rate:
-    time_window:
+    step_size:
+    gamma:
+    time_window: 
     prediction_decoder:
     prediction_steps:
     noise: 

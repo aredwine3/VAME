@@ -252,7 +252,9 @@ def train_model(config):
     TEMPORAL_WINDOW = cfg['time_window']*2
     FUTURE_DECODER = cfg['prediction_decoder']
     FUTURE_STEPS = cfg['prediction_steps']
-
+    STEP_SIZE = cfg['step_size']
+    GAMMA = cfg['gamma']
+    
     # RNN
     hidden_size_layer_1 = cfg['hidden_size_layer_1']
     hidden_size_layer_2 = cfg['hidden_size_layer_2']
@@ -322,12 +324,12 @@ def train_model(config):
     optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE, amsgrad=True)
 
     if optimizer_scheduler:
-        print('Scheduler step size: %d, Scheduler gamma: %.2f\n' %(scheduler_step_size, cfg['scheduler_gamma']))
-        scheduler = StepLR(optimizer, step_size=scheduler_step_size, gamma=cfg['scheduler_gamma'], last_epoch=-1)
+        print('Scheduler step size: %d, Scheduler gamma: %.2f\n' %(scheduler_step_size, GAMMA))
+        scheduler = StepLR(optimizer, step_size=STEP_SIZE, gamma=GAMMA, last_epoch=-1)
     else:
-        scheduler = StepLR(optimizer, step_size=scheduler_step_size, gamma=1, last_epoch=-1)
-    
-    print("Start training... ")
+        scheduler = StepLR(optimizer, step_size=STEP_SIZE, gamma=1, last_epoch=-1)
+
+
     for epoch in range(1,EPOCHS):
         print("Epoch: %d" %epoch)
         weight, train_loss, km_loss, kl_loss, mse_loss, fut_loss = train(train_loader, epoch, model, optimizer,
