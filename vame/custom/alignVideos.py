@@ -124,21 +124,24 @@ def background(path_to_file,filename,file_format='.mp4',num_frames=1000):
 
 def align_mouse(path_to_file,filename,file_format,crop_size, pose_list, pose_ref_index,
                       pose_flip_ref,bg,frame_count,use_video=True):  
-    
-    #returns: list of cropped images (if video is used) and list of cropped DLC points
-    #
-    #parameters:
-    #path_to_file: directory
-    #filename: name of video file without format
-    #file_format: format of video file
-    #crop_size: tuple of x and y crop size
-    #dlc_list: list of arrays containg corresponding x and y DLC values
-    #dlc_ref_index: indices of 2 lists in dlc_list to align mouse along
-    #dlc_flip_ref: indices of 2 lists in dlc_list to flip mouse if flip was false
-    #bg: background image to subtract
-    #frame_count: number of frames to align
-    #use_video: boolean if video should be cropped or DLC points only
-    
+    """Docstring:
+        Perform egocentric alignment of coordinates from CSV file.
+        
+        Parameters
+        ----------
+        path_to_file: string, directory
+        filename: string, name of video file without format
+        file_format: string, format of video file
+        crop_size: tuple, x and y crop size
+        dlc_list: list, arrays containg corresponding x and y DLC values
+        dlc_ref_index: list, indices of 2 lists in dlc_list to align mouse along
+        dlc_flip_ref: tuple, indices of 2 lists in dlc_list to flip mouse if flip was false
+        bg: background image to subtract
+        frame_count: number of frames to align
+        use_video: boolean if video should be cropped or DLC points only
+        
+        Returns: list of cropped images (if video is used) and list of cropped DLC points
+    """ 
     images = []
     points = []
     
@@ -245,7 +248,25 @@ def play_aligned_video(a, n, frame_count):
     cv.destroyAllWindows()
 
 
-def align_demo(path_to_file, filename, file_format, crop_size, use_video=False, check_video=False):
+def alignVideo(path_to_file, filename, file_format, crop_size, use_video=False, check_video=False):
+    """Docstring:
+    Performs egocentric alignment of video data.
+    
+    Parameters
+    ----------
+    path_to_file : string
+        path to CSV file
+    filename : string
+        name of subject in file, without format
+    file_format : string
+        format of video file
+    crop_size : tuple
+        tuple of ints for size of cropped egocentric frames
+    use_video : bool (optional, default False)
+        Whether to use openCV to read and analyze videos.
+    check_video : bool (optional, default False)
+        Whether to play result video upon completion.
+    """
     
     #read out data
     data = pd.read_csv(path_to_file+'/videos/pose_estimation/'+filename+'-DC.csv', skiprows = 2)
