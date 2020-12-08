@@ -252,7 +252,9 @@ def train_model(config):
     TEMPORAL_WINDOW = cfg['time_window']*2
     FUTURE_DECODER = cfg['prediction_decoder']
     FUTURE_STEPS = cfg['prediction_steps']
-
+    STEP_SIZE = cfg['step_size']
+    GAMMA = cfg['gamma']
+    
     # RNN
     hidden_size_layer_1 = cfg['hidden_size_layer_1']
     hidden_size_layer_2 = cfg['hidden_size_layer_2']
@@ -328,6 +330,7 @@ def train_model(config):
         scheduler = StepLR(optimizer, step_size=scheduler_step_size, gamma=1, last_epoch=-1)
     
     print("Start training... ")
+
     for epoch in range(1,EPOCHS):
         print("Epoch: %d" %epoch)
         weight, train_loss, km_loss, kl_loss, mse_loss, fut_loss = train(train_loader, epoch, model, optimizer,

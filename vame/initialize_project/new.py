@@ -114,6 +114,8 @@ def init_new_project(project, videos, working_directory=None, videotype='.mp4'):
     cfg_file['beta']=1
     cfg_file['zdims']=30
     cfg_file['learning_rate']=5e-4
+    cfg_file['step_size']=100
+    cfg_file['gamma']=0.2
     cfg_file['time_window']=30
     cfg_file['prediction_decoder']=1
     cfg_file['prediction_steps']=15
