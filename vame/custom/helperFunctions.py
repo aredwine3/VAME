@@ -17,6 +17,9 @@ from statsmodels.stats.multitest import multipletests
 
 
 def makeEgocentricCSV(h5Path, bodyPart):
+    """Docstring:
+        Deprecated. Use alignVideos.alignVideo() instead.
+    """
     directory = '/'.join(h5Path.split('/')[:-1])
     fileName = h5Path.split('/')[-1]#.split('DLC')[0]
     f, e = os.path.splitext(fileName)
@@ -40,6 +43,10 @@ def makeEgocentricCSV(h5Path, bodyPart):
     df_ego.to_csv(os.path.join(directory, 'egocentric/' + f + '_egocentric.csv'))
 
 def makeEgocentricCSV_Center(h5Path, bodyPart1, bodyPart2, drop=None):
+    """
+    Docstring:
+        Deprecated. Use alignVideos.alignVideo() instead.
+    """
     directory = '/'.join(h5Path.split('/')[:-1])
     fileName = h5Path.split('/')[-1]#.split('DLC')[0]
     f, e = os.path.splitext(fileName)
@@ -70,10 +77,16 @@ def makeEgocentricCSV_Center(h5Path, bodyPart1, bodyPart2, drop=None):
     
 def csv_to_numpy(projectPath, csvPath, pcutoff=.99):
     """
-    This is a demo function to show how a conversion from the resulting pose-estimation.csv file
-    to a numpy array can be implemented. 
-    Note that this code is only useful for data which is a priori egocentric, i.e. head-fixed
-    or otherwise restrained animals. 
+    Convert CSV to NumPy array.
+    
+    Parameters
+    ----------
+    projectPath : string
+        path to project folder.
+    csvPath : string
+        path to CSV
+    pcutoff : float (optional, default .99)
+        p-cutoff for likelihood, coordinates below this will be set to NaN.
     """
 
     # Read in your .csv file, skip the first two rows and create a numpy array
@@ -113,6 +126,18 @@ def csv_to_numpy(projectPath, csvPath, pcutoff=.99):
     np.save(os.path.join(projectPath, 'data/' + f + '/' + f + "-PE-seq.npy"), final_positions)
 
 def combineBehavior(config, save=True, n_cluster=30):
+    """
+    Docstring:
+        Combines motif usage for all samples into one CSV file.
+        
+    Parameters
+    ----------
+    config : string 
+        path to config file
+    save : bool
+    n_cluster : int 
+        number of clusters to analyze (behavioral segmentation data must exist)
+    """
     config_file = Path(config).resolve()
     cfg = read_config(config_file)
     project_path = cfg['project_path']
@@ -485,7 +510,31 @@ def combineBehavior(config, save=True, n_cluster=30):
         df2.to_csv(os.path.join(project_path, 'results/Motif_Usage_Combined_' + str(n_cluster) + 'clusters.csv'))
     return(df2)
 
-def extractResults(projectPath, group1, group2, modelName, n_clusters, phases):
+def extractResults(projectPath, group1, group2, modelName, n_clusters, phases=None):
+    """Docstring:
+    Compares motif usage between two groups with t-test.
+    
+    
+    Parameters
+    ----------
+    projectPath : string
+        Path to project folder
+    group1 : list
+        List of subject ID strings.
+    group2 : list
+        List of subject ID strings.
+    modelName : string
+        Name of model to use.
+    n_clusters : int
+        Number of segmented clusters to analyze.
+    phases (optional): 
+        Experimental phases that are suffixes for data files.
+
+    Returns
+    -------
+    Pandas DataFrame with results. Also saves CSV.
+
+    """
     if not os.path.exists(os.path.join(projectPath, str(n_clusters) + 'Clusters/')):
         os.mkdir(os.path.join(projectPath, str(n_clusters) + 'Clusters/'))
     saveDir = os.path.join(projectPath, str(n_clusters) + 'Clusters/')
@@ -578,8 +627,111 @@ def extractResults(projectPath, group1, group2, modelName, n_clusters, phases):
         summary['p-value'] = results['p-value']
         summary['q-value'] = results['q-value']
         summary.to_csv(os.path.join(saveDir, phase + '_SummmaryStatistics_' + str(n_clusters) + 'clusters.csv'))
+    return(summary)
         
+def selectLimbs(projectPath, suffix):
+    """Docstring:
+        
+    Parameters
+    ----------
+    projectPath : string
+        Path to project folder.
+    suffix : string
+        Suffix to add to file name when saving.
+    """
+    poseFiles = os.listdir(os.path.join(projectPath, 'videos/pose_estimation/'))
+    for file in poseFiles:
+        fullpath = os.path.join(projectPath, 'videos/pose_estimation/' + file)
+        f, e = os.path.splitext(file)
+        df = pd.read_csv(fullpath, header=[0,1,2], index_col=0)
+        cols = df.columns
+        newCols = cols.droplevel(level=0) #drops the 'scorer' level from the h5 MultiIndex
+        df.columns = newCols
+        bodyParts_f = ['forepaw-l', 'forepaw-r']
+        bodyParts_h = ['hindpaw-l', 'hindpaw-r']
+        bps_f = []
+        aves_f = []
+        for bp in bodyParts_f:
+            ave = np.mean(df[(bp, 'likelihood')])
+            aves_f.append(ave)
+            bps_f.append(bp)
+        bps_h = []
+        aves_h = []
+        for bp in bodyParts_h:
+            ave=np.mean(df[(bp, 'likelihood')])
+            aves_h.append(ave)
+            bps_h.append(bp)
+        lz_f = list(zip(aves_f, bps_f))
+        lz_h = list(zip(aves_h, bps_h))
+        use = ['nose', 'tail-base', 'spine1', 'spine2', 'spine3']
+        lists = [lz_f, lz_h]
+        for lz in lists:
+            if lz[0][0] > lz[1][0]:
+                use.append(lz[0][1])
+            else:
+                use.append(lz[1][1])
+        df2 = pd.DataFrame()
+        cat = pd.DataFrame()
+        for bp in use:
+            l = [bp, bp, bp]
+            i = ['x', 'y', 'likelihood']
+            lz = list(zip(l,i))
+            ind = pd.MultiIndex.from_tuples(lz)
+        #    df2.columns=[ind]
+            df2 = pd.DataFrame(df[bp].values, columns=[lz])
+            cat = pd.concat([cat, df2], axis=1)
+        usedBPs = list(set([cat.columns[x][0][0] for x in range(len(cat.columns))]))
+        bodyParts = []
+        for col in newCols:
+            bp = col[0]
+            bodyParts.append(bp)
+        bps = list(set(bodyParts))
+        dropBPs=[]
+        for bp in bps:
+            if bp not in usedBPs:
+                dropBPs.append(bp)
+        for bp in dropBPs:
+            df.drop(bp, axis=1, inplace=True)
+            
+        old_cols = df.columns.to_frame()
+        old_cols.insert(0, 0, 'DLC_resnet50_NPWSep26shuffle1_800000')
+        df.columns = old_cols
+        ind = pd.MultiIndex.from_tuples(df.columns)
+        df.columns=ind
+        df.to_csv(os.path.join(projectPath, 'videos/pose_estimation/' + f + suffix + '.csv'))
 
 
-
+def dropBodyParts(projectPath, bodyParts):
+    """
+    Drops specified body parts from CSV file. Creates a new folder called 'original/' and saves original CSVs there,
+    and overwrites the CSV in projectPath.
+    
+    
+    Parameters
+    ----------
+    projectPath : string
+        Path to project folder
+    bodyParts : list
+        List of bodyparts to drop.
+    """
+    poseFiles = os.listdir(os.path.join(projectPath, 'videos/pose_estimation/'))
+    if not os.path.exists(os.path.join(projectPath, 'videos/pose_estimation/original/')):
+        os.mkdir(os.path.join(projectPath, 'videos/pose_estimation/original/'))
+    for file in poseFiles:
+        if file.endswith('.csv'):
+            fullpath = os.path.join(projectPath, 'videos/pose_estimation/' + file)
+            f, e = os.path.splitext(file)
+            df = pd.read_csv(fullpath, header=[0,1,2], index_col=0)
+            df.to_csv(os.path.join(projectPath, 'videos/pose_estimation/original/', file))
+            dropList = []
+            scorer=df.columns[0][0]
+            for part in bodyParts:
+                tup1 = (scorer, part, 'x')
+                tup2 = (scorer, part, 'y')
+                tup3 = (scorer, part, 'likelihood')
+                dropList.append(tup1)
+                dropList.append(tup2)
+                dropList.append(tup3)
+            df.drop(labels=dropList, axis=1, inplace=True)
+            df.to_csv(os.path.join(projectPath, 'videos/pose_estimation/' + file))
 
