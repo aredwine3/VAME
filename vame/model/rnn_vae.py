@@ -375,6 +375,8 @@ def rnn_model(config, model_name, pretrained_weights=False, pretrained_model=Non
     TEMPORAL_WINDOW = cfg['time_window']*2
     FUTURE_DECODER = cfg['prediction_decoder']
     FUTURE_STEPS = cfg['prediction_steps']
+    STEP_SIZE = cfg['step_size']
+    GAMMA = cfg['gamma']
     
     # RNN
     hidden_size_layer_1 = cfg['hidden_size_layer_1']
@@ -394,6 +396,7 @@ def rnn_model(config, model_name, pretrained_weights=False, pretrained_model=Non
     ANNEALTIME = cfg['annealtime']
     anneal_function = cfg['anneal_function']
     optimizer_scheduler = cfg['scheduler']
+    
     
     BEST_LOSS = 999999
     convergence = 0
@@ -430,9 +433,9 @@ def rnn_model(config, model_name, pretrained_weights=False, pretrained_model=Non
     optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE, amsgrad=True)
     
     if optimizer_scheduler:
-        scheduler = StepLR(optimizer, step_size=100, gamma=0.2, last_epoch=-1)
+        scheduler = StepLR(optimizer, step_size=STEP_SIZE, gamma=GAMMA, last_epoch=-1)
     else:
-        scheduler = StepLR(optimizer, step_size=100, gamma=0, last_epoch=-1)
+        scheduler = StepLR(optimizer, step_size=STEP_SIZE, gamma=GAMMA, last_epoch=-1)
 
     for epoch in range(1,EPOCHS):
         print('Epoch: %d' %epoch)
