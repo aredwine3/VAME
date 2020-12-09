@@ -1,6 +1,13 @@
 ![VAME](https://github.com/LINCellularNeuroscience/VAME/blob/master/Images/VAME_Logo-1.png)
 ![workflow](https://github.com/LINCellularNeuroscience/VAME/blob/master/Images/workflow.png)
 
+# Release notes for this fork of VAME:
+
+12-8-20 - Added 'step_size' and 'gamma' parameters to config file. The 'step_size' parameter determines how many training epochs occur between each decrease in learning rate. The gamma parameter is the multiplicative reduction in learning rate after every step_size iterations. Step_size defaults to 100, and gamma defaults to 0.2. In the main VAME repository these are the values used in the model.
+11-30-20 - Minor updates include changing legend location in evaluation result figures. Also sets the nan_policy for t-test in extractResults function to 'omit', so nan clusters will be ignored rather than the t-test result being nan. In a future update empty clusters will likely be set to 0.
+11-24-20 - Added vame/custom/alignVideos.py to produce egocentric alignment CSV files in accordance with update to main VAME repository.
+11-2-20 - Added vame/custom/helperFunctions.py - These functions help with pre-processing of DLC data, e.g. dropping bodyparts if you don't want to include all in model. Also includes functions for extracting and concatenating results, performing statistics on motif usage between groups, and writing human-readable result CSV files.
+
 # VAME in a Nutshell
 VAME is a framework to cluster behavioral signals obtained from pose-estimation tools. It is a [PyTorch](https://pytorch.org/) based deep learning framework which leverages the power of recurrent neural networks (RNN) to model sequential data. In order to learn the underlying complex data distribution we use the RNN in a variational autoencoder setting to extract the latent state of the animal in every step of the input time series.
 
