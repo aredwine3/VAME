@@ -308,7 +308,7 @@ def extractResults(projectPath, group1, group2, modelName, n_clusters, phases=No
         summary['Group2_SEM'] = df2_split['Group2_sem']
         summary['p-value'] = results['p-value']
         summary['q-value'] = results['q-value']
-        summary.to_csv(os.path.join(saveDir, phase + '_SummmaryStatistics_' + str(n_clusters) + 'clusters.csv'))
+        summary.to_csv(os.path.join(saveDir, phase + '_SummaryStatistics_' + str(n_clusters) + 'clusters.csv'))
     return(summary)
         
 def selectLimbs(projectPath, suffix):
