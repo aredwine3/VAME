@@ -78,7 +78,7 @@ vame.rnn_model(config, model_name=modelName, pretrained_weights=False, pretraine
 vame.evaluate_model(config, model_name=modelName)
 
 #Segment Behaviors:
-vame.behavior_segmentation(config, model_name=modelName, cluster_method='kmeans', n_cluster=[5,10,15,20,30])
+vame.behavior_segmentation(config, model_name=modelName, cluster_method='kmeans', n_cluster=[15,30,45])
 #Quantify behaviors:
 vame.behavior_quantification(config, model_name=modelName, cluster_method='kmeans', n_cluster=10)
 #Make Example Videos:
