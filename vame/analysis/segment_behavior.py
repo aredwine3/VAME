@@ -44,11 +44,7 @@ def kmeans_clustering(context, n_clusters):
     return kmeans.predict(context)
 
 def ts_kmeans_clustering(context, n_clusters):
-<<<<<<< HEAD
     tskmeans = TimeSeriesKMeans(init='k-means++', n_clusters=n_clusters, metric='n_init=1 dtw', n_jobs=multiprocessing.cpu_count()-1, random_state=42, verbose=1, max_iter=10, n_init=1).fit(context)
-=======
-    tskmeans = TimeSeriesKMeans(init='k-means++', n_clusters=n_clusters, metric='dtw', n_jobs=-1, random_state=42, verbose=1, max_iter=10, n_init=1).fit(context)
->>>>>>> Added plot_transitions function
     return tskmeans.predict(context)
     
 def gmm_clustering(context,n_components):
@@ -166,24 +162,6 @@ def temporal_quant(cfg, model_name, files, use_gpu, n_cluster=[30], cluster_meth
         window_start = int(temp_win/2)
         idx = int(temp_win/2)
         x_decoded = []
-
-        with torch.no_grad():
-            for i in range(num_frames):
-                if idx >= num_frames:
-                    break
-                data = X[:,idx-window_start:idx+window_start]
-                data = np.reshape(data, (1,temp_win,NUM_FEATURES))
-                if use_gpu:
-                    dataTorch = torch.from_numpy(data).type(torch.FloatTensor).cuda()
-                else:
-                    dataTorch = torch.from_numpy(data).type(torch.FloatTensor).to()
-                h_n = model.encoder(dataTorch)
-                latent, _, _ = model.lmbda(h_n)
-                z = latent.cpu().data.numpy()
-                x_decoded.append(z)
-                idx += 1
-
-        z_temp = np.concatenate(x_decoded,axis=0)
         
         if os.path.exists(PROJECT_PATH + '/results/' + file + '/' + model_name + '/' + cluster_method + '-' + str(n_cluster) + '/'  +'latent_vector_' + file + '.npy'):
             z_temp = np.load(PROJECT_PATH + '/results/' + file + '/' + model_name + '/' + cluster_method + '-' + str(n_cluster) + '/' + 'latent_vector_' + file + '.npy')
