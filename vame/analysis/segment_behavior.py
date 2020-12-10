@@ -93,7 +93,12 @@ def behavior_segmentation(config, model_name=None, cluster_method='kmeans', n_cl
 
 
 def temporal_quant(cfg, model_name, files, use_gpu):
-
+    z, z_logger = temporal_quant(cfg, model_name, files, use_gpu, n_cluster=n_cluster) 
+    cluster_latent_space(cfg, files, z, z_logger, cluster_method, n_cluster, model_name)
+    
+    
+def temporal_quant(cfg, model_name, files, use_gpu, n_cluster=[30], cluster_method='kmeans'):
+    n_cluster = n_cluster[0]
     SEED = 19
     ZDIMS = cfg['zdims']
     FUTURE_DECODER = cfg['prediction_decoder']
@@ -170,6 +175,25 @@ def temporal_quant(cfg, model_name, files, use_gpu):
                 idx += 1
 
         z_temp = np.concatenate(x_decoded,axis=0)
+        
+        if os.path.exists(PROJECT_PATH + '/results/' + file + '/' + model_name + '/' + cluster_method + '-' + str(n_cluster) + '/'  +'latent_vector_' + file + '.npy'):
+            z_temp = np.load(PROJECT_PATH + '/results/' + file + '/' + model_name + '/' + cluster_method + '-' + str(n_cluster) + '/' + 'latent_vector_' + file + '.npy')
+            print("Loaded latent space from " + PROJECT_PATH + '/results/' + file + '/' + model_name + '/' + cluster_method + '-' + str(n_cluster) + '/' + 'latent_vector_' + file + '.npy')
+        else:
+            with torch.no_grad(): 
+                for i in range(num_frames):
+                    if idx >= num_frames:
+                        break
+                    data = X[:,idx-window_start:idx+window_start]
+                    data = np.reshape(data, (1,temp_win,NUM_FEATURES))
+                    dataTorch = torch.from_numpy(data).type(torch.FloatTensor).cuda()
+                    h_n = model.encoder(dataTorch)
+                    latent, _, _ = model.lmbda(h_n)
+                    z = latent.cpu().data.numpy()
+                    x_decoded.append(z)
+                    idx += 1
+                    
+            z_temp = np.concatenate(x_decoded,axis=0)    
         logger_temp = len(z_temp)
         logger += logger_temp
         z_list.append(z_temp)
@@ -189,7 +213,7 @@ def cluster_latent_space(cfg, files, z_data, z_logger, cluster_method, n_cluster
             data_labels = np.int64(scipy.signal.medfilt(data_labels, cfg['median_filter']))
             
         elif cluster_method == 'ts-kmeans':
-            print("Behavior segmentation via TimeSeriesKMeans for %d cluster.' %cluster")
+            print('Behavior segmentation via TimeSeriesKMeans for %d cluster.' %cluster)
             data_labels = ts_kmeans_clustering(z_data, n_clusters=cluster)
             data_labels = np.int64(scipy.signal.medfilt(data_labels, cfg['median_filter']))           
 
