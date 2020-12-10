@@ -15,8 +15,12 @@ from pathlib import Path
 
 import torch
 import scipy.signal
+import matplotlib.pyplot as plt
+import seaborn as sn
+
 from sklearn import mixture
 from sklearn.cluster import KMeans
+from tslearn.clustering import TimeSeriesKMeans
 
 from vame.util.auxiliary import read_config
 from vame.model.rnn_vae import RNN_VAE
@@ -34,7 +38,10 @@ def kmeans_clustering(context, n_clusters):
     kmeans = KMeans(init='k-means++',n_clusters=n_clusters, random_state=42,n_init=15).fit(context)
     return kmeans.predict(context)
 
-
+def ts_kmeans_clustering(context, n_clusters):
+    tskmeans = TimeSeriesKMeans(init='k-means++', n_clusters=n_clusters, metric='dtw', n_jobs=-1, random_state=42, verbose=1, max_iter=10, n_init=1).fit(context)
+    return tskmeans.predict(context)
+    
 def gmm_clustering(context,n_components):
     GMM = mixture.GaussianMixture
     gmm = GMM(n_components=n_components,covariance_type='full').fit(context)
@@ -180,8 +187,13 @@ def cluster_latent_space(cfg, files, z_data, z_logger, cluster_method, n_cluster
             print('Behavior segmentation via k-Means for %d cluster.' %cluster)
             data_labels = kmeans_clustering(z_data, n_clusters=cluster)
             data_labels = np.int64(scipy.signal.medfilt(data_labels, cfg['median_filter']))
+            
+        elif cluster_method == 'ts-kmeans':
+            print("Behavior segmentation via TimeSeriesKMeans for %d cluster.' %cluster")
+            data_labels = ts_kmeans_clustering(z_data, n_clusters=cluster)
+            data_labels = np.int64(scipy.signal.medfilt(data_labels, cfg['median_filter']))           
 
-        if cluster_method == 'GMM':
+        elif cluster_method == 'GMM':
             print('Behavior segmentation via GMM.')
             data_labels = gmm_clustering(z_data, n_components=cluster)
             data_labels = np.int64(scipy.signal.medfilt(data_labels, cfg['median_filter']))
@@ -200,13 +212,35 @@ def cluster_latent_space(cfg, files, z_data, z_logger, cluster_method, n_cluster
                 np.save(save_data+cluster_method+'-'+str(cluster)+'/'+str(cluster)+'_km_label_'+file, labels)
                 np.save(save_data+cluster_method+'-'+str(cluster)+'/'+'latent_vector_'+file, z_latent)
 
-            if cluster_method == 'GMM':
-                np.save(save_data+cluster_method+'-'+str(cluster)+'/'+str(cluster)+'_gmm_label_'+file, labels)
+            elif cluster_method == 'ts-kmeans':
+                np.save(save_data+cluster_method+'-'+str(cluster)+'/'+str(cluster)+'_ts-kmeans_label_'+file, labels)
                 np.save(save_data+cluster_method+'-'+str(cluster)+'/'+'latent_vector_'+file, z_latent)
-
-            if cluster_method == 'all':
-                np.save(save_data+cluster_method+'-'+str(cluster)+'/'+str(cluster)+'_km_label_'+file, labels)
+                
+            elif cluster_method == 'GMM':
                 np.save(save_data+cluster_method+'-'+str(cluster)+'/'+str(cluster)+'_gmm_label_'+file, labels)
                 np.save(save_data+cluster_method+'-'+str(cluster)+'/'+'latent_vector_'+file, z_latent)
                 
-            
+            elif cluster_method == 'all':
+                np.save(save_data+cluster_method+'-'+str(cluster)+'/'+str(cluster)+'_km_label_'+file, labels)
+                np.save(save_data+cluster_method+'-'+str(cluster)+'/'+str(cluster)+'_gmm_label_'+file, labels)
+                np.save(save_data+cluster_method+'-'+str(cluster)+'/'+'latent_vector_'+file, z_latent)
+    
+            np.save(save_data+cluster_method+'-'+str(cluster)+'/'+'z_logger_'+file, z_logger)
+
+
+def plot_transitions(config, files, n_cluster, model_name, cluster_method='kmeans'):
+    config_file = Path(config).resolve()
+    cfg = read_config(config_file)
+    
+    PROJECT_PATH = cfg['project_path']
+    for file in files:
+        tm = np.load(os.path.join(PROJECT_PATH, 'results/' + file + '/' + model_name + '/' + cluster_method + '-' + str(n_cluster) + '/behavior_quantification/' + 'transition_matrix.npy'))
+        fig = plt.figure(figsize=(15,10))
+        fig.suptitle("Transition matrix of {} behaviors".format(tm.shape[0]))
+        sn.heatmap(tm, annot=True)
+        plt.xlabel("Next frame behavior")
+        plt.ylabel("Current frame behavior")
+        plt.show()
+        fig.savefig(os.path.join(PROJECT_PATH, 'results/' + file + '/' + model_name + '/' + cluster_method + '-' + str(n_cluster) + '/behavior_quantification/' + file + '_transitionMatrix.svg'))
+
+
