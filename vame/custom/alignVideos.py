@@ -7,7 +7,7 @@ https://github.com/LINCellularNeuroscience/VAME
 Licensed under GNU General Public License v3.0
 """
 
-
+import os
 import cv2 as cv
 import numpy as np
 import pandas as pd
@@ -221,12 +221,24 @@ def align_mouse(path_to_file,filename,file_format,crop_size, pose_list, pose_ref
 
 
 #play aligned video
-def play_aligned_video(a, n, frame_count):
+def play_aligned_video(a, n, frame_count, path_to_file, filename, crop_size, save=False):
     colors = [(255,0,0),(0,255,0),(0,0,255),(255,255,0),(255,0,255),(0,255,255),(0,0,0),(255,255,255),(125,0,125),(125,125,125)]
+    if not os.path.exists(os.path.join(path_to_file, 'egocentricVideos/')):
+        os.mkdir(os.path.join(path_to_file, 'egocentricVideos/'))
+    if save:
+        fourcc = cv.VideoWriter_fourcc(*'mp4v')
+        writer = cv.VideoWriter(
+            os.path.join(os.path.join(path_to_file, 'egocentricVideos/' + filename + '.mp4')), 
+            fourcc, 
+            30.0, 
+            crop_size,
+            isColor=True
+        )
     
     for i in range(frame_count):
         # Capture frame-by-frame
         ret, frame = True,a[i]
+
         if ret == True:
             
           # Display the resulting frame
@@ -235,20 +247,21 @@ def play_aligned_video(a, n, frame_count):
           
           for c,j in enumerate(n[i]):
               cv.circle(im_color,(j[0], j[1]), 5, colors[c], -1)
-          
-          cv.imshow('Frame',im_color)
-          
-          # Press Q on keyboard to  exit
-          if cv.waitKey(25) & 0xFF == ord('q'):
-            break
-        
+          if not save:
+              cv.imshow('Frame',im_color)
+              if cv.waitKey(25) & 0xFF == ord('q'): # Press Q on keyboard to  exit
+                  break
+          elif save:
+              writer.write(im_color)
+              
         # Break the loop
         else: 
             break
+    writer.release()
     cv.destroyAllWindows()
+    
 
-
-def alignVideo(path_to_file, filename, file_format, crop_size, use_video=False, check_video=False):
+def alignVideo(path_to_file, filename, file_format, crop_size, use_video=False, check_video=False, save=False):
     """Docstring:
     Performs egocentric alignment of video data.
     
@@ -304,7 +317,9 @@ def alignVideo(path_to_file, filename, file_format, crop_size, use_video=False, 
     a,n, ego_time_series = align_mouse(path_to_file, filename, file_format, crop_size, pose_list, pose_ref_index,
                       pose_flip_ref, bg, frame_count, use_video)
     
-    if check_video:
-        play_aligned_video(a, n, frame_count)
-        
+    if check_video and not save:
+        play_aligned_video(a, n, frame_count, path_to_file, filename, crop_size, save=False)
+    elif check_video and save:
+        play_aligned_video(a, n, frame_count, path_to_file, filename, crop_size, save=True)
+      
     return ego_time_series
