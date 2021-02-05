@@ -17,6 +17,7 @@ from torch.optim.lr_scheduler import StepLR
 
 import os
 import numpy as np
+import pandas as pd
 from pathlib import Path
 
 from vame.util.auxiliary import read_config
@@ -329,7 +330,6 @@ def train_model(config):
     else:
         scheduler = StepLR(optimizer, step_size=STEP_SIZE, gamma=1, last_epoch=-1)
 
-
     for epoch in range(1,EPOCHS):
         print("Epoch: %d" %epoch)
         weight, train_loss, km_loss, kl_loss, mse_loss, fut_loss = train(train_loader, epoch, model, optimizer,
@@ -374,6 +374,27 @@ def train_model(config):
             print("Saving model snapshot!\n")
             torch.save(model.state_dict(), os.path.join(cfg['project_path'],'model','best_model','snapshots',model_name+'_'+cfg['Project']+'_epoch_'+str(epoch)+'.pkl'))
 
+        if not optimizer_scheduler:
+            if convergence >= STEP_SIZE:
+                LEARNING_RATE = LEARNING_RATE*GAMMA
+                optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE, amsgrad=True)
+                print("Decreasing Learning Rate To: " + str(LEARNING_RATE))
+        
+        # save logged losses
+        np.save(os.path.join(cfg['project_path'],'model','model_losses','train_losses_'+model_name), train_losses)
+        np.save(os.path.join(cfg['project_path'],'model','model_losses','test_losses_'+model_name), test_losses)
+        np.save(os.path.join(cfg['project_path'],'model','model_losses','kmeans_losses_'+model_name), kmeans_losses)
+        np.save(os.path.join(cfg['project_path'],'model','model_losses','kl_losses_'+model_name), kl_losses)
+        np.save(os.path.join(cfg['project_path'],'model','model_losses','weight_values_'+model_name), weight_values)
+        np.save(os.path.join(cfg['project_path'],'model','model_losses','mse_train_losses_'+model_name), mse_losses)
+        np.save(os.path.join(cfg['project_path'],'model','model_losses','mse_test_losses_'+model_name), current_loss)
+        np.save(os.path.join(cfg['project_path'],'model','model_losses','fut_losses_'+model_name), fut_losses)
+
+        df = pd.DataFrame([train_losses, test_losses, kmeans_losses, kl_losses, weight_values, mse_losses, fut_losses]).T
+        df.columns=['Train_losses', 'Test_losses', 'Kmeans_losses', 'KL_losses', 'Weight_values', 'MSE_losses', 'Future_losses']
+        df.to_csv(cfg['project_path']+'/model/model_losses/'+model_name+'_LossesSummary.csv')        
+        print("\n")
+
         if convergence > cfg['model_convergence']:
             print('Finished training...')
             print('Model converged. Please check your model with vame.evaluate_model(). \n'
@@ -387,21 +408,4 @@ def train_model(config):
             #return
             break
 
-        # save logged losses
-        np.save(os.path.join(cfg['project_path'],'model','model_losses','train_losses_'+model_name), train_losses)
-        np.save(os.path.join(cfg['project_path'],'model','model_losses','test_losses_'+model_name), test_losses)
-        np.save(os.path.join(cfg['project_path'],'model','model_losses','kmeans_losses_'+model_name), kmeans_losses)
-        np.save(os.path.join(cfg['project_path'],'model','model_losses','kl_losses_'+model_name), kl_losses)
-        np.save(os.path.join(cfg['project_path'],'model','model_losses','weight_values_'+model_name), weight_values)
-        np.save(os.path.join(cfg['project_path'],'model','model_losses','mse_train_losses_'+model_name), mse_losses)
-        np.save(os.path.join(cfg['project_path'],'model','model_losses','mse_test_losses_'+model_name), current_loss)
-        np.save(os.path.join(cfg['project_path'],'model','model_losses','fut_losses_'+model_name), fut_losses)
-        
-        print("\n")
 
-    if convergence < cfg['model_convergence']:
-        print('Finished training...')
-        print('Model seems to have not reached convergence. You may want to check your model \n'
-              'with vame.evaluate_model(). If your satisfied you can continue. \n'
-              'Use vame.pose_segmentation() to identify behavioral motifs! \n'
-              'OPTIONAL: You can re-run vame.train_model() to improve performance.')
