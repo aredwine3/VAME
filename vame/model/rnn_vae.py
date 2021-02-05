@@ -17,6 +17,7 @@ from torch.optim.lr_scheduler import StepLR
 
 import os
 import numpy as np
+import pandas as pd
 from pathlib import Path
 
 from vame.util.auxiliary import read_config
@@ -435,7 +436,7 @@ def rnn_model(config, model_name, pretrained_weights=False, pretrained_model=Non
     if optimizer_scheduler:
         scheduler = StepLR(optimizer, step_size=STEP_SIZE, gamma=GAMMA, last_epoch=-1)
     else:
-        scheduler = StepLR(optimizer, step_size=STEP_SIZE, gamma=GAMMA, last_epoch=-1)
+        scheduler = StepLR(optimizer, step_size=STEP_SIZE, gamma=1, last_epoch=-1)
 
     for epoch in range(1,EPOCHS):
         print('Epoch: %d' %epoch)
@@ -475,6 +476,12 @@ def rnn_model(config, model_name, pretrained_weights=False, pretrained_model=Non
         if epoch % SNAPSHOT == 0:
             print("Saving model snapshot!\n")
             torch.save(model.state_dict(), cfg['project_path']+'/'+'model/'+'best_model'+'/snapshots/'+model_name+'_'+cfg['Project']+'_epoch_'+str(epoch)+'.pkl')
+
+        if not optimizer_scheduler:
+            if convergence >= STEP_SIZE:
+                LEARNING_RATE = LEARNING_RATE*GAMMA
+                optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE, amsgrad=True)
+                print("Decreasing Learning Rate To: " + str(LEARNING_RATE))
         
         if convergence > cfg['model_convergence']:
             print('Model converged. Please check your model with vame.evaluate_model(). \n'
@@ -487,14 +494,18 @@ def rnn_model(config, model_name, pretrained_weights=False, pretrained_model=Non
             break
         
         # save logged losses
-        np.save(cfg['project_path']+'/'+'model/'+'model_losses'+'/train_losses_'+model_name, train_losses)
-        np.save(cfg['project_path']+'/'+'model/'+'model_losses'+'/test_losses_'+model_name, test_losses)
-        np.save(cfg['project_path']+'/'+'model/'+'model_losses'+'/kmeans_losses_'+model_name, kmeans_losses)
-        np.save(cfg['project_path']+'/'+'model/'+'model_losses'+'/kl_losses_'+model_name, kl_losses)
-        np.save(cfg['project_path']+'/'+'model/'+'model_losses'+'/weight_values_'+model_name, weight_values)
-        np.save(cfg['project_path']+'/'+'model/'+'model_losses'+'/mse_train_losses_'+model_name, mse_losses)
-        np.save(cfg['project_path']+'/'+'model/'+'model_losses'+'/mse_test_losses_'+model_name, current_loss)
-        np.save(cfg['project_path']+'/'+'model/'+'model_losses'+'/fut_losses_'+model_name, fut_losses)
+        np.save(cfg['project_path']+'/model/model_losses/train_losses_'+model_name, train_losses)
+        np.save(cfg['project_path']+'/model/model_losses/test_losses_'+model_name, test_losses)
+        np.save(cfg['project_path']+'/model/model_losses/kmeans_losses_'+model_name, kmeans_losses)
+        np.save(cfg['project_path']+'/model/model_losses/kl_losses_'+model_name, kl_losses)
+        np.save(cfg['project_path']+'/model/model_losses/weight_values_'+model_name, weight_values)
+        np.save(cfg['project_path']+'/model/model_losses/mse_train_losses_'+model_name, mse_losses)
+        np.save(cfg['project_path']+'/model/model_losses/mse_test_losses_'+model_name, current_loss)
+        np.save(cfg['project_path']+'/model/model_losses/fut_losses_'+model_name, fut_losses)
+
+        df = pd.DataFrame([train_losses, test_losses, kmeans_losses, kl_losses, weight_values, mse_losses, fut_losses]).T
+        df.columns=['Train_losses', 'Test_losses', 'Kmeans_losses', 'KL_losses', 'Weight_values', 'MSE_losses', 'Future_losses']
+        df.to_csv(cfg['project_path']+'/model/model_losses/'+model_name+'_LossesSummary.csv')
 
 
     if convergence < cfg['model_convergence']:
