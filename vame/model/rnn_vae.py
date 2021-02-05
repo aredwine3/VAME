@@ -332,6 +332,7 @@ def train_model(config):
     
     print("Start training... ")
 
+
     for epoch in range(1,EPOCHS):
         print('Epoch: %d' %epoch + ', Epochs on convergence counter: %d' %convergence)
         print('Train: ')
@@ -382,7 +383,7 @@ def train_model(config):
 
 
         if not optimizer_scheduler:
-            if convergence == STEP_SIZE:
+            if convergence >= STEP_SIZE:
                 LEARNING_RATE = LEARNING_RATE*GAMMA
                 optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE, amsgrad=True)
                 print("Decreasing Learning Rate To: " + str(LEARNING_RATE))
@@ -401,7 +402,6 @@ def train_model(config):
             #return
             break
 
-        
         df = pd.DataFrame([train_losses, test_losses, kmeans_losses, kl_losses, weight_values, mse_losses, fut_losses, learn_rates, conv_counter]).T
         df.columns=['Train_losses', 'Test_losses', 'Kmeans_losses', 'KL_losses', 'Weight_values', 'MSE_losses', 'Future_losses', 'Learning_Rate', 'Convergence_counter']
         df.to_csv(cfg['project_path']+'/model/model_losses/'+model_name+'_LossesSummary.csv')
@@ -418,9 +418,3 @@ def train_model(config):
         
         print("\n")
 
-    if convergence < cfg['model_convergence']:
-        print('Finished training...')
-        print('Model seems to have not reached convergence. You may want to check your model \n'
-              'with vame.evaluate_model(). If your satisfied you can continue. \n'
-              'Use vame.pose_segmentation() to identify behavioral motifs! \n'
-              'OPTIONAL: You can re-run vame.train_model() to improve performance.')
