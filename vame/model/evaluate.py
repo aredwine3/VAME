@@ -20,6 +20,7 @@ from vame.util.auxiliary import read_config
 from vame.model.rnn_vae import RNN_VAE
 from vame.model.dataloader import SEQUENCE_DATASET
 
+<<<<<<< HEAD
 use_gpu = torch.cuda.is_available()
 if use_gpu:
     pass
@@ -29,6 +30,10 @@ else:
 
 def plot_reconstruction(filepath, test_loader, seq_len_half, model, model_name,
                         FUTURE_DECODER, FUTURE_STEPS):
+=======
+def plot_reconstruction(filepath, test_loader, seq_len_half, model, model_name, 
+                        FUTURE_DECODER, FUTURE_STEPS, suffix=None):
+>>>>>>> Added plot suffix
     x = test_loader.__iter__().next()
     x = x.permute(0,2,1)
     if use_gpu:
@@ -54,6 +59,7 @@ def plot_reconstruction(filepath, test_loader, seq_len_half, model, model_name,
     data_tilde = data_tilde.detach().numpy()
 
     if FUTURE_DECODER:
+<<<<<<< HEAD
         fig, axs = plt.subplots(2, 5)
         fig.suptitle('Reconstruction [top] and future prediction [bottom] of input sequence')
         for i in range(5):
@@ -65,6 +71,19 @@ def plot_reconstruction(filepath, test_loader, seq_len_half, model, model_name,
         axs[0,0].set(xlabel='time steps', ylabel='reconstruction')
         axs[1,0].set(xlabel='time steps', ylabel='predction')
         fig.savefig(os.path.join(filepath,"evaluate",'Future_Reconstruction.png'))
+=======
+        fig, (ax1, ax2) = plt.subplots(1, 2)
+        fig.suptitle('Reconstruction and future prediction of input sequence')
+        ax1.plot(data_orig[1,...], color='k', label='Sequence Data')
+        ax1.plot(data_tilde[1,...], color='r', linestyle='dashed', label='Sequence Reconstruction')
+        ax2.plot(fut_orig[1,...], color='k')
+        ax2.plot(fut[1,...], color='r', linestyle='dashed')
+        if suffix:
+            fig.savefig(filepath+'evaluate/'+'Future_Reconstruction' + model_name + '_' + suffix + '.png') 
+        elif not suffix:
+            fig.savefig(filepath+'evaluate/'+'Future_Reconstruction' + model_name + '.png') 
+
+>>>>>>> Added plot suffix
     else:
         fig, ax1 = plt.subplots(1, 5)
         for i in range(5):
@@ -102,11 +121,11 @@ def plot_loss(cfg, filepath, model_name):
     ax1.plot(km_losses, label='KMeans-Loss')
     ax1.plot(kl_loss, label='KL-Loss')
     ax1.plot(fut_loss, label='Prediction-Loss')
-    ax1.legend()
-    #fig.savefig(filepath+'evaluate/'+'MSE-and-KL-Loss'+model_name+'.png')
-    fig.savefig(os.path.join(filepath,"evaluate",'MSE-and-KL-Loss'+model_name+'.png'))
+    ax1.legend(loc='lower left')
+    fig.savefig(filepath+'evaluate/'+'MSE-and-KL-Loss'+model_name+'.png')
     
-def eval_temporal(cfg, use_gpu, model_name):
+    
+def eval_temporal(cfg, use_gpu, model_name, suffix=None):
     SEED = 19
     ZDIMS = cfg['zdims']
     FUTURE_DECODER = cfg['prediction_decoder']
@@ -144,7 +163,6 @@ def eval_temporal(cfg, use_gpu, model_name):
         model.load_state_dict(torch.load(os.path.join(cfg['project_path'],"model","best_model",model_name+'_'+cfg['Project']+'.pkl'), map_location=torch.device('cpu')))
 
     model.eval() #toggle evaluation mode
-
     testset = SEQUENCE_DATASET(os.path.join(cfg['project_path'],"data", "train",""), data='test_seq.npy', train=False, temporal_window=TEMPORAL_WINDOW)
     test_loader = Data.DataLoader(testset, batch_size=TEST_BATCH_SIZE, shuffle=True, drop_last=True)
 
@@ -154,9 +172,15 @@ def eval_temporal(cfg, use_gpu, model_name):
     else:
         pass #note, loading of losses needs to be adapted for CPU use #TODO
 
-
-
-def evaluate_model(config):
+    testset = SEQUENCE_DATASET(cfg['project_path']+'data/train/', data='test_seq.npy', train=False, temporal_window=TEMPORAL_WINDOW)
+    test_loader = Data.DataLoader(testset, batch_size=TEST_BATCH_SIZE, shuffle=True, drop_last=True)    
+     
+    plot_reconstruction(filepath, test_loader, seq_len_half, model, model_name, FUTURE_DECODER, FUTURE_STEPS, suffix=suffix)
+    plot_loss(cfg, filepath, model_name)
+     
+    
+    
+def evaluate_model(config, model_name, suffix=None):
     """
         Evaluation of testset
     """
@@ -174,12 +198,10 @@ def evaluate_model(config):
         print('GPU active:',torch.cuda.is_available())
         print('GPU used:',torch.cuda.get_device_name(0))
     else:
-        torch.device("cpu")
-        print("CUDA is not working, or a GPU is not found; using CPU!")
-
-    print("\n\nEvaluation of %s model. \n" %model_name)
-    eval_temporal(cfg, use_gpu, model_name, legacy)
-
+        print("CUDA is not working!")
+      
+    print("\n\nEvaluation of %s model. \n" %model_name)   
+    eval_temporal(cfg, use_gpu, model_name, suffix=suffix)
     print("You can find the results of the evaluation in '/Your-VAME-Project-Apr30-2020/model/evaluate/' \n"
           "OPTIONS:\n"
           "- vame.behavior_segmentation() to identify behavioral motifs.\n"
