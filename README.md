@@ -2,6 +2,7 @@
 ![workflow](https://github.com/LINCellularNeuroscience/VAME/blob/master/Images/workflow.png)
 
 # Release notes for this fork of VAME:
+* 02-05-21 - Fixed the manual learning rate descent (see 12-8-20 update). To turn this feature on, set 'scheduler' in config.yaml to 0. Also added 'suffix' optional parameter to evaluate_model, allowing you to add a suffix to the future_reconstruction plots so as not to overwrite previously created plots, if they exist.
 * 12-10-20 - Added TimeSeriesKMeans cluster method. Also added a plot_transitions function to segment_behavior.py, to create .svg file with transition matrix plot. This adds the dependencies 'tslearn' and 'seaborn', both of which can be installed from conda-forge.
 * 12-8-20 - Added 'step_size' and 'gamma' parameters to config file. The 'step_size' parameter determines how many training epochs occur between each decrease in learning rate. The gamma parameter is the multiplicative reduction in learning rate after every step_size iterations. Step_size defaults to 100, and gamma defaults to 0.2. In the main VAME repository these are the values used in the model.
 * 11-30-20 - Minor updates include changing legend location in evaluation result figures. Also sets the nan_policy for t-test in extractResults function to 'omit', so nan clusters will be ignored rather than the t-test result being nan. In a future update empty clusters will likely be set to 0.
