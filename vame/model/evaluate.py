@@ -22,7 +22,7 @@ from vame.model.dataloader import SEQUENCE_DATASET
     
 
 def plot_reconstruction(filepath, test_loader, seq_len_half, model, model_name, 
-                        FUTURE_DECODER, FUTURE_STEPS):
+                        FUTURE_DECODER, FUTURE_STEPS, suffix=None):
     x = test_loader.__iter__().next()
     x = x.permute(0,2,1)
     data = x[:,:seq_len_half,:].type('torch.FloatTensor').cuda()
@@ -50,8 +50,11 @@ def plot_reconstruction(filepath, test_loader, seq_len_half, model, model_name,
         ax1.plot(data_tilde[1,...], color='r', linestyle='dashed', label='Sequence Reconstruction')
         ax2.plot(fut_orig[1,...], color='k')
         ax2.plot(fut[1,...], color='r', linestyle='dashed')
-        fig.savefig(filepath+'evaluate/'+'Future_Reconstruction.png') 
-    
+        if suffix:
+            fig.savefig(filepath+'evaluate/'+'Future_Reconstruction' + model_name + '_' + suffix + '.png') 
+        elif not suffix:
+            fig.savefig(filepath+'evaluate/'+'Future_Reconstruction' + model_name + '.png') 
+
     else:
         fig, ax1 = plt.subplots(1, 1)
         fig.suptitle('Reconstruction of input sequence')
@@ -86,11 +89,11 @@ def plot_loss(cfg, filepath, model_name):
     ax1.plot(km_losses, label='KMeans-Loss')
     ax1.plot(kl_loss, label='KL-Loss')
     ax1.plot(fut_loss, label='Prediction-Loss')
-    ax1.legend(loc='upper right')
+    ax1.legend(loc='lower left')
     fig.savefig(filepath+'evaluate/'+'MSE-and-KL-Loss'+model_name+'.png')
     
     
-def eval_temporal(cfg, use_gpu, model_name):
+def eval_temporal(cfg, use_gpu, model_name, suffix=None):
     
     SEED = 19
     ZDIMS = cfg['zdims']
@@ -125,12 +128,12 @@ def eval_temporal(cfg, use_gpu, model_name):
     testset = SEQUENCE_DATASET(cfg['project_path']+'data/train/', data='test_seq.npy', train=False, temporal_window=TEMPORAL_WINDOW)
     test_loader = Data.DataLoader(testset, batch_size=TEST_BATCH_SIZE, shuffle=True, drop_last=True)    
      
-    plot_reconstruction(filepath, test_loader, seq_len_half, model, model_name, FUTURE_DECODER, FUTURE_STEPS)
+    plot_reconstruction(filepath, test_loader, seq_len_half, model, model_name, FUTURE_DECODER, FUTURE_STEPS, suffix=suffix)
     plot_loss(cfg, filepath, model_name)
      
     
     
-def evaluate_model(config, model_name):
+def evaluate_model(config, model_name, suffix=None):
     """
         Evaluation of testset
     """
@@ -149,7 +152,7 @@ def evaluate_model(config, model_name):
         print("CUDA is not working!")
       
     print("\n\nEvaluation of %s model. \n" %model_name)   
-    eval_temporal(cfg, use_gpu, model_name)
+    eval_temporal(cfg, use_gpu, model_name, suffix=suffix)
 
     print("You can find the results of the evaluation in '/Your-VAME-Project-Apr30-2020/model/evaluate/' \n"
           "OPTIONS:\n" 
