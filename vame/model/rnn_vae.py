@@ -375,7 +375,7 @@ def train_model(config):
             torch.save(model.state_dict(), os.path.join(cfg['project_path'],'model','best_model','snapshots',model_name+'_'+cfg['Project']+'_epoch_'+str(epoch)+'.pkl'))
 
         if not optimizer_scheduler:
-            if convergence >= STEP_SIZE:
+            if convergence == STEP_SIZE:
                 LEARNING_RATE = LEARNING_RATE*GAMMA
                 optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE, amsgrad=True)
                 print("Decreasing Learning Rate To: " + str(LEARNING_RATE))
