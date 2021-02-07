@@ -108,8 +108,8 @@ def init_new_project(project, videos, working_directory=None, videotype='.mp4'):
     cfg_file['all_data']='yes'
     cfg_file['load_data']='-PE-seq-clean'
     cfg_file['anneal_function']='linear'
-    cfg_file['batch_size']=256
-    cfg_file['max_epochs']=500
+    cfg_file['batch_size']=512
+    cfg_file['max_epochs']=1000 
     cfg_file['transition_function']='GRU'
     cfg_file['beta']=1
     cfg_file['zdims']=30
@@ -123,8 +123,8 @@ def init_new_project(project, videos, working_directory=None, videotype='.mp4'):
     cfg_file['model_snapshot']=50
     cfg_file['num_features']=12
     cfg_file['savgol_filter']=True
-    cfg_file['savgol_length']=5
-    cfg_file['savgol_order']=2
+    cfg_file['savgol_length']=7
+    cfg_file['savgol_order']=3
     cfg_file['hidden_size_layer_1']=256
     cfg_file['hidden_size_layer_2']=256
     cfg_file['dropout_encoder']=0
