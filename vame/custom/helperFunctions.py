@@ -510,7 +510,7 @@ def combineBehavior(config, save=True, n_cluster=30):
         df2.to_csv(os.path.join(project_path, 'results/Motif_Usage_Combined_' + str(n_cluster) + 'clusters.csv'))
     return(df2)
 
-def extractResults(projectPath, group1, group2, modelName, n_clusters, phases=None):
+def extractResults(projectPath, expDate, group1, group2, modelName, n_clusters, phases=None):
     """Docstring:
     Compares motif usage between two groups with t-test.
     
@@ -573,60 +573,81 @@ def extractResults(projectPath, group1, group2, modelName, n_clusters, phases=No
     comb = pd.concat([df1, df2], axis=1)
     comb.to_csv(os.path.join(saveDir, 'Combined_' + modelName + '_' + str(n_clusters) + 'Clusters_Results.csv'))
 
-    cols = list(df1.columns)
-    for col in cols:
-        if col.endswith('_2020-11-09'):
-            newCol = '_'.join(col.split('_')[:-1])
-            i = cols.index(col)
-            cols.remove(col)
-            cols.insert(i, newCol)
-    df1.columns=cols
+#    cols = list(df1.columns)
+#    for col in cols:
+#        if col.endswith(expDate):
+#            newCol = '_'.join(col.split('_')[:-1])
+#            i = cols.index(col)
+#            cols.remove(col)
+#            cols.insert(i, newCol)
+#    df1.columns=cols
     
-    cols = list(df2.columns)
-    for col in cols:
-        if col.endswith('_2020-11-09'):
-            newCol = '_'.join(col.split('_')[:-1])
-            i = cols.index(col)
-            cols.remove(col)
-            cols.insert(i, newCol)
-    df2.columns=cols
-
-    for phase in phases:
-        df1_split = pd.DataFrame()
-        for col in df1.columns:
-            if col.endswith(phase):
-                df1_split[col]=df1[col]
-        df1_split['Group1_mean'] = np.mean(df1_split, axis=1)
-        df1_split['Group1_sem']=(np.std(df1_split, axis=1)/np.sqrt((df1_split.shape[1]-1)))
-        df1_split.to_csv(os.path.join(saveDir, 'Group1_' + phase + '_' + modelName + '_' + str(n_clusters) + 'Clusters_Results.csv'))
-                
-        df2_split = pd.DataFrame()
-        for col in df2.columns:
-            if col.endswith(phase):
-                df2_split[col]=df2[col]
-        df2_split['Group2_mean'] = np.mean(df2_split, axis=1)
-        df2_split['Group2_sem']=(np.std(df2_split, axis=1)/np.sqrt((df2_split.shape[1]-1)))
-        df2_split.to_csv(os.path.join(saveDir, 'Group2_' + phase + '_' + modelName + '_' + str(n_clusters) + 'Clusters_Results.csv'))
-           
-        results = pd.concat([df1_split, df2_split], axis=1)
+#    cols = list(df2.columns)
+#    for col in cols:
+#        if col.endswith(expDate):
+#            newCol = '_'.join(col.split('_')[:-1])
+#            i = cols.index(col)
+#            cols.remove(col)
+#            cols.insert(i, newCol)
+#    df2.columns=cols
+    if phases:
+        for phase in phases:
+            df1_split = pd.DataFrame()
+            for col in df1.columns:
+                if col.endswith(phase):
+                    df1_split[col]=df1[col]
+            df1_split['Group1_mean'] = np.mean(df1_split, axis=1)
+            df1_split['Group1_sem']=(np.std(df1_split, axis=1)/np.sqrt((df1_split.shape[1]-1)))
+            df1_split.to_csv(os.path.join(saveDir, 'Group1_' + phase + '_' + modelName + '_' + str(n_clusters) + 'Clusters_Results.csv'))
+                    
+            df2_split = pd.DataFrame()
+            for col in df2.columns:
+                if col.endswith(phase):
+                    df2_split[col]=df2[col]
+            df2_split['Group2_mean'] = np.mean(df2_split, axis=1)
+            df2_split['Group2_sem']=(np.std(df2_split, axis=1)/np.sqrt((df2_split.shape[1]-1)))
+            df2_split.to_csv(os.path.join(saveDir, 'Group2_' + phase + '_' + modelName + '_' + str(n_clusters) + 'Clusters_Results.csv'))
+               
+            results = pd.concat([df1_split, df2_split], axis=1)
+            
+            df1_arr = np.array(df1_split.iloc[:,:-2])
+            df2_arr = np.array(df2_split.iloc[:,:-2])
+            pvals = np.array([ttest_ind(df1_arr[i,:], df2_arr[i,:], nan_policy='omit')[1] for i in range(df1_arr.shape[0])])
+            fdr_pass,qvals,_,_ = multipletests(pvals, method='fdr_bh',alpha=0.05)
+    
+            results['p-value'] = pvals
+            results['q-value'] = qvals
+            results.to_csv(os.path.join(saveDir, 'Combined_' + phase + '_' + modelName + '_' + str(n_clusters) + 'Clusters_Results.csv'))
+            
+            summary = pd.DataFrame()
+            summary['Group1_Mean'] = df1_split['Group1_mean']
+            summary['Group1_SEM'] = df1_split['Group1_sem']
+            summary['Group2_Mean'] = df2_split['Group2_mean']
+            summary['Group2_SEM'] = df2_split['Group2_sem']
+            summary['p-value'] = results['p-value']
+            summary['q-value'] = results['q-value']
+            summary.to_csv(os.path.join(saveDir, phase + '_SummaryStatistics_' + str(n_clusters) + 'clusters.csv'))
+    elif not phases:
+        results = pd.concat([df1, df2], axis=1)
         
-        df1_arr = np.array(df1_split)
-        df2_arr = np.array(df2_split)
+        df1_arr = np.array(df1.iloc[:,:-2])
+        df2_arr = np.array(df2.iloc[:,:-2])
         pvals = np.array([ttest_ind(df1_arr[i,:], df2_arr[i,:], nan_policy='omit')[1] for i in range(df1_arr.shape[0])])
         fdr_pass,qvals,_,_ = multipletests(pvals, method='fdr_bh',alpha=0.05)
-
+        
         results['p-value'] = pvals
         results['q-value'] = qvals
-        results.to_csv(os.path.join(saveDir, 'Combined_' + phase + '_' + modelName + '_' + str(n_clusters) + 'Clusters_Results.csv'))
+        results.to_csv(os.path.join(saveDir, 'Combined_' + modelName + '_' + str(n_clusters) + 'Clusters_Results.csv'))
         
         summary = pd.DataFrame()
-        summary['Group1_Mean'] = df1_split['Group1_mean']
-        summary['Group1_SEM'] = df1_split['Group1_sem']
-        summary['Group2_Mean'] = df2_split['Group2_mean']
-        summary['Group2_SEM'] = df2_split['Group2_sem']
+        summary['Group1_Mean'] = df1['Group1_mean']
+        summary['Group1_SEM'] = df1['Group1_sem']
+        summary['Group2_Mean'] = df2['Group2_mean']
+        summary['Group2_SEM'] = df2['Group2_sem']
         summary['p-value'] = results['p-value']
         summary['q-value'] = results['q-value']
-        summary.to_csv(os.path.join(saveDir, phase + '_SummaryStatistics_' + str(n_clusters) + 'clusters.csv'))
+        summary.to_csv(os.path.join(saveDir, 'SummaryStatistics_' + str(n_clusters) + 'clusters.csv'))
+     
     return(summary)
         
 def selectLimbs(projectPath, suffix):

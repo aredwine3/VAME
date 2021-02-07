@@ -34,7 +34,7 @@ def get_cluster_vid(cfg, path_to_file, file, n_cluster, cluster_method='kmeans',
             capture = cv.VideoCapture(vidpath)
     elif not rename:
         capture = cv.VideoCapture(cfg['project_path']+'videos/'+file+'.mp4')
-    
+
     if capture.isOpened():
         width  = capture.get(cv.CAP_PROP_FRAME_WIDTH)
         height = capture.get(cv.CAP_PROP_FRAME_HEIGHT)
@@ -69,7 +69,7 @@ def get_cluster_vid(cfg, path_to_file, file, n_cluster, cluster_method='kmeans',
 
         video.release()
     capture.release()
-    
+
     
 def motif_videos(config, model_name, cluster_method="kmeans", n_cluster=[30], rename=None):
     config_file = Path(config).resolve()
@@ -99,6 +99,20 @@ def motif_videos(config, model_name, cluster_method="kmeans", n_cluster=[30], re
                 continue
     else:
         files.append(all_flag)
+        
+    for cluster in n_cluster:
+        print("Cluster size %d " %cluster)
+        if rename:
+            for file in files:
+                suffix=file.split('_')[-1]
+                file = file.replace(suffix, rename[suffix])
+
+                path_to_file=cfg['project_path']+'results/'+file+'/'+model_name+'/'+cluster_method+'-'+str(cluster)
+                
+                if not os.path.exists(path_to_file+'/cluster_videos/'):
+                        os.mkdir(path_to_file+'/cluster_videos/')
+            
+            get_cluster_vid(cfg, path_to_file, file, cluster, rename=rename)
 
     for cluster in n_cluster:
         print("Cluster size %d " %cluster)
