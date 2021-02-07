@@ -18,7 +18,7 @@ import matplotlib.cbook
 warnings.filterwarnings("ignore",category=matplotlib.cbook.mplDeprecation)
 
 from vame.util.auxiliary import read_config
-
+import glob
 
 def get_adjacency_matrix(labels, n_cluster):
     temp_matrix = np.zeros((n_cluster,n_cluster), dtype=np.float64)
@@ -68,6 +68,8 @@ def consecutive(data, stepsize=1):
 def get_network(path_to_file, file, cluster_method, n_cluster):
     if cluster_method == 'kmeans':
         labels = np.load(path_to_file + '/'+str(n_cluster)+'_km_label_'+file+'.npy')
+    elif cluster_method=='ts-kmeans':
+        labels = np.load(path_to_file + '/'+str(n_cluster)+'_ts-kmeans_label_'+file+'.npy')
     else:
         labels = np.load(path_to_file + '/'+str(n_cluster)+'_gmm_label_'+file+'.npy')
         
@@ -83,12 +85,6 @@ def get_network(path_to_file, file, cluster_method, n_cluster):
                 used_motifs.insert(i, i)
                 usage_list.insert(i,0)
         
-   #     for i in range(len(cons)):
-   #         index = cons[i][-1]+1
-   #         usage_list.insert(index,0)
-   #         if index != cons[i+1][-1]+1:
-   #             usage_list.insert(index+1,0)
-    
         usage = np.array(usage_list)
     
         motif_usage = usage
@@ -100,7 +96,7 @@ def get_network(path_to_file, file, cluster_method, n_cluster):
     np.save(path_to_file+'/behavior_quantification/motif_usage.npy', motif_usage)   
 
     
-def behavior_quantification(config, model_name, cluster_method='kmeans', n_cluster=30):
+def behavior_quantification(config, model_name, cluster_method='kmeans', n_cluster=30, rename=False):
     config_file = Path(config).resolve()
     cfg = read_config(config_file)
     
@@ -125,17 +121,27 @@ def behavior_quantification(config, model_name, cluster_method='kmeans', n_clust
                 continue
     else:
         files.append(all_flag)
-    
-
+        
+    if rename:
+        count=len(files)
+        for f in files[:count]:
+            suffix=f.split('_')[-1]
+            fn = f.replace(suffix, rename[suffix])
+            files.append(fn)         
+        files = files[count:]
+        
     for file in files:
         path_to_file=cfg['project_path']+'results/'+file+'/'+model_name+'/'+cluster_method+'-'+str(n_cluster)
        
         if not os.path.exists(path_to_file+'/behavior_quantification/'):
             os.mkdir(path_to_file+'/behavior_quantification/')
-        
+        if rename:
+            for filename in glob.iglob(path_to_file+'/'+str(n_cluster) + '*.npy'):
+                file, ext = os.path.splitext(filename.split('/')[-1])
+                file = file.split(str(n_cluster)+'_km_label_')[-1]
         get_network(path_to_file, file, cluster_method, n_cluster)
-        
 
+        
 
 
 

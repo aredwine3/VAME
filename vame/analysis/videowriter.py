@@ -14,19 +14,24 @@ from pathlib import Path
 import numpy as np
 import cv2 as cv
 import tqdm
-
 from vame.util.auxiliary import read_config
+import glob
 
 
-def get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag):
-    if flag == "motif":
-        print("Motif videos getting created for "+file+" ...")
-        labels = np.load(os.path.join(path_to_file,str(n_cluster)+'_km_label_'+file+'.npy'))
-    if flag == "community":
-        print("Community videos getting created for "+file+" ...")
-        labels = np.load(os.path.join(path_to_file,"community",'community_label_'+file+'.npy'))
-    capture = cv.VideoCapture(os.path.join(cfg['project_path'],"videos",file+videoType))
-
+def get_cluster_vid(cfg, path_to_file, file, n_cluster, rename=None):
+    print("Videos get created for "+file+" ...")
+    labels = np.load(glob.glob(path_to_file+'/'+str(n_cluster)+'_km_label_'+'*.npy')[0])
+   # labels = np.load(path_to_file+'/'+str(n_cluster)+'_km_label_'+file+'.npy')
+    if rename:
+        if file.split('_')[-1].startswith('Dec'):
+            vidpath = glob.glob(cfg['project_path']+'videos/'+file.split('Dec')[0]+'2020-12*.mp4')[0]
+            capture = cv.VideoCapture(vidpath)
+        elif file.split('_')[-1].startswith('Jan'):
+            vidpath = glob.glob(path_to_file+'/'+str(n_cluster)+file.split('Jan')[0]+'2021-01*.mp4')[0]
+            capture = cv.VideoCapture(vidpath)
+    elif not rename:
+        capture = cv.VideoCapture(cfg['project_path']+'videos/'+file+'.mp4')
+    
     if capture.isOpened():
         width  = capture.get(cv.CAP_PROP_FRAME_WIDTH)
         height = capture.get(cv.CAP_PROP_FRAME_HEIGHT)
@@ -61,9 +66,9 @@ def get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag):
 
         video.release()
     capture.release()
-
-
-def motif_videos(config, videoType='.mp4'):
+    
+    
+def motif_videos(config, model_name, cluster_method="kmeans", n_cluster=[30], rename=None):
     config_file = Path(config).resolve()
     cfg = read_config(config_file)
     model_name = cfg['model_name']
@@ -91,6 +96,29 @@ def motif_videos(config, videoType='.mp4'):
                 continue
     else:
         files.append(all_flag)
+
+    for cluster in n_cluster:
+        print("Cluster size %d " %cluster)
+        if rename:
+            for file in files:
+                suffix=file.split('_')[-1]
+                file = file.replace(suffix, rename[suffix])
+
+                path_to_file=cfg['project_path']+'results/'+file+'/'+model_name+'/'+cluster_method+'-'+str(cluster)
+                
+                if not os.path.exists(path_to_file+'/cluster_videos/'):
+                        os.mkdir(path_to_file+'/cluster_videos/')
+            
+            get_cluster_vid(cfg, path_to_file, file, cluster, rename=rename)
+
+        elif not rename:
+            for file in files:
+                path_to_file=cfg['project_path']+'results/'+file+'/'+model_name+'/'+cluster_method+'-'+str(cluster)
+                
+                if not os.path.exists(path_to_file+'/cluster_videos/'):
+                        os.mkdir(path_to_file+'/cluster_videos/')
+
+            get_cluster_vid(cfg, path_to_file, file, cluster)
 
     print("Cluster size is: %d " %n_cluster)
     for file in files:

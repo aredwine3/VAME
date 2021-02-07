@@ -113,6 +113,8 @@ def create_config_template():
     \n
 # Legacy mode
     legacy: 
+    scheduler:
+    # set scheduler to 0 for manual learning rate descent (decrease lr by factor of gamma after step_size epochs without new best_loss).
     """
     ruamelFile = ruamel.yaml.YAML()
     cfg_file = ruamelFile.load(yaml_str)
