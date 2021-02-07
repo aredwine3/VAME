@@ -111,8 +111,8 @@ def init_new_project(project, videos, working_directory=None, videotype='.mp4'):
     cfg_file['snapshot_epoch']=50
     cfg_file['median_filter']=5
     cfg_file['anneal_function']='linear'
-    cfg_file['batch_size']=256 
-    cfg_file['max_epochs']=500 
+    cfg_file['batch_size']=512
+    cfg_file['max_epochs']=1000 
     cfg_file['transition_function']='GRU'
     cfg_file['beta']=1
     cfg_file['zdims']=30
@@ -126,8 +126,8 @@ def init_new_project(project, videos, working_directory=None, videotype='.mp4'):
     cfg_file['model_snapshot']=50
     cfg_file['num_features']=12
     cfg_file['savgol_filter']=True
-    cfg_file['savgol_length']=5
-    cfg_file['savgol_order']=2
+    cfg_file['savgol_length']=7
+    cfg_file['savgol_order']=3
     cfg_file['hidden_size_layer_1']=256
     cfg_file['hidden_size_layer_2']=256
     cfg_file['dropout_encoder']=0
@@ -141,7 +141,7 @@ def init_new_project(project, videos, working_directory=None, videotype='.mp4'):
     cfg_file['mse_prediction_reduction']='sum'
     cfg_file['kmeans_loss']=cfg_file['zdims']
     cfg_file['kmeans_lambda']=0.1
-    cfg_file['scheduler']=1
+    cfg_file['scheduler']=0
     cfg_file['lenght_of_motif_video'] = 1000
     
     projconfigfile=os.path.join(str(project_path),'config.yaml')
