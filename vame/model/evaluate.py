@@ -53,7 +53,6 @@ def plot_reconstruction(filepath, test_loader, seq_len_half, model, model_name,
     data_tilde = data_tilde.detach().numpy()
 
     if FUTURE_DECODER:
-<<<<<<< HEAD
         fig, axs = plt.subplots(2, 5)
         fig.suptitle('Reconstruction [top] and future prediction [bottom] of input sequence')
         for i in range(5):
@@ -68,18 +67,6 @@ def plot_reconstruction(filepath, test_loader, seq_len_half, model, model_name,
             fig.savefig(os.path.join(filepath,"evaluate",'Future_Reconstruction'+suffix+'.png'))
         elif not suffix:
             fig.savefig(os.path.join(filepath,"evaluate",'Future_Reconstruction.png'))
-=======
-        fig, (ax1, ax2) = plt.subplots(1, 2)
-        fig.suptitle('Reconstruction and future prediction of input sequence')
-        ax1.plot(data_orig[1,...], color='k', label='Sequence Data')
-        ax1.plot(data_tilde[1,...], color='r', linestyle='dashed', label='Sequence Reconstruction')
-        ax2.plot(fut_orig[1,...], color='k')
-        ax2.plot(fut[1,...], color='r', linestyle='dashed')
-        if suffix:
-            fig.savefig(filepath+'evaluate/'+'Future_Reconstruction' + model_name + '_' + suffix + '.png') 
-        elif not suffix:
-            fig.savefig(filepath+'evaluate/'+'Future_Reconstruction' + model_name + '.png') 
->>>>>>> dc83ab81880aa01ac6aedd4f53fa8cf38b5850c9
 
     else:
         fig, ax1 = plt.subplots(1, 5)
@@ -122,12 +109,7 @@ def plot_loss(cfg, filepath, model_name):
     fig.savefig(filepath+'evaluate/'+'MSE-and-KL-Loss'+model_name+'.png')
     
     
-<<<<<<< HEAD
 def eval_temporal(cfg, use_gpu, model_name, legacy, suffix=None):
-=======
-def eval_temporal(cfg, use_gpu, model_name, suffix=None):
-    
->>>>>>> dc83ab81880aa01ac6aedd4f53fa8cf38b5850c9
     SEED = 19
     ZDIMS = cfg['zdims']
     FUTURE_DECODER = cfg['prediction_decoder']
