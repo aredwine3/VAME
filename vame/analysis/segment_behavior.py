@@ -274,5 +274,5 @@ def plot_transitions(config, files, n_cluster, model_name, cluster_method='kmean
             plt.ylabel("Current frame behavior")
             plt.show()
             fig.savefig(os.path.join(PROJECT_PATH, 'results/' + f + '/' + model_name + '/' + cluster_method + '-' + str(n_cluster) + '/behavior_quantification/' + file + '_transitionMatrix.svg'))
-    
+    return tm
 

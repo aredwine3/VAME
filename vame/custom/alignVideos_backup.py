@@ -7,7 +7,7 @@ https://github.com/LINCellularNeuroscience/VAME
 Licensed under GNU General Public License v3.0
 """
 
-import os
+
 import cv2 as cv
 import numpy as np
 import pandas as pd
@@ -20,7 +20,8 @@ def crop_and_flip(rect, src, points, ref_index):
     center, size = tuple(map(int, center)), tuple(map(int, size))
     #Get rotation matrix 
     M = cv.getRotationMatrix2D(center, theta, 1)
-       
+    
+    
     #shift DLC points
     x_diff = center[0] - size[0]//2
     y_diff = center[1] - size[1]//2
@@ -34,38 +35,17 @@ def crop_and_flip(rect, src, points, ref_index):
         point[1] -= y_diff
         
         dlc_points_shifted.append(point)
-        
+    
+    
     # Perform rotation on src image
     dst = cv.warpAffine(src.astype('float32'), M, src.shape[:2])
     out = cv.getRectSubPix(dst, size, center)
     
     #check if flipped correctly, otherwise flip again
-    if dlc_points_shifted[ref_index[1]][0] >= dlc_points_shifted[ref_index[0]][0]:
-        rect = ((size[0]//2,size[0]//2),size,180)
-        center, size, theta = rect
-        center, size = tuple(map(int, center)), tuple(map(int, size))
-        #Get rotation matrix 
-        M = cv.getRotationMatrix2D(center, theta, 1)
+#    if dlc_points_shifted[ref_index[1]][0] >= dlc_points_shifted[ref_index[0]][0]:
+#        rect = ((size[0]//2,size[0]//2),size,180)
+#        out, dlc_points_shifted = crop_and_flip(rect, out, dlc_points_shifted,ref_index)
         
-        
-        #shift DLC points
-        x_diff = center[0] - size[0]//2
-        y_diff = center[1] - size[1]//2
-        
-        points = dlc_points_shifted
-        dlc_points_shifted = []
-        
-        for i in points:
-            point=cv.transform(np.array([[[i[0], i[1]]]]),M)[0][0]
-    
-            point[0] -= x_diff
-            point[1] -= y_diff
-            
-            dlc_points_shifted.append(point)
-    
-        # Perform rotation on src image
-        dst = cv.warpAffine(out.astype('float32'), M, out.shape[:2])
-        out = cv.getRectSubPix(dst, size, center)
         
     return out, dlc_points_shifted
 
@@ -124,24 +104,21 @@ def background(path_to_file,filename,file_format='.mp4',num_frames=1000):
 
 def align_mouse(path_to_file,filename,file_format,crop_size, pose_list, pose_ref_index,
                       pose_flip_ref,bg,frame_count,use_video=True):  
-    """Docstring:
-        Perform egocentric alignment of coordinates from CSV file.
-        
-        Parameters
-        ----------
-        path_to_file: string, directory
-        filename: string, name of video file without format
-        file_format: string, format of video file
-        crop_size: tuple, x and y crop size
-        dlc_list: list, arrays containg corresponding x and y DLC values
-        dlc_ref_index: list, indices of 2 lists in dlc_list to align mouse along
-        dlc_flip_ref: tuple, indices of 2 lists in dlc_list to flip mouse if flip was false
-        bg: background image to subtract
-        frame_count: number of frames to align
-        use_video: boolean if video should be cropped or DLC points only
-        
-        Returns: list of cropped images (if video is used) and list of cropped DLC points
-    """ 
+    
+    #returns: list of cropped images (if video is used) and list of cropped DLC points
+    #
+    #parameters:
+    #path_to_file: directory
+    #filename: name of video file without format
+    #file_format: format of video file
+    #crop_size: tuple of x and y crop size
+    #dlc_list: list of arrays containg corresponding x and y DLC values
+    #dlc_ref_index: indices of 2 lists in dlc_list to align mouse along
+    #dlc_flip_ref: indices of 2 lists in dlc_list to flip mouse if flip was false
+    #bg: background image to subtract
+    #frame_count: number of frames to align
+    #use_video: boolean if video should be cropped or DLC points only
+    
     images = []
     points = []
     
@@ -221,24 +198,12 @@ def align_mouse(path_to_file,filename,file_format,crop_size, pose_list, pose_ref
 
 
 #play aligned video
-def play_aligned_video(a, n, frame_count, path_to_file, filename, crop_size, save=False):
-    colors = [(255,0,0),(0,255,0),(0,0,255),(255,255,0),(255,0,255),(0,255,255),(0,0,0),(255,255,255),(125,0,125),(125,125,125)]
-    if not os.path.exists(os.path.join(path_to_file, 'egocentricVideos/')):
-        os.mkdir(os.path.join(path_to_file, 'egocentricVideos/'))
-    if save:
-        fourcc = cv.VideoWriter_fourcc(*'mp4v')
-        writer = cv.VideoWriter(
-            os.path.join(os.path.join(path_to_file, 'egocentricVideos/' + filename + '.mp4')), 
-            fourcc, 
-            30.0, 
-            crop_size,
-            isColor=True
-        )
+def play_aligned_video(a, n, frame_count):
+    colors = [(255,0,0),(0,255,0),(0,0,255),(255,255,0),(255,0,255),(0,255,255),(0,0,0),(255,255,255)]
     
     for i in range(frame_count):
         # Capture frame-by-frame
         ret, frame = True,a[i]
-
         if ret == True:
             
           # Display the resulting frame
@@ -247,44 +212,23 @@ def play_aligned_video(a, n, frame_count, path_to_file, filename, crop_size, sav
           
           for c,j in enumerate(n[i]):
               cv.circle(im_color,(j[0], j[1]), 5, colors[c], -1)
-          if not save:
-              cv.imshow('Frame',im_color)
-              if cv.waitKey(25) & 0xFF == ord('q'): # Press Q on keyboard to  exit
-                  break
-          elif save:
-              writer.write(im_color)
-              
+          
+          cv.imshow('Frame',im_color)
+          
+          # Press Q on keyboard to  exit
+          if cv.waitKey(25) & 0xFF == ord('q'):
+            break
+        
         # Break the loop
         else: 
             break
-    writer.release()
     cv.destroyAllWindows()
-    
 
-def alignVideo(path_to_file, filename, file_format, crop_size, use_video=False, check_video=False, save=False):
-    """Docstring:
-    Performs egocentric alignment of video data.
-    
-    Parameters
-    ----------
-    path_to_file : string
-        path to CSV file
-    filename : string
-        name of subject in file, without format
-    file_format : string
-        format of video file
-    crop_size : tuple
-        tuple of ints for size of cropped egocentric frames
-    use_video : bool (optional, default False)
-        Whether to use openCV to read and analyze videos.
-    check_video : bool (optional, default False)
-        Whether to play result video upon completion.
-    save : bool (optional, default False)
-        Whether to save the result video. Check video must also be true.
-    """
+
+def align_demo(path_to_file, filename, file_format, crop_size, use_video=False, check_video=False):
     
     #read out data
-    data = pd.read_csv(path_to_file+'/videos/pose_estimation/'+filename+'-DC.csv', skiprows = 2)
+    data = pd.read_csv(path_to_file+'videos/pose_estimation/'+filename+'-DC.csv', skiprows = 2)
     data_mat = pd.DataFrame.to_numpy(data)
     data_mat = data_mat[:,1:] 
     
@@ -298,10 +242,10 @@ def alignVideo(path_to_file, filename, file_format, crop_size, use_video=False, 
     #0: snout, 1: forehand_left, 2: forehand_right, 
     #3: hindleft, 4: hindright, 5: tail    
     
-    pose_ref_index = [0,1]
+    pose_ref_index = [0,5]
     
     #list of 2 reference coordinate indices for avoiding flipping
-    pose_flip_ref = [0,1]
+    pose_flip_ref = [0,5]
         
     if use_video:
         #compute background
@@ -319,9 +263,7 @@ def alignVideo(path_to_file, filename, file_format, crop_size, use_video=False, 
     a,n, ego_time_series = align_mouse(path_to_file, filename, file_format, crop_size, pose_list, pose_ref_index,
                       pose_flip_ref, bg, frame_count, use_video)
     
-    if check_video and not save:
-        play_aligned_video(a, n, frame_count, path_to_file, filename, crop_size, save=False)
-    elif check_video and save:
-        play_aligned_video(a, n, frame_count, path_to_file, filename, crop_size, save=True)
-      
+    if check_video:
+        play_aligned_video(a, n, frame_count)
+        
     return ego_time_series

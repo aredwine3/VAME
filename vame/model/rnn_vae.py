@@ -333,9 +333,10 @@ def train_model(config):
     print("Start training... ")
 
     for epoch in range(1,EPOCHS):
-        print("Epoch: %d" %epoch)
-        weight, train_loss, km_loss, kl_loss, mse_loss, fut_loss = train(train_loader, epoch, model, optimizer,
-                                                                         anneal_function, BETA, KL_START,
+        print('Epoch: %d' %epoch + ', Epochs on convergence counter: %d' %convergence)
+        print('Train: ')
+        weight, train_loss, km_loss, kl_loss, mse_loss, fut_loss = train(train_loader, epoch, model, optimizer, 
+                                                                         anneal_function, BETA, KL_START, 
                                                                          ANNEALTIME, TEMPORAL_WINDOW, FUTURE_DECODER,
                                                                          FUTURE_STEPS, scheduler, MSE_REC_REDUCTION,
                                                                          MSE_PRED_REDUCTION, KMEANS_LOSS, KMEANS_LAMBDA,
@@ -357,6 +358,9 @@ def train_model(config):
         mse_losses.append(mse_loss)
         fut_losses.append(fut_loss)
 
+        learn_rates.append(LEARNING_RATE)
+        conv_counter.append(convergence)
+        
         # save best model
         if weight > 0.99 and current_loss <= BEST_LOSS:
             BEST_LOSS = current_loss
@@ -374,11 +378,8 @@ def train_model(config):
 
         if epoch % SNAPSHOT == 0:
             print("Saving model snapshot!\n")
-<<<<<<< HEAD
             torch.save(model.state_dict(), os.path.join(cfg['project_path'],'model','best_model','snapshots',model_name+'_'+cfg['Project']+'_epoch_'+str(epoch)+'.pkl'))
 
-=======
-            torch.save(model.state_dict(), cfg['project_path']+'/'+'model/'+'best_model'+'/snapshots/'+model_name+'_'+cfg['Project']+'_epoch_'+str(epoch)+'.pkl')
 
         if not optimizer_scheduler:
             if convergence == STEP_SIZE:
@@ -386,7 +387,7 @@ def train_model(config):
                 optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE, amsgrad=True)
                 print("Decreasing Learning Rate To: " + str(LEARNING_RATE))
         
->>>>>>> Implemented manual learing rate descent
+
         if convergence > cfg['model_convergence']:
             print('Finished training...')
             print('Model converged. Please check your model with vame.evaluate_model(). \n'
@@ -399,23 +400,11 @@ def train_model(config):
                   'Use vame.pose_segmentation() to identify behavioral motifs in your dataset!')
             #return
             break
-<<<<<<< HEAD
-=======
-        
-        # save logged losses
-        np.save(cfg['project_path']+'/model/model_losses/train_losses_'+model_name, train_losses)
-        np.save(cfg['project_path']+'/model/model_losses/test_losses_'+model_name, test_losses)
-        np.save(cfg['project_path']+'/model/model_losses/kmeans_losses_'+model_name, kmeans_losses)
-        np.save(cfg['project_path']+'/model/model_losses/kl_losses_'+model_name, kl_losses)
-        np.save(cfg['project_path']+'/model/model_losses/weight_values_'+model_name, weight_values)
-        np.save(cfg['project_path']+'/model/model_losses/mse_train_losses_'+model_name, mse_losses)
-        np.save(cfg['project_path']+'/model/model_losses/mse_test_losses_'+model_name, current_loss)
-        np.save(cfg['project_path']+'/model/model_losses/fut_losses_'+model_name, fut_losses)
 
-        df = pd.DataFrame([train_losses, test_losses, kmeans_losses, kl_losses, weight_values, mse_losses, fut_losses]).T
-        df.columns=['Train_losses', 'Test_losses', 'Kmeans_losses', 'KL_losses', 'Weight_values', 'MSE_losses', 'Future_losses']
+        
+        df = pd.DataFrame([train_losses, test_losses, kmeans_losses, kl_losses, weight_values, mse_losses, fut_losses, learn_rates, conv_counter]).T
+        df.columns=['Train_losses', 'Test_losses', 'Kmeans_losses', 'KL_losses', 'Weight_values', 'MSE_losses', 'Future_losses', 'Learning_Rate', 'Convergence_counter']
         df.to_csv(cfg['project_path']+'/model/model_losses/'+model_name+'_LossesSummary.csv')
->>>>>>> Implemented manual learing rate descent
 
         # save logged losses
         np.save(os.path.join(cfg['project_path'],'model','model_losses','train_losses_'+model_name), train_losses)
