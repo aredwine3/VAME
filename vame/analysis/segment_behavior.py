@@ -87,6 +87,7 @@ def behavior_segmentation(config, model_name=None, cluster_method='kmeans', n_cl
         print('GPU active:',torch.cuda.is_available())
         print('GPU used:',torch.cuda.get_device_name(0))
     else:
+<<<<<<< HEAD
         print("CUDA is not working! Attempting to use the CPU...")
         torch.device("cpu")
 
@@ -97,6 +98,12 @@ def behavior_segmentation(config, model_name=None, cluster_method='kmeans', n_cl
 def temporal_quant(cfg, model_name, files, use_gpu):
     z, z_logger = temporal_quant(cfg, model_name, files, use_gpu, n_cluster=n_cluster) 
     cluster_latent_space(cfg, files, z, z_logger, cluster_method, n_cluster, model_name)
+=======
+        print("CUDA is not working!")
+        
+    z, z_logger = temporal_quant(cfg, model_name, files, use_gpu, n_cluster=n_cluster) 
+    cluster_latent_space(cfg, files, z, z_logger, cluster_method, n_cluster, model_name)
+>>>>>>> dc83ab81880aa01ac6aedd4f53fa8cf38b5850c9
     
     
 def temporal_quant(cfg, model_name, files, use_gpu, n_cluster=[30], cluster_method='kmeans'):
@@ -195,6 +202,7 @@ def cluster_latent_space(cfg, files, z_data, z_logger, cluster_method, n_cluster
             print('Behavior segmentation via k-Means for %d cluster.' %cluster)
             data_labels = kmeans_clustering(z_data, n_clusters=cluster)
             data_labels = np.int64(scipy.signal.medfilt(data_labels, cfg['median_filter']))
+
         elif cluster_method == 'ts-kmeans':
             print('Behavior segmentation via TimeSeriesKMeans for %d cluster.' %cluster)
             z_data = to_time_series_dataset(z_data)

@@ -90,10 +90,9 @@ def csv_to_numpy(projectPath, csvPath, pcutoff=.99):
         p-cutoff for likelihood, coordinates below this will be set to NaN.
     """
 
-    # Read in your .csv file, skip the first two rows and create a numpy array
-    data = pd.read_csv(csvPath, skiprows = 1)
     fileName = csvPath.split('/')[-1].split('DLC')[0]
     f, e = os.path.splitext(fileName)
+    # Read in your .csv file, skip the first two rows and create a numpy array
     data = pd.read_csv(csvPath, skiprows = 1)
     data_mat = pd.DataFrame.to_numpy(data)
     data_mat = data_mat[:,1:] 
@@ -192,7 +191,8 @@ def combineBehavior(config, save=True, n_cluster=30):
     if save:
         df2.to_csv(os.path.join(project_path, 'results/Motif_Usage_Combined_' + str(n_cluster) + 'clusters.csv'))
     return(df2)
-    
+
+
 
 def extractResults(projectPath, expDate, group1, group2, modelName, n_clusters, cluster_method='kmeans', phases=None):
     """Docstring:

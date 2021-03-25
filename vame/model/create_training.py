@@ -120,6 +120,7 @@ def traindata_legacy(cfg, files, testfraction, num_features, savgol_filter):
     print('Length of train data: %d' %len(z_train.T))
     print('Length of test data: %d' %len(z_test.T))
 
+
 def create_trainset(config):
     config_file = Path(config).resolve()
     cfg = read_config(config_file)

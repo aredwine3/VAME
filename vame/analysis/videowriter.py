@@ -70,7 +70,7 @@ def get_cluster_vid(cfg, path_to_file, file, n_cluster, cluster_method='kmeans',
         video.release()
     capture.release()
 
-    
+
 def motif_videos(config, model_name, cluster_method="kmeans", n_cluster=[30], rename=None):
     config_file = Path(config).resolve()
     cfg = read_config(config_file)
@@ -112,7 +112,7 @@ def motif_videos(config, model_name, cluster_method="kmeans", n_cluster=[30], re
                 if not os.path.exists(path_to_file+'/cluster_videos/'):
                         os.mkdir(path_to_file+'/cluster_videos/')
             
-                get_cluster_vid(cfg, path_to_file, file, cluster, rename=rename)
+                get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag, cluster_method=cluster_method, rename=rename)
 
         elif not rename:
             for file in files:
@@ -121,9 +121,7 @@ def motif_videos(config, model_name, cluster_method="kmeans", n_cluster=[30], re
                 if not os.path.exists(path_to_file+'/cluster_videos/'):
                         os.mkdir(path_to_file+'/cluster_videos/')
 
-            get_cluster_vid(cfg, path_to_file, file, cluster, cluster_method=cluster_method)
-
-        get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag)
+            get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag, cluster_method=cluster_method)
     
     print("All videos have been created!")
     

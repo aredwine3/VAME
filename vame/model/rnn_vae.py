@@ -297,6 +297,8 @@ def train_model(config):
         RNN = RNN_VAE
     else:
         RNN = RNN_VAE_LEGACY
+    
+    torch.manual_seed(SEED)
     if CUDA:
         torch.cuda.manual_seed(SEED)
         model = RNN(TEMPORAL_WINDOW,ZDIMS,NUM_FEATURES,FUTURE_DECODER,FUTURE_STEPS, hidden_size_layer_1,
