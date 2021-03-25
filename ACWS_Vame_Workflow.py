@@ -9,21 +9,16 @@ Created on Mon Nov  2 11:46:40 2020
 import os
 import numpy as np
 import pandas as pd
-<<<<<<< HEAD
 os.chdir('/d1/studies/VAME/')
 import vame
 from vame.custom import helperFunctions as hf
 
 new = False #Set to True to create new project, False to load config file
+
 #Initialize Project:
 project = 'VAME_Operant_NoCue'
 directory = '/d1/studies/VAME/VAME_NoCue/'
 videoDirectory = os.path.join(directory, 'videos')
-
-#Initialize Project:
-project = 'OperantDLC_Vame'
-directory = '/d1/studies/VAME/Vame_Project/'
-videoDirectory = '/d1/studies/VAME/Vame_Project/videos/'
 vids = []
 files = os.listdir(videoDirectory)
 for f in files:
@@ -37,7 +32,6 @@ elif not new:
     config = '/d1/studies/VAME/Vame_Project/OperantDLC_Vame-Nov2-2020/config.yaml'
     projectPath = '/'.join(config.split('/')[:-1])
     
-    
 ###Convert h5s to egocentric CSVs:
 h5Directory = os.path.join(directory, 'data/h5s')
 files = os.listdir(h5Directory)
@@ -48,7 +42,7 @@ for f in files:
 
 ###Convert all CSVs to numpy arrays:
 csvs = []
-csvDirectory = '/d1/studies/VAME/Vame_Project/data/h5s/egocentric/'
+csvDirectory = os.path.join(h5Directory, 'egocentric/')
 files = os.listdir(csvDirectory)
 for f in files:
     if f.endswith('.csv'):
@@ -132,3 +126,4 @@ cko['cko_sem']=(np.std(cko, axis=1)/np.sqrt((cko.shape[1]-1)))
 
 comb = pd.concat([ctrl, cko], axis=1)
 comb.to_csv(os.path.join(directory, 'CombinedResults_20Clusters.csv'))
+
