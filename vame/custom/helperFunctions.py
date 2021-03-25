@@ -90,7 +90,6 @@ def csv_to_numpy(projectPath, csvPath, pcutoff=.99):
 
     # Read in your .csv file, skip the first two rows and create a numpy array
     data = pd.read_csv(csvPath, skiprows = 1)
-    directory = '/'.join(csvPath.split('/')[:-1])
     fileName = csvPath.split('/')[-1].split('DLC')[0]
     f, e = os.path.splitext(fileName)
     data = pd.read_csv(csvPath, skiprows = 1)
@@ -191,12 +190,7 @@ def combineBehavior(config, save=True, n_cluster=30):
     if save:
         df2.to_csv(os.path.join(project_path, 'results/Motif_Usage_Combined_' + str(n_cluster) + 'clusters.csv'))
     return(df2)
-        seq[con_arr[idx,:]<.99] = np.NaN
     
-    final_positions = np.array(body_position_nan)
-    # save the final_positions array with np.save()
-    np.save(os.path.join(projectPath, 'data/' + f + '/' + f + "-PE-seq.npy"), final_positions)
-
 
 def extractResults(projectPath, expDate, group1, group2, modelName, n_clusters, cluster_method='kmeans', phases=None):
     """Docstring:
@@ -508,6 +502,7 @@ def combineBehavior(config, save=True, n_cluster=30):
     if save:
         df2.to_csv(os.path.join(project_path, 'results/Motif_Usage_Combined_' + str(n_cluster) + 'clusters.csv'))
     return(df2)
+
 
 def extractResults(projectPath, expDate, group1, group2, modelName, n_clusters, cluster_method='kmeans', phases=None):
     """Docstring:

@@ -20,7 +20,6 @@ import matplotlib.pyplot as plt
 from vame.util.auxiliary import read_config
 from vame.analysis.tree_hierarchy import graph_to_tree, draw_tree, traverse_tree_cutline
 
-
 def get_adjacency_matrix(labels, n_cluster):
     temp_matrix = np.zeros((n_cluster,n_cluster), dtype=np.float64)
     adjacency_matrix = np.zeros((n_cluster,n_cluster), dtype=np.float64)
@@ -111,12 +110,11 @@ def create_community_bag(files, labels, transition_matrices, cut_tree, n_cluster
                             community_bag.append([motif_idx])
                         print(community_bag)
                         flag_2 = input('\nAre all motifs in the list? (yes/no/restart)')
-                if flag_2 == "restart":
-                    continue
                 if flag_2 == 'yes':
-                    communities_all.append(community_bag)
                     flag_1 = 'yes'
-            
+                    communities_all.append(community_bag)
+                if flag_2 == "restart":
+                    continue     
     return communities_all, trees
 
 
@@ -171,7 +169,7 @@ def umap_vis(cfg, file, embed, community_labels_all):
     plt.colorbar(boundaries=np.arange(np.max(num)+2)-0.5).set_ticks(np.arange(np.max(num)+1))
     plt.gca().set_aspect('equal', 'datalim')
     plt.grid(False)
-
+    fig.savefig(os.path.join(cfg['project_path'], 'UMAP.tif'))
 
 def community(config, show_umap=False, cut_tree=None):
     config_file = Path(config).resolve()
