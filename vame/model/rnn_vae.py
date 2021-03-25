@@ -410,7 +410,9 @@ def rnn_model(config, model_name, pretrained_weights=False, pretrained_model=Non
     kl_losses = []
     weight_values = []
     mse_losses = []
-    fut_losses = []    
+    fut_losses = []
+    learn_rates = []
+    conv_counter = []
     
     torch.manual_seed(SEED)
     if CUDA:
@@ -439,7 +441,7 @@ def rnn_model(config, model_name, pretrained_weights=False, pretrained_model=Non
         scheduler = StepLR(optimizer, step_size=STEP_SIZE, gamma=1, last_epoch=-1)
 
     for epoch in range(1,EPOCHS):
-        print('Epoch: %d' %epoch)
+        print('Epoch: %d' %epoch + ', Epochs on convergence counter: %d' %convergence)
         print('Train: ')
         weight, train_loss, km_loss, kl_loss, mse_loss, fut_loss = train(train_loader, epoch, model, optimizer, 
                                                                          anneal_function, BETA, KL_START, 
@@ -463,7 +465,9 @@ def rnn_model(config, model_name, pretrained_weights=False, pretrained_model=Non
         weight_values.append(weight)
         mse_losses.append(mse_loss)
         fut_losses.append(fut_loss)
-            
+        learn_rates.append(LEARNING_RATE)
+        conv_counter.append(convergence)
+        
         # save best model
         if weight > 0.99 and current_loss <= BEST_LOSS:
             BEST_LOSS = current_loss
@@ -502,9 +506,10 @@ def rnn_model(config, model_name, pretrained_weights=False, pretrained_model=Non
         np.save(cfg['project_path']+'/model/model_losses/mse_train_losses_'+model_name, mse_losses)
         np.save(cfg['project_path']+'/model/model_losses/mse_test_losses_'+model_name, current_loss)
         np.save(cfg['project_path']+'/model/model_losses/fut_losses_'+model_name, fut_losses)
-
-        df = pd.DataFrame([train_losses, test_losses, kmeans_losses, kl_losses, weight_values, mse_losses, fut_losses]).T
-        df.columns=['Train_losses', 'Test_losses', 'Kmeans_losses', 'KL_losses', 'Weight_values', 'MSE_losses', 'Future_losses']
+    
+        
+        df = pd.DataFrame([train_losses, test_losses, kmeans_losses, kl_losses, weight_values, mse_losses, fut_losses, learn_rates, conv_counter]).T
+        df.columns=['Train_losses', 'Test_losses', 'Kmeans_losses', 'KL_losses', 'Weight_values', 'MSE_losses', 'Future_losses', 'Learning_Rate', 'Convergence_counter']
         df.to_csv(cfg['project_path']+'/model/model_losses/'+model_name+'_LossesSummary.csv')
 
 

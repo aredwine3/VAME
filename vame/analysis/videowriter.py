@@ -17,9 +17,12 @@ import glob
 from vame.util.auxiliary import read_config
 
 
-def get_cluster_vid(cfg, path_to_file, file, n_cluster, rename=None):
+def get_cluster_vid(cfg, path_to_file, file, n_cluster, cluster_method='kmeans', rename=None):
     print("Videos get created for "+file+" ...")
-    labels = np.load(glob.glob(path_to_file+'/'+str(n_cluster)+'_km_label_'+'*.npy')[0])
+    if cluster_method == 'kmeans':
+        labels = np.load(glob.glob(path_to_file+'/'+str(n_cluster)+'_km_label_'+'*.npy')[0])
+    elif cluster_method == 'GMM':
+        labels = np.load(glob.glob(path_to_file+'/'+str(n_cluster)+'_gmm_label_'+'*.npy')[0])
    # labels = np.load(path_to_file+'/'+str(n_cluster)+'_km_label_'+file+'.npy')
     if rename:
         if file.split('_')[-1].startswith('Dec'):
@@ -101,7 +104,7 @@ def motif_videos(config, model_name, cluster_method="kmeans", n_cluster=[30], re
                 if not os.path.exists(path_to_file+'/cluster_videos/'):
                         os.mkdir(path_to_file+'/cluster_videos/')
             
-            get_cluster_vid(cfg, path_to_file, file, cluster, rename=rename)
+                get_cluster_vid(cfg, path_to_file, file, cluster, rename=rename)
 
         elif not rename:
             for file in files:
@@ -110,7 +113,7 @@ def motif_videos(config, model_name, cluster_method="kmeans", n_cluster=[30], re
                 if not os.path.exists(path_to_file+'/cluster_videos/'):
                         os.mkdir(path_to_file+'/cluster_videos/')
 
-            get_cluster_vid(cfg, path_to_file, file, cluster)
+            get_cluster_vid(cfg, path_to_file, file, cluster, cluster_method=cluster_method)
 
 
 
