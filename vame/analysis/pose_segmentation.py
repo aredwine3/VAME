@@ -230,9 +230,9 @@ def pose_segmentation(config):
             
             if flag == 'yes':
                 new = True
-                path_to_latent_vector = os.path.join(cfg['project_path'],"results",file,model_name,'kmeans-'+str(n_cluster),"")
                 latent_vectors = []
                 for file in files:
+                    path_to_latent_vector = os.path.join(cfg['project_path'],"results",file,model_name,'kmeans-'+str(n_cluster),"")
                     latent_vector = np.load(os.path.join(path_to_latent_vector,'latent_vector_'+file+'.npy'))
                     latent_vectors.append(latent_vector)
                     
