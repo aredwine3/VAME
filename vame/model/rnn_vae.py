@@ -290,9 +290,9 @@ def train_model(config):
     weight_values = []
     mse_losses = []
     fut_losses = []
+    learn_rates = []
+    conv_counter = []
 
-    torch.manual_seed(SEED)
-    
     if legacy == False:
         RNN = RNN_VAE
     else:
@@ -401,6 +401,8 @@ def train_model(config):
                   'Use vame.pose_segmentation() to identify behavioral motifs in your dataset!')
             #return
             break
+        
+        # save logged losses
 
         df = pd.DataFrame([train_losses, test_losses, kmeans_losses, kl_losses, weight_values, mse_losses, fut_losses, learn_rates, conv_counter]).T
         df.columns=['Train_losses', 'Test_losses', 'Kmeans_losses', 'KL_losses', 'Weight_values', 'MSE_losses', 'Future_losses', 'Learning_Rate', 'Convergence_counter']
@@ -417,4 +419,9 @@ def train_model(config):
         np.save(os.path.join(cfg['project_path'],'model','model_losses','fut_losses_'+model_name), fut_losses)
         
         print("\n")
+    if convergence < cfg['model_convergence']:
+        print('Model seemed to have not reached convergence. You may want to check your model \n'
+              'with vame.evaluate_model(). If your satisfied you can continue with \n'
+              'Use vame.behavior_segmentation() to identify behavioral motifs!\n\n'
+              'OPTIONAL: You can re-run vame.rnn_model() to improve performance.')
 

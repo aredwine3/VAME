@@ -21,16 +21,8 @@ import seaborn as sn
 from sklearn import mixture
 from sklearn.cluster import KMeans
 from tslearn.clustering import TimeSeriesKMeans
-<<<<<<< HEAD
-<<<<<<< HEAD
 from tslearn.utils import to_time_series_dataset
 import multiprocessing
-=======
->>>>>>> Added plot_transitions function
-=======
-from tslearn.utils import to_time_series_dataset
-import multiprocessing
->>>>>>> Implemented easier file finding with renaming
 
 from vame.util.auxiliary import read_config
 from vame.model.rnn_vae import RNN_VAE
@@ -266,5 +258,4 @@ def plot_transitions(config, files, n_cluster, model_name, cluster_method='kmean
             plt.show()
             fig.savefig(os.path.join(PROJECT_PATH, 'results/' + f + '/' + model_name + '/' + cluster_method + '-' + str(n_cluster) + '/behavior_quantification/' + file + '_transitionMatrix.svg'))
     return tm
-
 

@@ -37,7 +37,6 @@ def makeEgocentricCSV(h5Path, bodyPart):
     for bp in bodyParts_norm: #normalize bodyparts by subtracting one from all 
         df_ego[(scorerName, bp, 'x')] = df_ego[(scorerName, bp, 'x')] - df_ego[(scorerName, bodyPart, 'x')] #for x position
         df_ego[(scorerName, bp, 'y')] = df_ego[(scorerName, bp, 'y')] - df_ego[(scorerName, bodyPart, 'y')] #for y position
-
     if not os.path.exists(os.path.join(directory, 'egocentric/')):
         os.mkdir(os.path.join(directory, 'egocentric/'))
     df_ego.to_csv(os.path.join(directory, 'egocentric/' + f + '_egocentric.csv'))
@@ -510,7 +509,7 @@ def combineBehavior(config, save=True, n_cluster=30):
         df2.to_csv(os.path.join(project_path, 'results/Motif_Usage_Combined_' + str(n_cluster) + 'clusters.csv'))
     return(df2)
 
-def extractResults(projectPath, expDate, group1, group2, modelName, n_clusters, phases=None):
+def extractResults(projectPath, expDate, group1, group2, modelName, n_clusters, cluster_method='kmeans', phases=None):
     """Docstring:
     Compares motif usage between two groups with t-test.
     
@@ -541,7 +540,7 @@ def extractResults(projectPath, expDate, group1, group2, modelName, n_clusters, 
     samples = os.listdir(os.path.join(projectPath, 'results/'))
     cat = pd.DataFrame()
     for sample in samples:
-        clu_arr = np.load(os.path.join(projectPath, 'results/' + sample + '/' + modelName + '/kmeans-' + str(n_clusters) + '/behavior_quantification/motif_usage.npy'))
+        clu_arr = np.load(os.path.join(projectPath, 'results/' + sample + '/' + modelName + '/' + cluster_method + '-' + str(n_clusters) + '/behavior_quantification/motif_usage.npy'))
         clu = pd.DataFrame(clu_arr)
         clu.columns=[sample]
         cat = pd.concat([cat, clu], axis=1)
@@ -612,21 +611,24 @@ def extractResults(projectPath, expDate, group1, group2, modelName, n_clusters, 
             
             df1_arr = np.array(df1_split.iloc[:,:-2])
             df2_arr = np.array(df2_split.iloc[:,:-2])
-            pvals = np.array([ttest_ind(df1_arr[i,:], df2_arr[i,:], nan_policy='omit')[1] for i in range(df1_arr.shape[0])])
-            fdr_pass,qvals,_,_ = multipletests(pvals, method='fdr_bh',alpha=0.05)
-    
-            results['p-value'] = pvals
-            results['q-value'] = qvals
-            results.to_csv(os.path.join(saveDir, 'Combined_' + phase + '_' + modelName + '_' + str(n_clusters) + 'Clusters_Results.csv'))
-            
-            summary = pd.DataFrame()
-            summary['Group1_Mean'] = df1_split['Group1_mean']
-            summary['Group1_SEM'] = df1_split['Group1_sem']
-            summary['Group2_Mean'] = df2_split['Group2_mean']
-            summary['Group2_SEM'] = df2_split['Group2_sem']
-            summary['p-value'] = results['p-value']
-            summary['q-value'] = results['q-value']
-            summary.to_csv(os.path.join(saveDir, phase + '_SummaryStatistics_' + str(n_clusters) + 'clusters.csv'))
+            if len(df1_arr) > 0 and len(df2_arr) > 0:
+                pvals = np.array([ttest_ind(df1_arr[i,:], df2_arr[i,:], nan_policy='omit')[1] for i in range(df1_arr.shape[0])])
+                fdr_pass,qvals,_,_ = multipletests(pvals, method='fdr_bh',alpha=0.05)
+        
+                results['p-value'] = pvals
+                results['q-value'] = qvals
+                results.to_csv(os.path.join(saveDir, 'Combined_' + phase + '_' + modelName + '_' + str(n_clusters) + 'Clusters_Results.csv'))
+                
+                summary = pd.DataFrame()
+                summary['Group1_Mean'] = df1_split['Group1_mean']
+                summary['Group1_SEM'] = df1_split['Group1_sem']
+                summary['Group2_Mean'] = df2_split['Group2_mean']
+                summary['Group2_SEM'] = df2_split['Group2_sem']
+                summary['p-value'] = results['p-value']
+                summary['q-value'] = results['q-value']
+                summary.to_csv(os.path.join(saveDir, phase + '_SummaryStatistics_' + str(n_clusters) + 'clusters.csv'))
+            else:
+                print("No results found for both groups found in phase " + str(phase))
     elif not phases:
         results = pd.concat([df1, df2], axis=1)
         
@@ -648,7 +650,6 @@ def extractResults(projectPath, expDate, group1, group2, modelName, n_clusters, 
         summary['q-value'] = results['q-value']
         summary.to_csv(os.path.join(saveDir, 'SummaryStatistics_' + str(n_clusters) + 'clusters.csv'))
      
-    return(summary)
         
 def selectLimbs(projectPath, suffix):
     """Docstring:

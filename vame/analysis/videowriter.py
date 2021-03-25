@@ -112,7 +112,7 @@ def motif_videos(config, model_name, cluster_method="kmeans", n_cluster=[30], re
                 if not os.path.exists(path_to_file+'/cluster_videos/'):
                         os.mkdir(path_to_file+'/cluster_videos/')
             
-            get_cluster_vid(cfg, path_to_file, file, cluster, rename=rename)
+                get_cluster_vid(cfg, path_to_file, file, cluster, rename=rename)
 
     for cluster in n_cluster:
         print("Cluster size %d " %cluster)
@@ -137,14 +137,7 @@ def motif_videos(config, model_name, cluster_method="kmeans", n_cluster=[30], re
 
             get_cluster_vid(cfg, path_to_file, file, cluster, cluster_method=cluster_method)
 
-    print("Cluster size is: %d " %n_cluster)
-    for file in files:
-        path_to_file=os.path.join(cfg['project_path'],"results",file,model_name,'kmeans-'+str(n_cluster),"")
-        if not os.path.exists(os.path.join(path_to_file,"cluster_videos")):
-            os.mkdir(os.path.join(path_to_file,"cluster_videos"))
 
-        get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag)
-    
     print("All videos have been created!")
     
     

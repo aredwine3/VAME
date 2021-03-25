@@ -24,11 +24,8 @@ project = 'vGluT2_RTA'
 creationDate = 'Feb15-2021'
 modelName = 'VG2_RTA_with6Hz'
 file_format = '.mp4'
-
-videoDirectory = '/d1/studies/VAME/VAME_VG2/'
-
-
 videoDirectory = '/d1/studies/VAME/VAME_VG2/vGluT2_RTA-Jan8-2021/videos/'
+
 vids = []
 files = os.listdir(videoDirectory)
 for f in files:
@@ -67,12 +64,12 @@ for file in poseFiles:
 vame.create_trainset(config)
 
 #Train RNN:
-vame.rnn_model(config, model_name=modelName, pretrained_weights=False, pretrained_model=None)
+vame.rnn_model(config, model_name=modelName, pretrained_weights=True, pretrained_model='VG2_RTA_with6Hz_vGluT2_RTA_Epoch203_Feb16')
 #Evaluate RNN:
 vame.evaluate_model(config, model_name=modelName, suffix=None)
 
 #Segment Behaviors:
-vame.behavior_segmentation(config, model_name=modelName, cluster_method='kmeans', n_cluster=[10,15,20,25,30])
+vame.behavior_segmentation(config, model_name=modelName, cluster_method='GMM', n_cluster=[9,12,15,18,20])
 #Quantify behaviors:
 vame.behavior_quantification(config, model_name=modelName, cluster_method='ts-kmeans', n_cluster=30)
 #Plot transition matrices
@@ -93,26 +90,10 @@ group2=cko_mice
 group1 = ['VG1_RT', 'VG1_RB', 'VG1_LT', 'VG2_LT', 'VG3_RT']
 group2 = ['VG1_LB', 'VG2_RT', 'VG3_LB']
 #phases=['2020-12-21', '2020-12-22', '2021-01-06', '2021-01-08']
-phases=['Dec2020', 'Jan2021']
-
-"VG2_RT_2020-12-21",
-"VG1_RB_2020-12-21",
-"VG1_LB_2021-01-08",
-"VG3_RT_2021-01-08",
-"VG3_RT_2020-12-22",
-"VG3_LB_2020-12-22",
-"VG2_RT_2021-01-08",
-"VG2_LT_2021-01-08",
-"VG2_LT_2020-12-22",
-"VG1_RT_2021-01-06",
-"VG1_RT_2020-12-21",
-"VG1_RB_2021-01-06",
-"VG1_LT_2021-01-06",
-"VG1_LT_2020-12-21",
-"VG1_LB_2020-12-21"
-
+phases=['2020-12-21', '2020-12-22', '2021-01-06', '2021-01-08', '2021-01-18', '2021-01-16']
 expDate = 'Dec2020'
-clus=[10,15,20,25,30]
+clus=[9,12,15,18,20]
+cluster_method='GMM'
 
 rename = {'2020-12-21':'Dec2020', '2020-12-22':'Dec2020', '2021-01-06':'Jan2021', '2021-01-08':'Jan2021'}
 
@@ -201,5 +182,6 @@ plt.xlabel("Next frame behavior")
 plt.ylabel("Current frame behavior")
 plt.show()
 fig.savefig(os.path.join(projectPath, 'Difference_AverageTransitionMatrix_' + str(n_cluster) + 'clusters_GMM.png'))
+
 
 
