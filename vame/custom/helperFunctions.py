@@ -92,7 +92,6 @@ def csv_to_numpy(projectPath, csvPath, pcutoff=.99):
 
     # Read in your .csv file, skip the first two rows and create a numpy array
     data = pd.read_csv(csvPath, skiprows = 1)
-    directory = '/'.join(csvPath.split('/')[:-1])
     fileName = csvPath.split('/')[-1].split('DLC')[0]
     f, e = os.path.splitext(fileName)
     data = pd.read_csv(csvPath, skiprows = 1)
@@ -193,67 +192,7 @@ def combineBehavior(config, save=True, n_cluster=30):
     if save:
         df2.to_csv(os.path.join(project_path, 'results/Motif_Usage_Combined_' + str(n_cluster) + 'clusters.csv'))
     return(df2)
-        seq[con_arr[idx,:]<.99] = np.NaN
     
-    final_positions = np.array(body_position_nan)
-    # save the final_positions array with np.save()
-    np.save(os.path.join(projectPath, 'data/' + f + '/' + f + "-PE-seq.npy"), final_positions)
-
-def combineBehavior(config, save=True, n_cluster=30):
-    config_file = Path(config).resolve()
-    cfg = read_config(config_file)
-    project_path = cfg['project_path']
-    files = []
-    if cfg['all_data'] == 'No':
-        all_flag = input("Do you want to write motif videos for your entire dataset? \n"
-                     "If you only want to use a specific dataset type filename: \n"
-                     "yes/no/filename ")
-    else: 
-        all_flag = 'yes'
-        
-    if all_flag == 'yes' or all_flag == 'Yes':
-        for file in cfg['video_sets']:
-            files.append(file)
-            
-    elif all_flag == 'no' or all_flag == 'No':
-        for file in cfg['video_sets']:
-            use_file = input("Do you want to quantify " + file + "? yes/no: ")
-            if use_file == 'yes':
-                files.append(file)
-            if use_file == 'no':
-                continue
-    else:
-        files.append(all_flag)
-    
-    cat = pd.DataFrame()
-    for file in files:
-        arr = np.load(os.path.join(project_path, 'results/' + file + '/VAME_NPW/kmeans-' + str(n_cluster) + '/behavior_quantification/motif_usage.npy'))
-        df = pd.DataFrame(arr, columns=[file])
-        cat = pd.concat([cat, df], axis=1)
-
-    phases=[]
-    mice=[]
-    for col in cat.columns:
-        phase = col.split('_')[1]
-        phases.append(phase)
-        mouse = col.split('_')[0]
-        mice.append(mouse)
-    lz = list(zip(mice, phases))    
-    lz = sorted(lz)
-    joined = []
-    for pair in lz:
-        j = '_'.join(pair)
-        joined.append(j)
-    ind = sorted(lz)
-    ind = pd.MultiIndex.from_tuples(ind)
-    df2 = pd.DataFrame()
-    for sample in joined:
-        df2[sample] = cat[sample]
-    df2.columns=ind
-    
-    if save:
-        df2.to_csv(os.path.join(project_path, 'results/Motif_Usage_Combined_' + str(n_cluster) + 'clusters.csv'))
-    return(df2)
 
 def extractResults(projectPath, expDate, group1, group2, modelName, n_clusters, cluster_method='kmeans', phases=None):
     """Docstring:

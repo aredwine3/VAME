@@ -20,20 +20,14 @@ from vame.util.auxiliary import read_config
 from vame.model.rnn_vae import RNN_VAE
 from vame.model.dataloader import SEQUENCE_DATASET
 
-<<<<<<< HEAD
 use_gpu = torch.cuda.is_available()
 if use_gpu:
     pass
 else:
     torch.device("cpu")
 
-
-def plot_reconstruction(filepath, test_loader, seq_len_half, model, model_name,
-                        FUTURE_DECODER, FUTURE_STEPS):
-=======
 def plot_reconstruction(filepath, test_loader, seq_len_half, model, model_name, 
                         FUTURE_DECODER, FUTURE_STEPS, suffix=None):
->>>>>>> Added plot suffix
     x = test_loader.__iter__().next()
     x = x.permute(0,2,1)
     if use_gpu:
@@ -59,7 +53,6 @@ def plot_reconstruction(filepath, test_loader, seq_len_half, model, model_name,
     data_tilde = data_tilde.detach().numpy()
 
     if FUTURE_DECODER:
-<<<<<<< HEAD
         fig, axs = plt.subplots(2, 5)
         fig.suptitle('Reconstruction [top] and future prediction [bottom] of input sequence')
         for i in range(5):
@@ -70,20 +63,11 @@ def plot_reconstruction(filepath, test_loader, seq_len_half, model, model_name,
             axs[1,i].plot(fut[i,...], color='r', linestyle='dashed')
         axs[0,0].set(xlabel='time steps', ylabel='reconstruction')
         axs[1,0].set(xlabel='time steps', ylabel='predction')
-        fig.savefig(os.path.join(filepath,"evaluate",'Future_Reconstruction.png'))
-=======
-        fig, (ax1, ax2) = plt.subplots(1, 2)
-        fig.suptitle('Reconstruction and future prediction of input sequence')
-        ax1.plot(data_orig[1,...], color='k', label='Sequence Data')
-        ax1.plot(data_tilde[1,...], color='r', linestyle='dashed', label='Sequence Reconstruction')
-        ax2.plot(fut_orig[1,...], color='k')
-        ax2.plot(fut[1,...], color='r', linestyle='dashed')
         if suffix:
-            fig.savefig(filepath+'evaluate/'+'Future_Reconstruction' + model_name + '_' + suffix + '.png') 
+            fig.savefig(os.path.join(filepath,"evaluate",'Future_Reconstruction'+suffix+'.png'))
         elif not suffix:
-            fig.savefig(filepath+'evaluate/'+'Future_Reconstruction' + model_name + '.png') 
+            fig.savefig(os.path.join(filepath,"evaluate",'Future_Reconstruction.png'))
 
->>>>>>> Added plot suffix
     else:
         fig, ax1 = plt.subplots(1, 5)
         for i in range(5):
@@ -125,7 +109,7 @@ def plot_loss(cfg, filepath, model_name):
     fig.savefig(filepath+'evaluate/'+'MSE-and-KL-Loss'+model_name+'.png')
     
     
-def eval_temporal(cfg, use_gpu, model_name, suffix=None):
+def eval_temporal(cfg, use_gpu, model_name, legacy, suffix=None):
     SEED = 19
     ZDIMS = cfg['zdims']
     FUTURE_DECODER = cfg['prediction_decoder']
@@ -163,21 +147,15 @@ def eval_temporal(cfg, use_gpu, model_name, suffix=None):
         model.load_state_dict(torch.load(os.path.join(cfg['project_path'],"model","best_model",model_name+'_'+cfg['Project']+'.pkl'), map_location=torch.device('cpu')))
 
     model.eval() #toggle evaluation mode
+
     testset = SEQUENCE_DATASET(os.path.join(cfg['project_path'],"data", "train",""), data='test_seq.npy', train=False, temporal_window=TEMPORAL_WINDOW)
     test_loader = Data.DataLoader(testset, batch_size=TEST_BATCH_SIZE, shuffle=True, drop_last=True)
-
-    plot_reconstruction(filepath, test_loader, seq_len_half, model, model_name, FUTURE_DECODER, FUTURE_STEPS)
+     
+    plot_reconstruction(filepath, test_loader, seq_len_half, model, model_name, FUTURE_DECODER, FUTURE_STEPS, suffix=suffix)
     if use_gpu:
         plot_loss(cfg, filepath, model_name)
     else:
         pass #note, loading of losses needs to be adapted for CPU use #TODO
-
-    testset = SEQUENCE_DATASET(cfg['project_path']+'data/train/', data='test_seq.npy', train=False, temporal_window=TEMPORAL_WINDOW)
-    test_loader = Data.DataLoader(testset, batch_size=TEST_BATCH_SIZE, shuffle=True, drop_last=True)    
-     
-    plot_reconstruction(filepath, test_loader, seq_len_half, model, model_name, FUTURE_DECODER, FUTURE_STEPS, suffix=suffix)
-    plot_loss(cfg, filepath, model_name)
-     
     
     
 def evaluate_model(config, model_name, suffix=None):
