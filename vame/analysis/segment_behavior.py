@@ -93,11 +93,6 @@ def behavior_segmentation(config, model_name=None, cluster_method='kmeans', n_cl
     z, z_logger = temporal_quant(cfg, model_name, files, use_gpu)
     cluster_latent_space(cfg, files, z, z_logger, cluster_method, n_cluster, model_name)
 
-
-def temporal_quant(cfg, model_name, files, use_gpu):
-    z, z_logger = temporal_quant(cfg, model_name, files, use_gpu, n_cluster=n_cluster) 
-    cluster_latent_space(cfg, files, z, z_logger, cluster_method, n_cluster, model_name)
-    
     
 def temporal_quant(cfg, model_name, files, use_gpu, n_cluster=[30], cluster_method='kmeans'):
     n_cluster = n_cluster[0]
@@ -116,6 +111,7 @@ def temporal_quant(cfg, model_name, files, use_gpu, n_cluster=[30], cluster_meth
     dropout_rec = cfg['dropout_rec']
     dropout_pred = cfg['dropout_pred']
     temp_win = int(TEMPORAL_WINDOW/2)
+    n_cluster=cfg['n_cluster']
 
     if use_gpu:
         torch.cuda.manual_seed(SEED)
