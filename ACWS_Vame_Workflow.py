@@ -9,7 +9,6 @@ Created on Mon Nov  2 11:46:40 2020
 import os
 import numpy as np
 import pandas as pd
-<<<<<<< HEAD
 os.chdir('/d1/studies/VAME/')
 import vame
 from vame.custom import helperFunctions as hf
@@ -22,11 +21,6 @@ from vame.analysis.videowriter import motif_videos
 project = 'VAME_Operant_NoCue'
 directory = '/d1/studies/VAME/VAME_NoCue/'
 videoDirectory = os.path.join(directory, 'videos')
-
-#Initialize Project:
-project = 'OperantDLC_Vame'
-directory = '/d1/studies/VAME/Vame_Project/'
-videoDirectory = '/d1/studies/VAME/Vame_Project/videos/'
 vids = []
 files = os.listdir(videoDirectory)
 for f in files:
@@ -53,7 +47,7 @@ for f in files:
 
 ###Convert all CSVs to numpy arrays:
 csvs = []
-csvDirectory = '/d1/studies/VAME/Vame_Project/data/h5s/egocentric/'
+csvDirectory = os.path.join(h5Directory, 'egocentric/')
 files = os.listdir(csvDirectory)
 for f in files:
     if f.endswith('.csv'):
