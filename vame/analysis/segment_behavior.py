@@ -93,9 +93,8 @@ def behavior_segmentation(config, model_name=None, cluster_method='kmeans', n_cl
     z, z_logger = temporal_quant(cfg, model_name, files, use_gpu)
     cluster_latent_space(cfg, files, z, z_logger, cluster_method, n_cluster, model_name)
 
-    
-def temporal_quant(cfg, model_name, files, use_gpu, n_cluster=[30], cluster_method='kmeans'):
-    n_cluster = n_cluster[0]
+
+def temporal_quant(cfg, model_name, files, use_gpu, cluster_method='kmeans'):
     SEED = 19
     ZDIMS = cfg['zdims']
     FUTURE_DECODER = cfg['prediction_decoder']
@@ -192,7 +191,6 @@ def cluster_latent_space(cfg, files, z_data, z_logger, cluster_method, n_cluster
             data_labels = kmeans_clustering(z_data, n_clusters=cluster)
             data_labels = np.int64(scipy.signal.medfilt(data_labels, cfg['median_filter']))
 
-            
         elif cluster_method == 'ts-kmeans':
             print('Behavior segmentation via TimeSeriesKMeans for %d cluster.' %cluster)
             z_data = to_time_series_dataset(z_data)
@@ -229,7 +227,6 @@ def cluster_latent_space(cfg, files, z_data, z_logger, cluster_method, n_cluster
                 np.save(save_data+cluster_method+'-'+str(cluster)+'/'+str(cluster)+'_km_label_'+file, labels)
                 np.save(save_data+cluster_method+'-'+str(cluster)+'/'+str(cluster)+'_gmm_label_'+file, labels)
                 np.save(save_data+cluster_method+'-'+str(cluster)+'/'+'latent_vector_'+file, z_latent)
-
 
             np.save(save_data+cluster_method+'-'+str(cluster)+'/'+'z_logger_' +file, z_logger)
             np.save(save_data +'latent_vector_'+file, z_latent)

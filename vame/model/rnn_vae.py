@@ -297,6 +297,8 @@ def train_model(config):
         RNN = RNN_VAE
     else:
         RNN = RNN_VAE_LEGACY
+    
+    torch.manual_seed(SEED)
     if CUDA:
         torch.cuda.manual_seed(SEED)
         model = RNN(TEMPORAL_WINDOW,ZDIMS,NUM_FEATURES,FUTURE_DECODER,FUTURE_STEPS, hidden_size_layer_1,
@@ -332,7 +334,6 @@ def train_model(config):
     
     print("Start training... ")
 
-
     for epoch in range(1,EPOCHS):
         print('Epoch: %d' %epoch + ', Epochs on convergence counter: %d' %convergence)
         print('Train: ')
@@ -358,7 +359,6 @@ def train_model(config):
         weight_values.append(weight)
         mse_losses.append(mse_loss)
         fut_losses.append(fut_loss)
-
         learn_rates.append(LEARNING_RATE)
         conv_counter.append(convergence)
         
@@ -381,13 +381,26 @@ def train_model(config):
             print("Saving model snapshot!\n")
             torch.save(model.state_dict(), os.path.join(cfg['project_path'],'model','best_model','snapshots',model_name+'_'+cfg['Project']+'_epoch_'+str(epoch)+'.pkl'))
 
-
         if not optimizer_scheduler:
             if convergence == STEP_SIZE:
                 LEARNING_RATE = LEARNING_RATE*GAMMA
                 optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE, amsgrad=True)
                 print("Decreasing Learning Rate To: " + str(LEARNING_RATE))
         
+        # save logged losses
+        np.save(os.path.join(cfg['project_path'],'model','model_losses','train_losses_'+model_name), train_losses)
+        np.save(os.path.join(cfg['project_path'],'model','model_losses','test_losses_'+model_name), test_losses)
+        np.save(os.path.join(cfg['project_path'],'model','model_losses','kmeans_losses_'+model_name), kmeans_losses)
+        np.save(os.path.join(cfg['project_path'],'model','model_losses','kl_losses_'+model_name), kl_losses)
+        np.save(os.path.join(cfg['project_path'],'model','model_losses','weight_values_'+model_name), weight_values)
+        np.save(os.path.join(cfg['project_path'],'model','model_losses','mse_train_losses_'+model_name), mse_losses)
+        np.save(os.path.join(cfg['project_path'],'model','model_losses','mse_test_losses_'+model_name), current_loss)
+        np.save(os.path.join(cfg['project_path'],'model','model_losses','fut_losses_'+model_name), fut_losses)
+
+        df = pd.DataFrame([train_losses, test_losses, kmeans_losses, kl_losses, weight_values, mse_losses, fut_losses, learn_rates, conv_counter]).T
+        df.columns=['Train_losses', 'Test_losses', 'Kmeans_losses', 'KL_losses', 'Weight_values', 'MSE_losses', 'Future_losses', 'Learning_Rate', 'Convergence_counter']
+        df.to_csv(cfg['project_path']+'/model/model_losses/'+model_name+'_LossesSummary.csv')     
+        print("\n")
 
         if convergence > cfg['model_convergence']:
             print('Finished training...')
@@ -401,24 +414,7 @@ def train_model(config):
                   'Use vame.pose_segmentation() to identify behavioral motifs in your dataset!')
             #return
             break
-        
-        # save logged losses
 
-        df = pd.DataFrame([train_losses, test_losses, kmeans_losses, kl_losses, weight_values, mse_losses, fut_losses, learn_rates, conv_counter]).T
-        df.columns=['Train_losses', 'Test_losses', 'Kmeans_losses', 'KL_losses', 'Weight_values', 'MSE_losses', 'Future_losses', 'Learning_Rate', 'Convergence_counter']
-        df.to_csv(cfg['project_path']+'/model/model_losses/'+model_name+'_LossesSummary.csv')
-
-        # save logged losses
-        np.save(os.path.join(cfg['project_path'],'model','model_losses','train_losses_'+model_name), train_losses)
-        np.save(os.path.join(cfg['project_path'],'model','model_losses','test_losses_'+model_name), test_losses)
-        np.save(os.path.join(cfg['project_path'],'model','model_losses','kmeans_losses_'+model_name), kmeans_losses)
-        np.save(os.path.join(cfg['project_path'],'model','model_losses','kl_losses_'+model_name), kl_losses)
-        np.save(os.path.join(cfg['project_path'],'model','model_losses','weight_values_'+model_name), weight_values)
-        np.save(os.path.join(cfg['project_path'],'model','model_losses','mse_train_losses_'+model_name), mse_losses)
-        np.save(os.path.join(cfg['project_path'],'model','model_losses','mse_test_losses_'+model_name), current_loss)
-        np.save(os.path.join(cfg['project_path'],'model','model_losses','fut_losses_'+model_name), fut_losses)
-        
-        print("\n")
     if convergence < cfg['model_convergence']:
         print('Model seemed to have not reached convergence. You may want to check your model \n'
               'with vame.evaluate_model(). If your satisfied you can continue with \n'

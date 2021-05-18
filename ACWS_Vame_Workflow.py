@@ -16,8 +16,16 @@ from vame.custom import alignVideos as av
 from vame.analysis.videowriter import motif_videos
 
 
+<<<<<<< HEAD
 new = True #Set to True to create new project, False to load config file
 
+=======
+<<<<<<< HEAD
+new = True #Set to True to create new project, False to load config file
+
+=======
+>>>>>>> dc83ab81880aa01ac6aedd4f53fa8cf38b5850c9
+>>>>>>> d955e975b9d6ac701acedd6891d0c795320865b7
 #Initialize Project:
 directory = '/d1/studies/VAME/VAME_CombinedNPW'
 project = 'VAME_CombinedNPW_NoPaws'
@@ -32,6 +40,7 @@ for f in files:
     if f.endswith(file_format):
         fullpath = os.path.join(videoDirectory, f)
         vids.append(fullpath)
+<<<<<<< HEAD
 
 if not os.path.exists(os.path.join(directory, project + '-' + creationDate + '/config.yaml')):
     config = vame.init_new_project(project=project, videos=vids, working_directory=directory, videotype='.mp4')
@@ -70,6 +79,17 @@ for file in poseFiles:
                                                    use_video=False, check_video=False)
             np.save(projectPath+'/data/'+sampleName+'/'+sampleName+'-PE-seq.npy', egocentric_time_series)
 
+=======
+if not os.path.exists(os.path.join(directory, project + '-' + creationDate + '/config.yaml')):
+    config = vame.init_new_project(project=project, videos=vids, working_directory=directory, videotype='.mp4')
+
+else:
+    config = os.path.join(directory, project + '-' + creationDate + '/config.yaml')
+    print("Loaded config from " + os.path.join(directory, project + '-' + creationDate + 'config.yaml'))
+    
+projectPath = '/'.join(config.split('/')[:-1])
+
+>>>>>>> d955e975b9d6ac701acedd6891d0c795320865b7
 #Optional drop one of each forelimb & highlimb, keeping whichever has highest likelihood:
 hf.selectLimbs(projectPath, '_7points')
 
@@ -104,6 +124,10 @@ vame.behavior_quantification(config, model_name=modelName, cluster_method='kmean
 #Make Example Videos:
 motif_videos(config, model_name=modelName, cluster_method="kmeans", n_cluster=[10])
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> d955e975b9d6ac701acedd6891d0c795320865b7
 #Define groups & experimental setup:
 group1 = ['C1-RT', 'C3-RB', 'C5-NP', 'C5-RT', 'C9_LT', 'C12_NP', 'C13_RT', 'C14_LT', 'C14_LB', 'C15_RT', 'C16_RB']
 group2 = ['C2-RB', 'C3-LT', 'C4-NP', 'C4-RT', 'C10_NP', 'C12_RT', 'C13_NP', 'C14_RT', 'C15_NP', 'C16_NP']
@@ -115,6 +139,7 @@ for n_clusters in clus:
     vame.behavior_quantification(config, model_name=modelName, cluster_method='kmeans', n_cluster=n_clusters)
     hf.extractResults(projectPath, group1, group2, modelName, n_clusters, phases)
 
+<<<<<<< HEAD
 motif_videos(config, model_name=modelName, cluster_method="kmeans", n_cluster=[30])
 
 samples = os.listdir(os.path.join(projectPath, 'results/'))
@@ -129,4 +154,6 @@ cat.to_csv(os.path.join(directory, 'VAME_NPW_NewAlignment_Test_30clusters_result
 
 cat.columns
 
+=======
+>>>>>>> d955e975b9d6ac701acedd6891d0c795320865b7
 

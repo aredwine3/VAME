@@ -222,20 +222,6 @@ def align_mouse(path_to_file,filename,file_format,crop_size, pose_list, pose_ref
 
 #play aligned video
 def play_aligned_video(a, n, frame_count, path_to_file, filename, crop_size, save=False):
-<<<<<<< HEAD
-    colors = [(255,0,0),(0,255,0),(0,0,255),(255,255,0),(255,0,255),(0,255,255),(0,0,0),(255,255,255),(125,0,125),(125,125,125)]
-    if not os.path.exists(os.path.join(path_to_file, 'egocentricVideos/')):
-        os.mkdir(os.path.join(path_to_file, 'egocentricVideos/'))
-    if save:
-        fourcc = cv.VideoWriter_fourcc(*'mp4v')
-        writer = cv.VideoWriter(
-            os.path.join(os.path.join(path_to_file, 'egocentricVideos/' + filename + '.mp4')), 
-            fourcc, 
-            30.0, 
-            crop_size,
-            isColor=True
-        )
-def play_aligned_video(a, n, frame_count):
     colors = [(255,0,0),(0,255,0),(0,0,255),(255,255,0),(255,0,255),(0,255,255),(0,0,0),(255,255,255),(125,0,125),(125,125,125)]
     if not os.path.exists(os.path.join(path_to_file, 'egocentricVideos/')):
         os.mkdir(os.path.join(path_to_file, 'egocentricVideos/'))

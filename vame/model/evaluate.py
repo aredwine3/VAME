@@ -26,9 +26,8 @@ if use_gpu:
 else:
     torch.device("cpu")
 
-
-def plot_reconstruction(filepath, test_loader, seq_len_half, model, model_name,
-                        FUTURE_DECODER, FUTURE_STEPS):
+def plot_reconstruction(filepath, test_loader, seq_len_half, model, model_name, 
+                        FUTURE_DECODER, FUTURE_STEPS, suffix=None):
     x = test_loader.__iter__().next()
     x = x.permute(0,2,1)
     if use_gpu:
@@ -64,7 +63,10 @@ def plot_reconstruction(filepath, test_loader, seq_len_half, model, model_name,
             axs[1,i].plot(fut[i,...], color='r', linestyle='dashed')
         axs[0,0].set(xlabel='time steps', ylabel='reconstruction')
         axs[1,0].set(xlabel='time steps', ylabel='predction')
-        fig.savefig(os.path.join(filepath,"evaluate",'Future_Reconstruction.png'))
+        if suffix:
+            fig.savefig(os.path.join(filepath,"evaluate",'Future_Reconstruction'+suffix+'.png'))
+        elif not suffix:
+            fig.savefig(os.path.join(filepath,"evaluate",'Future_Reconstruction.png'))
 
     else:
         fig, ax1 = plt.subplots(1, 5)
@@ -109,7 +111,8 @@ def plot_loss(cfg, filepath, model_name):
 
 
     
-def eval_temporal(cfg, use_gpu, model_name, legacy):
+
+def eval_temporal(cfg, use_gpu, model_name, legacy, suffix=None):
     SEED = 19
     ZDIMS = cfg['zdims']
     FUTURE_DECODER = cfg['prediction_decoder']
@@ -150,14 +153,16 @@ def eval_temporal(cfg, use_gpu, model_name, legacy):
 
     testset = SEQUENCE_DATASET(os.path.join(cfg['project_path'],"data", "train",""), data='test_seq.npy', train=False, temporal_window=TEMPORAL_WINDOW)
     test_loader = Data.DataLoader(testset, batch_size=TEST_BATCH_SIZE, shuffle=True, drop_last=True)
-     
-    plot_reconstruction(filepath, test_loader, seq_len_half, model, model_name, FUTURE_DECODER, FUTURE_STEPS)
+
+    plot_reconstruction(filepath, test_loader, seq_len_half, model, model_name, FUTURE_DECODER, FUTURE_STEPS, suffix=suffix)
+
     if use_gpu:
         plot_loss(cfg, filepath, model_name)
     else:
         pass #note, loading of losses needs to be adapted for CPU use #TODO
     
-def evaluate_model(config, model_name):
+
+def evaluate_model(config, model_name, suffix=None):
     """
         Evaluation of testset
     """
@@ -179,7 +184,7 @@ def evaluate_model(config, model_name):
         print("CUDA is not working, or a GPU is not found; using CPU!")
 
     print("\n\nEvaluation of %s model. \n" %model_name)   
-    eval_temporal(cfg, use_gpu, model_name)
+    eval_temporal(cfg, use_gpu, model_name, suffix=suffix)
     print("You can find the results of the evaluation in '/Your-VAME-Project-Apr30-2020/model/evaluate/' \n"
           "OPTIONS:\n"
           "- vame.behavior_segmentation() to identify behavioral motifs.\n"
