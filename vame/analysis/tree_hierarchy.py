@@ -70,7 +70,14 @@ def merge_func(transition_matrix, n_cluster, motif_norm, merge_sel):
                 if cost <= cost_temp:
                     cost_temp = cost
                     merge_nodes = (np.array([i]), np.array([j]))                
-            
+                denom = np.abs(transition_matrix[i,j] + transition_matrix[j,i] )
+                if denom!=0:
+     #               print(str(i),str(j))
+                    cost = motif_norm[i] + motif_norm[j] / denom
+                    if cost <= cost_temp:
+                       # print(str(i),str(j))
+                        cost_temp = cost
+                        merge_nodes = (np.array([i]), np.array([j]))                           
     return merge_nodes
 
 
@@ -247,7 +254,7 @@ def graph_to_tree(motif_usage, transition_matrix, n_cluster, merge_sel=1):
 def draw_tree(T):
     # pos = nx.drawing.layout.fruchterman_reingold_layout(T)
     pos = hierarchy_pos(T,'Root',width=.5, vert_gap = 0.1, vert_loc = 0, xcenter = 50) 
-    fig = plt.figure(2)
+    fig = plt.figure()
     nx.draw_networkx(T, pos)  
     figManager = plt.get_current_fig_manager()
     figManager.window.showMaximized()

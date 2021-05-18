@@ -91,8 +91,8 @@ def create_community_bag(files, labels, transition_matrices, cut_tree, n_cluster
             draw_tree(T)
         else:
             draw_tree(T)
-            plt.pause(0.5)
             flag_1 = 'no'
+            plt.pause(0.5)
             while flag_1 == 'no':
                 cutline = int(input("Where do you want to cut the Tree? 0/1/2/3/..."))
                 community_bag =  traverse_tree_cutline(T,cutline=cutline)

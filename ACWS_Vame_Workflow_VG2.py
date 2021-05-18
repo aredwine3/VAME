@@ -19,10 +19,10 @@ from vame.analysis.videowriter import motif_videos
 from vame.analysis.segment_behavior import plot_transitions
 
 #Initialize Project:
-directory = '/d1/studies/VAME/VAME_VG2/'
+directory = '/d1/studies/VAME/VameV1/'
 project = 'vGluT2_RTA'
-creationDate = 'Feb15-2021'
-modelName = 'VG2_RTA_with6Hz'
+creationDate = 'March25-2021'
+modelName = 'VG2_RTA_VameV1'
 file_format = '.mp4'
 videoDirectory = '/d1/studies/VAME/VAME_VG2/vGluT2_RTA-Jan8-2021/videos/'
 
@@ -71,11 +71,21 @@ vame.evaluate_model(config, model_name=modelName, suffix=None)
 #Segment Behaviors:
 vame.behavior_segmentation(config, model_name=modelName, cluster_method='GMM', n_cluster=[9,12,15,18,20])
 #Quantify behaviors:
-vame.behavior_quantification(config, model_name=modelName, cluster_method='ts-kmeans', n_cluster=30)
+vame.behavior_quantification(config, model_name=modelName, cluster_method='kmeans', n_cluster=15)
 #Plot transition matrices
 files = os.listdir(os.path.join(projectPath, 'results/'))
 n_cluster=10
 plot_transitions(config, files, n_cluster, modelName, cluster_method='kmeans')
+
+###NEW COMMUNITY PLOTTING
+
+vame.pose_segmentation(config)
+
+import matplotlib
+matplotlib.use('Qt5Agg')
+vame.community(config, show_umap=False)
+
+
 
 ###Run groupwise comparisons
 ctrl_mice = ['C1-RT', 'C3-RB', 'C5-NP', 'C5-RT', 'C9_LT', 'C12_NP', 'C13_RT', 'C14_LT', 'C14_LB', 'C15_RT', 'C16_RB']
