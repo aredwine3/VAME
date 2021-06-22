@@ -15,14 +15,8 @@ from pathlib import Path
 
 import torch
 import scipy.signal
-import matplotlib.pyplot as plt
-import seaborn as sn
-
 from sklearn import mixture
 from sklearn.cluster import KMeans
-from tslearn.clustering import TimeSeriesKMeans
-from tslearn.utils import to_time_series_dataset
-import multiprocessing
 
 from vame.util.auxiliary import read_config
 from vame.model.rnn_vae import RNN_VAE
@@ -40,10 +34,7 @@ def kmeans_clustering(context, n_clusters):
     kmeans = KMeans(init='k-means++',n_clusters=n_clusters, random_state=42,n_init=15).fit(context)
     return kmeans.predict(context)
 
-def ts_kmeans_clustering(context, n_clusters):
-    tskmeans = TimeSeriesKMeans(init='k-means++', n_clusters=n_clusters, metric='n_init=1 dtw', n_jobs=multiprocessing.cpu_count()-1, random_state=42, verbose=1, max_iter=10, n_init=1).fit(context)
-    return tskmeans.predict(context)
-    
+
 def gmm_clustering(context,n_components):
     GMM = mixture.GaussianMixture
     gmm = GMM(n_components=n_components,covariance_type='full').fit(context)
@@ -94,7 +85,8 @@ def behavior_segmentation(config, model_name=None, cluster_method='kmeans', n_cl
     cluster_latent_space(cfg, files, z, z_logger, cluster_method, n_cluster, model_name)
 
 
-def temporal_quant(cfg, model_name, files, use_gpu, cluster_method='kmeans'):
+def temporal_quant(cfg, model_name, files, use_gpu):
+
     SEED = 19
     ZDIMS = cfg['zdims']
     FUTURE_DECODER = cfg['prediction_decoder']
@@ -110,7 +102,6 @@ def temporal_quant(cfg, model_name, files, use_gpu, cluster_method='kmeans'):
     dropout_rec = cfg['dropout_rec']
     dropout_pred = cfg['dropout_pred']
     temp_win = int(TEMPORAL_WINDOW/2)
-    n_cluster=cfg['n_cluster']
 
     if use_gpu:
         torch.cuda.manual_seed(SEED)
@@ -154,25 +145,24 @@ def temporal_quant(cfg, model_name, files, use_gpu, cluster_method='kmeans'):
         window_start = int(temp_win/2)
         idx = int(temp_win/2)
         x_decoded = []
-        
-        if os.path.exists(PROJECT_PATH + '/results/' + file + '/' + model_name + '/' + cluster_method + '-' + str(n_cluster) + '/'  +'latent_vector_' + file + '.npy'):
-            z_temp = np.load(PROJECT_PATH + '/results/' + file + '/' + model_name + '/' + cluster_method + '-' + str(n_cluster) + '/' + 'latent_vector_' + file + '.npy')
-            print("Loaded latent space from " + PROJECT_PATH + '/results/' + file + '/' + model_name + '/' + cluster_method + '-' + str(n_cluster) + '/' + 'latent_vector_' + file + '.npy')
-        else:
-            with torch.no_grad(): 
-                for i in range(num_frames):
-                    if idx >= num_frames:
-                        break
-                    data = X[:,idx-window_start:idx+window_start]
-                    data = np.reshape(data, (1,temp_win,NUM_FEATURES))
+
+        with torch.no_grad():
+            for i in range(num_frames):
+                if idx >= num_frames:
+                    break
+                data = X[:,idx-window_start:idx+window_start]
+                data = np.reshape(data, (1,temp_win,NUM_FEATURES))
+                if use_gpu:
                     dataTorch = torch.from_numpy(data).type(torch.FloatTensor).cuda()
-                    h_n = model.encoder(dataTorch)
-                    latent, _, _ = model.lmbda(h_n)
-                    z = latent.cpu().data.numpy()
-                    x_decoded.append(z)
-                    idx += 1
-                    
-            z_temp = np.concatenate(x_decoded,axis=0)    
+                else:
+                    dataTorch = torch.from_numpy(data).type(torch.FloatTensor).to()
+                h_n = model.encoder(dataTorch)
+                latent, _, _ = model.lmbda(h_n)
+                z = latent.cpu().data.numpy()
+                x_decoded.append(z)
+                idx += 1
+
+        z_temp = np.concatenate(x_decoded,axis=0)
         logger_temp = len(z_temp)
         logger += logger_temp
         z_list.append(z_temp)
@@ -191,13 +181,7 @@ def cluster_latent_space(cfg, files, z_data, z_logger, cluster_method, n_cluster
             data_labels = kmeans_clustering(z_data, n_clusters=cluster)
             data_labels = np.int64(scipy.signal.medfilt(data_labels, cfg['median_filter']))
 
-        elif cluster_method == 'ts-kmeans':
-            print('Behavior segmentation via TimeSeriesKMeans for %d cluster.' %cluster)
-            z_data = to_time_series_dataset(z_data)
-            data_labels = ts_kmeans_clustering(z_data, n_clusters=cluster)
-            data_labels = np.int64(scipy.signal.medfilt(data_labels, cfg['median_filter']))           
-
-        elif cluster_method == 'GMM':
+        if cluster_method == 'GMM':
             print('Behavior segmentation via GMM.')
             data_labels = gmm_clustering(z_data, n_components=cluster)
             data_labels = np.int64(scipy.signal.medfilt(data_labels, cfg['median_filter']))
@@ -215,40 +199,14 @@ def cluster_latent_space(cfg, files, z_data, z_logger, cluster_method, n_cluster
             if cluster_method == 'kmeans':
                 np.save(save_data+cluster_method+'-'+str(cluster)+'/'+str(cluster)+'_km_label_'+file, labels)
                 np.save(save_data+cluster_method+'-'+str(cluster)+'/'+'latent_vector_'+file, z_latent)
-            elif cluster_method == 'ts-kmeans':
-                np.save(save_data+cluster_method+'-'+str(cluster)+'/'+str(cluster)+'_ts-kmeans_label_'+file, labels)
-                np.save(save_data+cluster_method+'-'+str(cluster)+'/'+'latent_vector_'+file, z_latent)
-                
-            elif cluster_method == 'GMM':
+
+            if cluster_method == 'GMM':
                 np.save(save_data+cluster_method+'-'+str(cluster)+'/'+str(cluster)+'_gmm_label_'+file, labels)
                 np.save(save_data+cluster_method+'-'+str(cluster)+'/'+'latent_vector_'+file, z_latent)
-                
-            elif cluster_method == 'all':
+
+            if cluster_method == 'all':
                 np.save(save_data+cluster_method+'-'+str(cluster)+'/'+str(cluster)+'_km_label_'+file, labels)
                 np.save(save_data+cluster_method+'-'+str(cluster)+'/'+str(cluster)+'_gmm_label_'+file, labels)
                 np.save(save_data+cluster_method+'-'+str(cluster)+'/'+'latent_vector_'+file, z_latent)
-
-            np.save(save_data+cluster_method+'-'+str(cluster)+'/'+'z_logger_' +file, z_logger)
-            np.save(save_data +'latent_vector_'+file, z_latent)
-
-
-def plot_transitions(config, files, n_cluster, model_name, cluster_method='kmeans', rename=None):
-    config_file = Path(config).resolve()
-    cfg = read_config(config_file)
-    PROJECT_PATH = cfg['project_path']
-    for file in files:
-        if file.endswith('.mp4'):
-            f, e = os.path.splitext(file)
-            if rename:
-                suffix=f.split('_')[-1]
-                f = f.replace(suffix, rename[suffix])
-            tm = np.load(os.path.join(PROJECT_PATH, 'results/' + f + '/' + model_name + '/' + cluster_method + '-' + str(n_cluster) + '/behavior_quantification/' + 'transition_matrix.npy'))
-            fig = plt.figure(figsize=(15,10))
-            fig.suptitle("Transition matrix of {} behaviors".format(tm.shape[0]))
-            sn.heatmap(tm, annot=True)
-            plt.xlabel("Next frame behavior")
-            plt.ylabel("Current frame behavior")
-            plt.show()
-            fig.savefig(os.path.join(PROJECT_PATH, 'results/' + f + '/' + model_name + '/' + cluster_method + '-' + str(n_cluster) + '/behavior_quantification/' + file + '_transitionMatrix.svg'))
-    return tm
-
+                
+            
