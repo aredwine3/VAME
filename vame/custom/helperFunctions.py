@@ -37,11 +37,7 @@ def makeEgocentricCSV(h5Path, bodyPart):
     for bp in bodyParts_norm: #normalize bodyparts by subtracting one from all 
         df_ego[(scorerName, bp, 'x')] = df_ego[(scorerName, bp, 'x')] - df_ego[(scorerName, bodyPart, 'x')] #for x position
         df_ego[(scorerName, bp, 'y')] = df_ego[(scorerName, bp, 'y')] - df_ego[(scorerName, bodyPart, 'y')] #for y position
-<<<<<<< HEAD
-=======
-    df_ego[(bodyPart, 'x')] = df_ego[(bodyPart, 'x')] - df_ego[(bodyPart, 'x')]  
-    df_ego[(bodyPart, 'y')] = df_ego[(bodyPart, 'y')] - df_ego[(bodyPart, 'y')]  
->>>>>>> d955e975b9d6ac701acedd6891d0c795320865b7
+
     if not os.path.exists(os.path.join(directory, 'egocentric/')):
         os.mkdir(os.path.join(directory, 'egocentric/'))
     df_ego.to_csv(os.path.join(directory, 'egocentric/' + f + '_egocentric.csv'))
@@ -93,17 +89,10 @@ def csv_to_numpy(projectPath, csvPath, pcutoff=.99):
         p-cutoff for likelihood, coordinates below this will be set to NaN.
     """
 
-<<<<<<< HEAD
     # Read in your .csv file, skip the first two rows and create a numpy array
     data = pd.read_csv(csvPath, skiprows = 1)
     fileName = csvPath.split('/')[-1].split('DLC')[0]
     f, e = os.path.splitext(fileName)
-=======
-    fileName = csvPath.split('/')[-1].split('DLC')[0]
-    f, e = os.path.splitext(fileName)
-    # Read in your .csv file, skip the first two rows and create a numpy array
->>>>>>> d955e975b9d6ac701acedd6891d0c795320865b7
-    data = pd.read_csv(csvPath, skiprows = 1)
     data_mat = pd.DataFrame.to_numpy(data)
     data_mat = data_mat[:,1:] 
     
