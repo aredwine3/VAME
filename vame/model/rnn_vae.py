@@ -253,8 +253,8 @@ def train_model(config):
     TEMPORAL_WINDOW = cfg['time_window']*2
     FUTURE_DECODER = cfg['prediction_decoder']
     FUTURE_STEPS = cfg['prediction_steps']
-    STEP_SIZE = cfg['step_size']
-    GAMMA = cfg['gamma']
+    STEP_SIZE = cfg['scheduler_step_size']
+    GAMMA = cfg['scheduler_gamma']
     
     # RNN
     hidden_size_layer_1 = cfg['hidden_size_layer_1']
@@ -381,12 +381,6 @@ def train_model(config):
             print("Saving model snapshot!\n")
             torch.save(model.state_dict(), os.path.join(cfg['project_path'],'model','best_model','snapshots',model_name+'_'+cfg['Project']+'_epoch_'+str(epoch)+'.pkl'))
 
-        if not optimizer_scheduler:
-            if convergence == STEP_SIZE:
-                LEARNING_RATE = LEARNING_RATE*GAMMA
-                optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE, amsgrad=True)
-                print("Decreasing Learning Rate To: " + str(LEARNING_RATE))
-        
         # save logged losses
         np.save(os.path.join(cfg['project_path'],'model','model_losses','train_losses_'+model_name), train_losses)
         np.save(os.path.join(cfg['project_path'],'model','model_losses','test_losses_'+model_name), test_losses)
