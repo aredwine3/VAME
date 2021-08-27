@@ -14,7 +14,6 @@ from vame.util.auxiliary import read_config
 from scipy.stats import ttest_ind
 from statsmodels.stats.multitest import multipletests
 
-
 def listBodyParts(config):
     cfg = read_config(config)
     projectPath = cfg['project_path']
