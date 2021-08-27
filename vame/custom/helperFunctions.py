@@ -9,12 +9,25 @@ Created on Wed May 20 13:52:04 2020
 import numpy as np
 import pandas as pd
 import os
-os.chdir('/d1/studies/VAME')
 from pathlib import Path
 from vame.util.auxiliary import read_config
 from scipy.stats import ttest_ind
 from statsmodels.stats.multitest import multipletests
 
+
+def listBodyParts(config):
+    cfg = read_config(config)
+    projectPath = cfg['project_path']
+    dataPath = os.path.join(projectPath, 'videos/pose_estimation/')
+    dataFiles = os.listdir(dataPath)
+    df = pd.read_csv(os.path.join(dataPath, dataFiles[0]), index_col=0, header=[0,1,2])
+    cols = df.columns.tolist()
+    bodyParts = []
+    for col in cols:
+        bp = col[1]
+        bodyParts.append(bp)
+    bodyParts = list(set(bodyParts))
+    return bodyParts
 
 def makeEgocentricCSV(h5Path, bodyPart):
     """Docstring:
@@ -406,7 +419,8 @@ def selectLimbs(projectPath, suffix):
         df.to_csv(os.path.join(projectPath, 'videos/pose_estimation/' + f + suffix + '.csv'))
 
 
-def dropBodyParts(projectPath, bodyParts):
+
+def dropBodyParts(config, bodyParts):
     """
     Drops specified body parts from CSV file. Creates a new folder called 'original/' and saves original CSVs there,
     and overwrites the CSV in projectPath.
@@ -419,24 +433,30 @@ def dropBodyParts(projectPath, bodyParts):
     bodyParts : list
         List of bodyparts to drop.
     """
+    cfg = read_config(config)
+    projectPath=cfg['project_path']
     poseFiles = os.listdir(os.path.join(projectPath, 'videos/pose_estimation/'))
     if not os.path.exists(os.path.join(projectPath, 'videos/pose_estimation/original/')):
         os.mkdir(os.path.join(projectPath, 'videos/pose_estimation/original/'))
     for file in poseFiles:
-        if file.endswith('.csv'):
+        if file.endswith('.csv') and not file.startswith('.'):
             fullpath = os.path.join(projectPath, 'videos/pose_estimation/' + file)
-            f, e = os.path.splitext(file)
-            df = pd.read_csv(fullpath, header=[0,1,2], index_col=0)
-            df.to_csv(os.path.join(projectPath, 'videos/pose_estimation/original/', file))
-            dropList = []
-            scorer=df.columns[0][0]
-            for part in bodyParts:
-                tup1 = (scorer, part, 'x')
-                tup2 = (scorer, part, 'y')
-                tup3 = (scorer, part, 'likelihood')
-                dropList.append(tup1)
-                dropList.append(tup2)
-                dropList.append(tup3)
-            df.drop(labels=dropList, axis=1, inplace=True)
-            df.to_csv(os.path.join(projectPath, 'videos/pose_estimation/' + file))
+            if not os.path.exists(os.path.join(projectPath, 'videos/pose_estimation/original/', file)):
+                f, e = os.path.splitext(file)
+                df = pd.read_csv(fullpath, header=[0,1,2], index_col=0)
+                df.to_csv(os.path.join(projectPath, 'videos/pose_estimation/original/', file))
+                dropList = []
+                scorer=df.columns[0][0]
+                if not isinstance(bodyParts, list):
+                    bodyParts = [bodyParts]
+                for part in bodyParts:
+                    tup1 = (scorer, part, 'x')
+                    tup2 = (scorer, part, 'y')
+                    tup3 = (scorer, part, 'likelihood')
+                    dropList.append(tup1)
+                    dropList.append(tup2)
+                    dropList.append(tup3)
+                df.drop(labels=dropList, axis=1, inplace=True)
+                df.to_csv(os.path.join(projectPath, 'videos/pose_estimation/' + file))
+
 
