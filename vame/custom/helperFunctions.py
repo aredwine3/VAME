@@ -418,8 +418,6 @@ def selectLimbs(projectPath, suffix):
         df.columns=ind
         df.to_csv(os.path.join(projectPath, 'videos/pose_estimation/' + f + suffix + '.csv'))
 
-
-
 def dropBodyParts(config, bodyParts):
     """
     Drops specified body parts from CSV file. Creates a new folder called 'original/' and saves original CSVs there,
@@ -458,5 +456,4 @@ def dropBodyParts(config, bodyParts):
                     dropList.append(tup3)
                 df.drop(labels=dropList, axis=1, inplace=True)
                 df.to_csv(os.path.join(projectPath, 'videos/pose_estimation/' + file))
-
 
