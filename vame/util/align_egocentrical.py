@@ -302,14 +302,11 @@ def alignment(path_to_file, filename, pose_ref_index, video_format, crop_size, c
     frames, n, time_series = align_mouse(path_to_file, filename, video_format, crop_size, pose_list, pose_ref_index,
                                          confidence, pose_flip_ref, bg, frame_count, use_video)
     
-    if check_video:
-        play_aligned_video(frames, n, frame_count)
-
     if check_video and not save:
-        play_aligned_video(frames, n, frame_count)
+        play_aligned_video(frames, n, frame_count, path_to_file)
     elif check_video and save:
         play_aligned_video(frames, n, frame_count, path_to_file, filename=filename, crop_size=crop_size, save=True)
-        
+
     return time_series, frames
 
 
