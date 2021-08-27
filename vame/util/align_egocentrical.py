@@ -223,9 +223,19 @@ def align_mouse(path_to_file,filename,video_format,crop_size, pose_list,
 
 
 #play aligned video
-def play_aligned_video(a, n, frame_count):
+def play_aligned_video(a, n, frame_count, path_to_file, filename=None, crop_size=None, save=False):
     colors = [(255,0,0),(0,255,0),(0,0,255),(255,255,0),(255,0,255),(0,255,255),(0,0,0),(255,255,255)]
-    
+    if not os.path.exists(os.path.join(path_to_file, 'egocentricVideos/')):
+        os.mkdir(os.path.join(path_to_file, 'egocentricVideos/'))
+    if save:
+        fourcc = cv.VideoWriter_fourcc(*'mp4v')
+        writer = cv.VideoWriter(
+            os.path.join(os.path.join(path_to_file, 'egocentricVideos/' + filename + '.mp4')), 
+            fourcc, 
+            30.0, 
+            crop_size,
+            isColor=True
+        )
     for i in range(frame_count):
         # Capture frame-by-frame
         ret, frame = True,a[i]
@@ -237,20 +247,23 @@ def play_aligned_video(a, n, frame_count):
           
           for c,j in enumerate(n[i]):
               cv.circle(im_color,(j[0], j[1]), 5, colors[c], -1)
-          
-          cv.imshow('Frame',im_color)
-          
-          # Press Q on keyboard to  exit
-          if cv.waitKey(25) & 0xFF == ord('q'):
-            break
+              
+          if not save:
+              cv.imshow('Frame',im_color)
+              if cv.waitKey(25) & 0xFF == ord('q'): # Press Q on keyboard to  exit
+                  break
+          elif save:
+              writer.write(im_color)    
         
         # Break the loop
         else: 
             break
+    if save:
+        writer.release()
     cv.destroyAllWindows()
 
 
-def alignment(path_to_file, filename, pose_ref_index, video_format, crop_size, confidence, use_video=False, check_video=False):
+def alignment(path_to_file, filename, pose_ref_index, video_format, crop_size, confidence, use_video=False, check_video=False, save=False):
     
     #read out data
     data = pd.read_csv(os.path.join(path_to_file,'videos','pose_estimation',filename+'.csv'), skiprows = 2)
@@ -291,11 +304,16 @@ def alignment(path_to_file, filename, pose_ref_index, video_format, crop_size, c
     
     if check_video:
         play_aligned_video(frames, n, frame_count)
+
+    if check_video and not save:
+        play_aligned_video(frames, n, frame_count)
+    elif check_video and save:
+        play_aligned_video(frames, n, frame_count, path_to_file, filename=filename, crop_size=crop_size, save=True)
         
     return time_series, frames
 
 
-def egocentric_alignment(config, pose_ref_index=[0,5], crop_size=(300,300), use_video=False, video_format='.mp4', check_video=False):
+def egocentric_alignment(config, pose_ref_index=[0,5], crop_size=(300,300), use_video=False, video_format='.mp4', check_video=False, save=False):
     """ Happy aligning """
     #config parameters
     config_file = Path(config).resolve()
@@ -311,7 +329,7 @@ def egocentric_alignment(config, pose_ref_index=[0,5], crop_size=(300,300), use_
     for file in filename:
         print("Aligning data %s, Pose confidence value: %.2f" %(file, confidence))
         egocentric_time_series, frames = alignment(path_to_file, file, pose_ref_index, video_format, crop_size, 
-                                                   confidence, use_video=use_video, check_video=check_video)
+                                                   confidence, use_video=use_video, check_video=check_video, save=save)
         np.save(os.path.join(path_to_file,'data',file,file+'-PE-seq.npy'), egocentric_time_series)
 #        np.save(os.path.join(path_to_file,'data/',file,"",file+'-PE-seq.npy', egocentric_time_series))
         

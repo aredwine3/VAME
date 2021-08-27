@@ -27,6 +27,7 @@ from vame.model.rnn_model import RNN_VAE, RNN_VAE_LEGACY
 # make sure torch uses cuda for GPU computing
 use_gpu = torch.cuda.is_available()
 if use_gpu:
+    torch.set_default_tensor_type('torch.cuda.FloatTensor')
     print("Using CUDA")
     print('GPU active:',torch.cuda.is_available())
     print('GPU used:',torch.cuda.get_device_name(0))
@@ -109,8 +110,8 @@ def train(train_loader, epoch, model, optimizer, anneal_function, BETA, kl_start
         data_item = data_item.permute(0,2,1)
 
         if use_gpu:
-            data = data_item[:,:seq_len_half,:].type('torch.FloatTensor').cuda()
-            fut = data_item[:,seq_len_half:seq_len_half+future_steps,:].type('torch.FloatTensor').cuda()
+            data = data_item[:,:seq_len_half,:].type('torch.cuda.FloatTensor')
+            fut = data_item[:,seq_len_half:seq_len_half+future_steps,:].type('torch.cuda.FloatTensor')
         else:
             data = data_item[:,:seq_len_half,:].type('torch.FloatTensor').to()
             fut = data_item[:,seq_len_half:seq_len_half+future_steps,:].type('torch.FloatTensor').to()
@@ -128,7 +129,7 @@ def train(train_loader, epoch, model, optimizer, anneal_function, BETA, kl_start
             kl_loss = kullback_leibler_loss(mu, logvar)
             kl_weight = kl_annealing(epoch, kl_start, annealtime, anneal_function)
             loss = rec_loss + fut_rec_loss + BETA*kl_weight*kl_loss + kl_weight*kmeans_loss
-            fut_loss += fut_rec_loss.item()
+            fut_loss += fut_rec_loss.detach()#.item()
 
         else:
             data_tilde, latent, mu, logvar = model(data_gaussian)
@@ -180,7 +181,7 @@ def test(test_loader, epoch, model, optimizer, BETA, kl_weight, seq_len, mse_red
             data_item = Variable(data_item)
             data_item = data_item.permute(0,2,1)
             if use_gpu:
-                data = data_item[:,:seq_len_half,:].type('torch.FloatTensor').cuda()
+                data = data_item[:,:seq_len_half,:].type('torch.cuda.FloatTensor')
             else:
                 data = data_item[:,:seq_len_half,:].type('torch.FloatTensor').to()
 
@@ -321,8 +322,8 @@ def train_model(config):
     trainset = SEQUENCE_DATASET(os.path.join(cfg['project_path'],"data", "train",""), data='train_seq.npy', train=True, temporal_window=TEMPORAL_WINDOW)
     testset = SEQUENCE_DATASET(os.path.join(cfg['project_path'],"data", "train",""), data='test_seq.npy', train=False, temporal_window=TEMPORAL_WINDOW)
 
-    train_loader = Data.DataLoader(trainset, batch_size=TRAIN_BATCH_SIZE, shuffle=True, drop_last=True)
-    test_loader = Data.DataLoader(testset, batch_size=TEST_BATCH_SIZE, shuffle=True, drop_last=True)
+    train_loader = Data.DataLoader(trainset, batch_size=TRAIN_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4)
+    test_loader = Data.DataLoader(testset, batch_size=TEST_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE, amsgrad=True)
 
