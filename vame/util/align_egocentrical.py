@@ -408,6 +408,7 @@ def egocentric_alignment(config, pose_ref_index=[0,5], crop_size=(300,300), use_
     
     path_to_file = cfg['project_path']
     filename = cfg['video_sets']
+    confidence=cfg['pose_confidence']
     video_format=video_format
     crop_size=crop_size
     

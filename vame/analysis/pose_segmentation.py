@@ -92,17 +92,6 @@ def consecutive(data, stepsize=1):
 def get_motif_usage(label, n_cluster):
     motif_usage = np.unique(label, return_counts=True)
     cons = consecutive(motif_usage[0])
-   # if len(cons) != 1:
-   #     usage_list = list(motif_usage[1])
-   #     for i in range(len(cons)-1):
-   #         a = cons[i+1][0]
-   #         b = cons[i][-1]
-   #         d = (a-b)-1
-   #        for j in range(1,d+1):
-   #            index = cons[i][-1]+j
-   #             usage_list.insert(index,0)
-   #     usage = np.array(usage_list)
-   #     motif_usage = usage
     if len(cons) != 1:
         used_motifs = list(motif_usage[0])
         usage_list = list(motif_usage[1])   
@@ -110,8 +99,7 @@ def get_motif_usage(label, n_cluster):
             if i not in used_motifs:
                 used_motifs.insert(i, i)
                 usage_list.insert(i,0)
-        usage = np.array(usage_list)
-        motif_usage = usage
+        motif_usage = np.array(usage_list)
     else:
         motif_usage = motif_usage[1]
     

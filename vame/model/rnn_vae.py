@@ -19,6 +19,7 @@ import os
 import numpy as np
 import pandas as pd
 from pathlib import Path
+import time
 
 from vame.util.auxiliary import read_config
 from vame.model.dataloader import SEQUENCE_DATASET
@@ -157,9 +158,11 @@ def train(train_loader, epoch, model, optimizer, anneal_function, BETA, kl_start
     scheduler.step(loss) #be sure scheduler is called before optimizer in >1.1 pytorch
 
     if future_decoder:
+        print(time.strftime('%H:%M:%S'))
         print('Train loss: {:.3f}, MSE-Loss: {:.3f}, MSE-Future-Loss {:.3f}, KL-Loss: {:.3f}, Kmeans-Loss: {:.3f}, weight: {:.2f}'.format(train_loss / idx,
               mse_loss /idx, fut_loss/idx, BETA*kl_weight*kullback_loss/idx, kl_weight*kmeans_losses/idx, kl_weight))
     else:
+        print(time.strftime('%H:%M:%S'))
         print('Train loss: {:.3f}, MSE-Loss: {:.3f}, KL-Loss: {:.3f}, Kmeans-Loss: {:.3f}, weight: {:.2f}'.format(train_loss / idx,
               mse_loss /idx, BETA*kl_weight*kullback_loss/idx, kl_weight*kmeans_losses/idx, kl_weight))
 
@@ -302,7 +305,7 @@ def train_model(config):
     torch.manual_seed(SEED)
     if CUDA:
         torch.cuda.manual_seed(SEED)
-        model = RNN(TEMPORAL_WINDOW,ZDIMS,NUM_FEATURES,FUTURE_DECODER,FUTURE_STEPS, hidden_size_layer_1,
+        model = (TEMPORAL_WINDOW,ZDIMS,NUM_FEATURES,FUTURE_DECODER,FUTURE_STEPS, hidden_size_layer_1,
                         hidden_size_layer_2, hidden_size_rec, hidden_size_pred, dropout_encoder,
                         dropout_rec, dropout_pred, softplus).cuda()
     else: #cpu support ...
@@ -348,10 +351,10 @@ def train_model(config):
         current_loss, test_loss, test_list = test(test_loader, epoch, model, optimizer,
                                                   BETA, weight, TEMPORAL_WINDOW, MSE_REC_REDUCTION,
                                                   KMEANS_LOSS, KMEANS_LAMBDA, FUTURE_DECODER, TEST_BATCH_SIZE)
-
-        if epoch % scheduler_step_size == 0 and epoch != 0:
-            for param_group in optimizer.param_groups:
-                print('learning rate update: {}'.format(param_group['lr']))
+        if not optimizer_scheduler:
+            if epoch % scheduler_step_size == 0 and epoch != 0:
+                for param_group in optimizer.param_groups:
+                    print('learning rate update: {}'.format(param_group['lr']))
         # logging losses
         train_losses.append(train_loss)
         test_losses.append(test_loss)
