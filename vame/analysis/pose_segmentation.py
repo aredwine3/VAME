@@ -66,7 +66,7 @@ def embedd_latent_vectors(cfg, files, model, legacy):
     latent_vector_files = [] 
 
     for file in files:
-        print('Embedd latent vector for file %s' %file)
+        print('Embed latent vector for file %s' %file)
         data = np.load(os.path.join(project_path,'data',file,file+'-PE-seq-clean.npy'))
         latent_vector_list = []
         with torch.no_grad(): 

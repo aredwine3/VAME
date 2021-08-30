@@ -73,6 +73,7 @@ def create_config_template():
     scheduler:
     scheduler_step_size:
     scheduler_gamma:
+    scheduler_threshold:
     softplus: 
     \n
 # Segmentation:
@@ -239,6 +240,7 @@ def update_config(config):
         cfg_file['random_state'] = 42
         cfg_file['num_points'] = 30000
         cfg_file['scheduler_gamma'] = 0.2
+        cfg_file['scheduler_threshold'] = .0001
         cfg_file['softplus'] = False
         cfg_file['pose_confidence'] = 0.99
         cfg_file['iqr_factor'] = 4

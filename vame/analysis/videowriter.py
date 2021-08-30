@@ -17,7 +17,7 @@ import tqdm
 from vame.util.auxiliary import read_config
 import glob
 
-def get_cluster_vid(cfg, path_to_file, file, n_cluster, cluster_method='kmeans', rename=None):
+def get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag, fps=25, cluster_method='kmeans', rename=None):
     print("Videos get created for "+file+" ...")
     if cluster_method == 'kmeans':
         labels = np.load(glob.glob(path_to_file+'/'+str(n_cluster)+'_km_label_'+'*.npy')[0])
@@ -32,15 +32,16 @@ def get_cluster_vid(cfg, path_to_file, file, n_cluster, cluster_method='kmeans',
             vidpath = glob.glob(path_to_file+'/'+str(n_cluster)+file.split('Jan')[0]+'2021-01*.mp4')[0]
             capture = cv.VideoCapture(vidpath)
     elif not rename:
-        capture = cv.VideoCapture(cfg['project_path']+'videos/'+file+'.mp4')
+      capture = cv.VideoCapture(os.path.join(cfg['project_path'],"videos",file+videoType))  
 
     if capture.isOpened():
         width  = capture.get(cv.CAP_PROP_FRAME_WIDTH)
         height = capture.get(cv.CAP_PROP_FRAME_HEIGHT)
 #        print('width, height:', width, height)
 
-        fps = 25#capture.get(cv.CAP_PROP_FPS)
-#        print('fps:', fps)
+       # fps = 25#capture.get(cv.CAP_PROP_FPS)
+    else:
+        raise EnvironmentError("Could not open OpenCV capture device.")
 
     cluster_start = cfg['time_window'] / 2
     for cluster in range(n_cluster):
@@ -70,7 +71,7 @@ def get_cluster_vid(cfg, path_to_file, file, n_cluster, cluster_method='kmeans',
     capture.release()
 
 
-def motif_videos(config, model_name, cluster_method="kmeans", n_cluster=[30], rename=None):
+def motif_videos(config, model_name, videoType='.mp4', fps=25, cluster_method="kmeans", rename=None):
     config_file = Path(config).resolve()
     cfg = read_config(config_file)
     model_name = cfg['model_name']
@@ -99,29 +100,34 @@ def motif_videos(config, model_name, cluster_method="kmeans", n_cluster=[30], re
     else:
         files.append(all_flag)
         
-    for cluster in n_cluster:
-        print("Cluster size %d " %cluster)
+    for cluster in range(n_cluster):
+        print("Cluster size is: %d " %n_cluster)
         if rename:
             for file in files:
                 suffix=file.split('_')[-1]
                 file = file.replace(suffix, rename[suffix])
 
-                path_to_file=cfg['project_path']+'results/'+file+'/'+model_name+'/'+cluster_method+'-'+str(cluster)
-                
-                if not os.path.exists(path_to_file+'/cluster_videos/'):
-                        os.mkdir(path_to_file+'/cluster_videos/')
-
-                get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag, cluster_method=cluster_method, rename=rename)
-
+                path_to_file=os.path.join(cfg['project_path'], 'results/',file,model_name,cluster_method+'-'+str(n_cluster),'')
+                if not os.path.exists(os.path.join(path_to_file,"cluster_videos",file+'-motif_%d.avi' %cluster)):
+                    if not os.path.exists(path_to_file+'/cluster_videos/'):
+                            os.mkdir(path_to_file+'/cluster_videos/')
+    
+                    get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag, fps=fps, cluster_method=cluster_method, rename=rename)
+                else:
+                    print("Video for cluster %d already exists, skipping..." %cluster)
         elif not rename:
             for file in files:
-                path_to_file=cfg['project_path']+'results/'+file+'/'+model_name+'/'+cluster_method+'-'+str(cluster)
+                path_to_file=os.path.join(cfg['project_path'], 'results/',file,model_name,cluster_method+'-'+str(n_cluster),'')
                 
-                if not os.path.exists(path_to_file+'/cluster_videos/'):
-                        os.mkdir(path_to_file+'/cluster_videos/')
-
-            get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag, cluster_method=cluster_method)
+                if not os.path.exists(os.path.join(path_to_file,"cluster_videos",file+'-motif_%d.avi' %cluster)):
+                    if not os.path.exists(path_to_file+'/cluster_videos/'):
+                            os.mkdir(path_to_file+'/cluster_videos/')
     
+                        
+                    get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag, fps=fps, cluster_method=cluster_method, rename=None)
+                else:
+                    print("Video for cluster %d already exists, skipping..." %cluster)
+
     print("All videos have been created!")
     
     
