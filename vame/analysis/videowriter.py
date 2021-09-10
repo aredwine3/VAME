@@ -17,6 +17,12 @@ import tqdm
 from vame.util.auxiliary import read_config
 import glob
 
+
+def consecutive(data, stepsize=1):
+    data = data[:]
+    return np.split(data, np.where(np.diff(data) != stepsize)[0]+1)
+
+
 def get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag, fps=25, cluster_method='kmeans', rename=None):
     print("Videos get created for "+file+" ...")
     if cluster_method == 'kmeans':
@@ -122,7 +128,6 @@ def motif_videos(config, model_name, videoType='.mp4', fps=25, cluster_method="k
                 if not os.path.exists(os.path.join(path_to_file,"cluster_videos",file+'-motif_%d.avi' %cluster)):
                     if not os.path.exists(path_to_file+'/cluster_videos/'):
                             os.mkdir(path_to_file+'/cluster_videos/')
-    
                         
                     get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag, fps=fps, cluster_method=cluster_method, rename=None)
                 else:

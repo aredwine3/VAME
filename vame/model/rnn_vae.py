@@ -257,8 +257,6 @@ def train_model(config):
     TEMPORAL_WINDOW = cfg['time_window']*2
     FUTURE_DECODER = cfg['prediction_decoder']
     FUTURE_STEPS = cfg['prediction_steps']
-    STEP_SIZE = cfg['scheduler_step_size']
-    GAMMA = cfg['scheduler_gamma']
     
     # RNN
     hidden_size_layer_1 = cfg['hidden_size_layer_1']
@@ -298,15 +296,16 @@ def train_model(config):
     learn_rates = []
     conv_counter = []
 
+    torch.manual_seed(SEED)
+
     if legacy == False:
         RNN = RNN_VAE
     else:
         RNN = RNN_VAE_LEGACY
     
-    torch.manual_seed(SEED)
     if CUDA:
         torch.cuda.manual_seed(SEED)
-        model = (TEMPORAL_WINDOW,ZDIMS,NUM_FEATURES,FUTURE_DECODER,FUTURE_STEPS, hidden_size_layer_1,
+        model = RNN(TEMPORAL_WINDOW,ZDIMS,NUM_FEATURES,FUTURE_DECODER,FUTURE_STEPS, hidden_size_layer_1,
                         hidden_size_layer_2, hidden_size_rec, hidden_size_pred, dropout_encoder,
                         dropout_rec, dropout_pred, softplus).cuda()
     else: #cpu support ...
@@ -333,7 +332,7 @@ def train_model(config):
 
     if optimizer_scheduler:
         print('Scheduler step size: %d, Scheduler gamma: %.2f, Scheduler Threshold: %.5f\n' %(scheduler_step_size, cfg['scheduler_gamma'], scheduler_thresh))
-        scheduler = ReduceLROnPlateau(optimizer, 'min', factor=cfg['scheduler_gamma'], patience=cfg['scheduler_step_size'], threshold=scheduler_thresh, threshold_mode='rel')
+        scheduler = ReduceLROnPlateau(optimizer, 'min', factor=cfg['scheduler_gamma'], patience=cfg['scheduler_step_size'], threshold=scheduler_thresh, threshold_mode='rel', verbose=True)
     else:
         scheduler = StepLR(optimizer, step_size=scheduler_step_size, gamma=1, last_epoch=-1)
     
@@ -365,7 +364,6 @@ def train_model(config):
         mse_losses.append(mse_loss)
         fut_losses.append(fut_loss)
         learn_rates.append(LEARNING_RATE)
-        conv_counter.append(convergence)
         
         # save best model
         if weight > 0.99 and current_loss <= BEST_LOSS:
@@ -381,7 +379,7 @@ def train_model(config):
             convergence = 0
         else:
             convergence += 1
-
+        conv_counter.append(convergence)
         if epoch % SNAPSHOT == 0:
             print("Saving model snapshot!\n")
             torch.save(model.state_dict(), os.path.join(cfg['project_path'],'model','best_model','snapshots',model_name+'_'+cfg['Project']+'_epoch_'+str(epoch)+'.pkl'))

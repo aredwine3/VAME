@@ -64,8 +64,6 @@ def create_config_template():
     beta_norm:
     zdims:
     learning_rate:
-    step_size:
-    gamma:
     time_window: 
     prediction_decoder:
     prediction_steps:
@@ -113,13 +111,10 @@ def create_config_template():
     kmeans_lambda:
     anneal_function:
     kl_start:
-    annealtime
+    annealtime:
     \n
 # Legacy mode
     legacy: 
-
-    scheduler:
-    # set scheduler to 0 for manual learning rate descent (decrease lr by factor of gamma after step_size epochs without new best_loss).
 
     \n
     """

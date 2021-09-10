@@ -14,6 +14,8 @@ import numpy as np
 import networkx as nx
 import random
 from matplotlib import pyplot as plt
+import matplotlib
+matplotlib.use('Qt5Agg')
 
 def hierarchy_pos(G, root=None, width=.5, vert_gap = 0.2, vert_loc = 0, xcenter = 0.5):
 
