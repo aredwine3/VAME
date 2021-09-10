@@ -2,8 +2,7 @@
 ![workflow](https://github.com/LINCellularNeuroscience/VAME/blob/master/Images/workflow.png)
 
 # Release notes for this fork of VAME:
-
-
+* 09-10-21 - Merged in VAME 1.0 release. Main updates from the parent repository are a video writer at vame/custom/ACWS_videowriter.py that creates motif videos from the longest sequences for each motif, rather than the first frames of the motif. Also adds scheduler_stepsize, scheduler_gamma, and scheduler_threshold for torch ReduceLROnPlateau function.
 * 02-05-21 - Fixed the manual learning rate descent (see 12-8-20 update). To turn this feature on, set 'scheduler' in config.yaml to 0. Also added 'suffix' optional parameter to evaluate_model, allowing you to add a suffix to the future_reconstruction plots so as not to overwrite previously created plots, if they exist.
 * 12-10-20 - Added TimeSeriesKMeans cluster method. Also added a plot_transitions function to segment_behavior.py, to create .svg file with transition matrix plot. This adds the dependencies 'tslearn' and 'seaborn', both of which can be installed from conda-forge.
 * 02-05-21 - Fixed the manual learning rate descent (see 12-8-20 update). To turn this feature on, set 'scheduler' in config.yaml to 0. Also added 'suffix' optional parameter to evaluate_model, allowing you to add a suffix to the future_reconstruction plots so as not to overwrite previously created plots, if they exist.
