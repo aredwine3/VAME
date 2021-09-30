@@ -52,7 +52,6 @@ def get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag, fps=30,
     Returns
     -------
     None. Saves motif videos.
-        
     
     """
     
@@ -110,11 +109,11 @@ def get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag, fps=30,
             used_seqs = used_seqs[:vid_length]
             
         if flag == "motif":
-            output = os.path.join(path_to_file,"cluster_videos",file+'-motif_%d_longestSequences_binned.avi' %cluster)
+            output = os.path.join(path_to_file,"cluster_videos",file+'-motif_%d_longestSequences_binned'+str(bins)+'.avi' %cluster)
         elif flag == "community":
-            output = os.path.join(path_to_file,"community_videos",file+'-community_%d_longestSequences_binned.avi' %cluster)
+            output = os.path.join(path_to_file,"community_videos",file+'-community_%d_longestSequences_binned'+str(bins)+'.avi' %cluster)
             
-        if os.path.exists(os.path.join(path_to_file,"cluster_videos",file+'-motif_%d_longestSequences_binned.avi' %cluster)):
+        if os.path.exists(os.path.join(path_to_file,"cluster_videos",file+'-motif_%d_longestSequences_binned'+str(bins)+'.avi' %cluster)):
             print("Video for cluster %d already found, skipping..." %cluster)
             continue
         else:
@@ -135,7 +134,7 @@ def get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag, fps=30,
     capture.release()
 
 
-def motif_videos(config, model_name, videoType='.mp4', fps=25, bins=6, cluster_method="kmeans", rename=None):
+def motif_videos(config, model_name, videoType='.mp4', fps=25, bins=6, cluster_method="kmeans"):
     """Create custom motif videos. This differs from the function in the main vame repository in that 
     rather than the first frames 1000 frames (or whatever number assigned in config.yaml) of each cluster,
     motif videos will sample the longest sequential number of frames in the same behavioral cluster.
@@ -194,25 +193,13 @@ def motif_videos(config, model_name, videoType='.mp4', fps=25, bins=6, cluster_m
     else:
         files.append(all_flag)
         
-    if rename:
-        for file in files:
-            suffix=file.split('_')[-1]
-            file = file.replace(suffix, rename[suffix])
+    for file in files:
+        path_to_file=os.path.join(cfg['project_path'], 'results/',file,model_name,cluster_method+'-'+str(n_cluster),'')
+        
+        if not os.path.exists(path_to_file+'/cluster_videos/'):
+            os.mkdir(path_to_file+'/cluster_videos/')
 
-            path_to_file=os.path.join(cfg['project_path'], 'results/',file,model_name,cluster_method+'-'+str(n_cluster),'')
-            if not os.path.exists(path_to_file+'/cluster_videos/'):
-                os.mkdir(path_to_file+'/cluster_videos/')
-
-            get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag, fps=fps, bins=bins, cluster_method=cluster_method, rename=rename)
-
-    elif not rename:
-        for file in files:
-            path_to_file=os.path.join(cfg['project_path'], 'results/',file,model_name,cluster_method+'-'+str(n_cluster),'')
-            
-            if not os.path.exists(path_to_file+'/cluster_videos/'):
-                os.mkdir(path_to_file+'/cluster_videos/')
-
-            get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag, fps=fps, bins=bins, cluster_method=cluster_method, rename=None)
+        get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag, fps=fps, bins=bins, cluster_method=cluster_method)
 
     print("All videos have been created!")
     

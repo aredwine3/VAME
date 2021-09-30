@@ -11,8 +11,45 @@ import pandas as pd
 import os
 from pathlib import Path
 from vame.util.auxiliary import read_config
+from vame.analysis.behavior_structure import get_adjacency_matrix, get_transition_matrix
 from scipy.stats import ttest_ind
 from statsmodels.stats.multitest import multipletests
+import matplotlib.pyplot as plt
+import seaborn as sns
+import glob
+import shutil
+
+def trimFrames(directory, begin=1500, end=1500):
+    """Crop csv or data files within specific frames. Good for removing unuseful frames from beginning, end, or both.
+    
+    Parameters
+    ----------
+    directory : string
+        Path to directory containing data files to process.
+    startFrame : int (optional, default None)
+        Starting frame for trimmed data.
+    stopFrame : int (optional, default None)
+        Ending frame for trimmed data.
+    """
+    files = os.listdir(directory)
+    saveDir = os.path.join(directory, 'trimmedData/')
+    startFrame=begin
+    if not os.path.exists(saveDir):
+        os.mkdir(saveDir)
+    for f in files:
+        if f.endswith('.csv'):
+            n, e = os.path.splitext(f)
+            fullpath = os.path.join(directory, f)
+            df = pd.read_csv(fullpath, header = [0,1,2], index_col=0)
+            stopFrame=int(df.shape[0]-int(end))
+            df = df[startFrame:stopFrame]
+            df.to_csv(os.path.join(saveDir, n + '_trimmed.csv'))
+        elif f.endswith('.h5'):
+            n, e = os.path.splitext(f)
+            fullpath = os.path.join(directory, f)
+            df = pd.read_hdf(fullpath)
+            df = df[startFrame:stopFrame]
+            df.to_hdf(os.path.join(saveDir, n + '_trimmed.csv'), key='df_with_missing')
 
 def listBodyParts(config):
     cfg = read_config(config)
@@ -135,7 +172,7 @@ def csv_to_numpy(projectPath, csvPath, pcutoff=.99):
     # save the final_positions array with np.save()
     np.save(os.path.join(projectPath, 'data/' + f + '/' + f + "-PE-seq.npy"), final_positions)
 
-def combineBehavior(config, save=True, n_cluster=30):
+def combineBehavior(config, save=True, cluster_method='kmeans', legacy=False):
     """
     Docstring:
         Combines motif usage for all samples into one CSV file.
@@ -151,6 +188,8 @@ def combineBehavior(config, save=True, n_cluster=30):
     config_file = Path(config).resolve()
     cfg = read_config(config_file)
     project_path = cfg['project_path']
+    n_cluster=cfg['n_cluster']
+    model_name = cfg['model_name']
     files = []
     if cfg['all_data'] == 'No':
         all_flag = input("Do you want to write motif videos for your entire dataset? \n"
@@ -175,35 +214,36 @@ def combineBehavior(config, save=True, n_cluster=30):
     
     cat = pd.DataFrame()
     for file in files:
-        arr = np.load(os.path.join(project_path, 'results/' + file + '/VAME_NPW/kmeans-' + str(n_cluster) + '/behavior_quantification/motif_usage.npy'))
+        if legacy:
+            arr = np.load(os.path.join(project_path, 'results/' + file + '/VAME_NPW/kmeans-' + str(n_cluster) + '/behavior_quantification/motif_usage.npy'))
+        elif not legacy:
+            arr = np.load(os.path.join(project_path, 'results',file,model_name,cluster_method+'-'+str(n_cluster),'motif_usage_'+file+'.npy'))
         df = pd.DataFrame(arr, columns=[file])
         cat = pd.concat([cat, df], axis=1)
-
-    phases=[]
-    mice=[]
-    for col in cat.columns:
-        phase = col.split('_')[1]
-        phases.append(phase)
-        mouse = col.split('_')[0]
-        mice.append(mouse)
-    lz = list(zip(mice, phases))    
-    lz = sorted(lz)
-    joined = []
-    for pair in lz:
-        j = '_'.join(pair)
-        joined.append(j)
-    ind = sorted(lz)
-    ind = pd.MultiIndex.from_tuples(ind)
-    df2 = pd.DataFrame()
-    for sample in joined:
-        df2[sample] = cat[sample]
-    df2.columns=ind
-    
     if save:
-        df2.to_csv(os.path.join(project_path, 'results/Motif_Usage_Combined_' + str(n_cluster) + 'clusters.csv'))
-    return(df2)
+        cat.to_csv(os.path.join(project_path, 'CombinedMotifUsage.csv'))
+    return cat
 
-
+def parseIVSA(config, groups, presession=True):
+    config_file = Path(config).resolve()
+    cfg = read_config(config_file)
+    projectPath = cfg['project_path']
+    files = cfg['video_sets']
+    cat = combineBehavior(config)
+    for group in groups:
+        groupData=pd.DataFrame()
+        if presession:
+            preData = pd.DataFrame()
+        for file in files:
+            if group in file:
+                if not 'Presession' in file:
+                    groupData[file]=cat[file]
+                elif 'Presession' in file:
+                    preData[file]=cat[file]
+            groupData.to_csv(os.path.join(projectPath, group + '_MotifUsage.csv'))
+            if presession:
+                preData.to_csv(os.path.join(projectPath, 'Presession_'+group+'MotifUsage.csv'))
+                
 def extractResults(projectPath, expDate, group1, group2, modelName, n_clusters, cluster_method='kmeans', phases=None):
     """Docstring:
     Compares motif usage between two groups with t-test.
@@ -457,3 +497,42 @@ def dropBodyParts(config, bodyParts):
                 df.drop(labels=dropList, axis=1, inplace=True)
                 df.to_csv(os.path.join(projectPath, 'videos/pose_estimation/' + file))
 
+def plotAverageTransitionMatrices(config, group1, group2=None, g1name='Group1', g2name='Group2', cluster_method='kmeans'):
+    cfg = read_config(config)
+    projectPath = cfg['project_path']
+    n_cluster=cfg['n_cluster']
+    model_name=cfg['model_name']
+    resultDir = os.path.join(projectPath, 'results')    
+    g1tms = []
+    g2tms = []
+    files = cfg['video_sets']
+    for file in files:
+        if file in group1:
+            labels = np.load(os.path.join(resultDir, file, model_name, cluster_method+'-'+str(n_cluster), str(n_cluster)+'_km_label_'+file+'.npy'))
+            am, tm = get_adjacency_matrix(labels, n_cluster)
+            g1tms.append(tm)
+        if group2:
+         if file in group2:
+            labels = np.load(os.path.join(resultDir, file, model_name, cluster_method+'-'+str(n_cluster), str(n_cluster)+'_km_label_'+file+'.npy'))
+            am, tm = get_adjacency_matrix(labels, n_cluster)
+            g2tms.append(tm)
+    g1stack = np.stack(g1tms, axis=2)
+    g1ave = np.mean(g1stack, axis=2)
+    fig = plt.figure(figsize=(15,10))
+    sns.heatmap(g1ave, annot=True)
+    plt.xlabel("Next frame behavior", fontsize=16)
+    plt.ylabel("Current frame behavior", fontsize=16)
+    plt.title("Averaged Transition matrix of {} clusters".format(tm.shape[0]), fontsize=18)
+    fig.savefig(os.path.join(projectPath, g1name+'_AverageTransitionMatrix_' + str(n_cluster) + 'clusters_'+str(cluster_method)+'.png'), bbox_inches='tight')
+    print("Figure saved to " + os.path.join(projectPath, g1name+'_AverageTransitionMatrix_' + str(n_cluster) + 'clusters_'+str(cluster_method)+'.png'))
+    if group2:
+        g2stack = np.stack(g2tms, axis=2)
+        g2ave = np.mean(g2stack, axis=2)
+        fig = plt.figure(figsize=(15,10))
+        sns.heatmap(g2ave, annot=True)
+        plt.xlabel("Next frame behavior", fontsize=16)
+        plt.ylabel("Current frame behavior", fontsize=16)
+        plt.title("Averaged Transition matrix of {} clusters".format(tm.shape[0]), fontsize=18)
+        fig.savefig(os.path.join(projectPath, g2name+'_AverageTransitionMatrix_' + str(n_cluster) + 'clusters_'+str(cluster_method)+'.png'), bbox_inches='tight')
+        print("Figure saved to " + os.path.join(projectPath, g2name+'_AverageTransitionMatrix_' + str(n_cluster) + 'clusters_'+str(cluster_method)+'.png'))
+    
