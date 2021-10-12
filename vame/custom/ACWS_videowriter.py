@@ -109,11 +109,11 @@ def get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag, fps=30,
             used_seqs = used_seqs[:vid_length]
             
         if flag == "motif":
-            output = os.path.join(path_to_file,"cluster_videos",file+'-motif_%d_longestSequences_binned'+str(bins)+'.avi' %cluster)
+            output = os.path.join(path_to_file,"cluster_videos",file+'-motif_%d_longestSequences_binned%d.avi' %(cluster,bins))
         elif flag == "community":
-            output = os.path.join(path_to_file,"community_videos",file+'-community_%d_longestSequences_binned'+str(bins)+'.avi' %cluster)
+            output = os.path.join(path_to_file,"community_videos",file+'-community_%d_longestSequences_binned%d.avi' %(cluster,bins))
             
-        if os.path.exists(os.path.join(path_to_file,"cluster_videos",file+'-motif_%d_longestSequences_binned'+str(bins)+'.avi' %cluster)):
+        if os.path.exists(os.path.join(path_to_file,"cluster_videos",file+'-motif_%d_longestSequences_binned%d.avi' %(cluster,bins))):
             print("Video for cluster %d already found, skipping..." %cluster)
             continue
         else:

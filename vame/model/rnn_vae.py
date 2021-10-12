@@ -355,6 +355,7 @@ def train_model(config):
             if epoch % scheduler_step_size == 0 and epoch != 0:
                 for param_group in optimizer.param_groups:
                     print('learning rate update: {}'.format(param_group['lr']))
+                    
         # logging losses
         train_losses.append(train_loss)
         test_losses.append(test_loss)
@@ -363,7 +364,9 @@ def train_model(config):
         weight_values.append(weight)
         mse_losses.append(mse_loss)
         fut_losses.append(fut_loss)
-        learn_rates.append(LEARNING_RATE)
+        
+        lr = optimizer.param_groups[0]['lr']
+        learn_rates.append(lr)
         
         # save best model
         if weight > 0.99 and current_loss <= BEST_LOSS:
