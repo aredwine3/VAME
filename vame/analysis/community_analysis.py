@@ -16,6 +16,8 @@ import pickle
 import numpy as np
 from pathlib import Path
 import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use('Qt5Agg')
 
 from vame.util.auxiliary import read_config
 from vame.analysis.tree_hierarchy import graph_to_tree, draw_tree, traverse_tree_cutline
@@ -76,7 +78,7 @@ def compute_transition_matrices(files, labels, n_cluster):
     return transition_matrices
     
 
-def create_community_bag(files, labels, transition_matrices, cut_tree, n_cluster):
+def create_community_bag(files, labels, transition_matrices, cut_tree, n_cluster, autofill=False):
     # markov chain to tree -> community detection
     trees = []
     communities_all = []
@@ -86,11 +88,11 @@ def create_community_bag(files, labels, transition_matrices, cut_tree, n_cluster
         trees.append(T)
         
         if cut_tree != None:
-            community_bag =  traverse_tree_cutline(T,cutline=cut_tree)
+            community_bag =  traverse_tree_cutline(T,cutline=cut_tree, n_cluster=n_cluster, fill=autofill)
             communities_all.append(community_bag)
-            draw_tree(T)
+            draw_tree(T, file)
         else:
-            draw_tree(T)
+            draw_tree(T, file)
             flag_1 = 'no'
             plt.pause(0.5)
             while flag_1 == 'no':
@@ -115,6 +117,7 @@ def create_community_bag(files, labels, transition_matrices, cut_tree, n_cluster
                     communities_all.append(community_bag)
                 if flag_2 == "restart":
                     continue     
+        plt.close('all')
     return communities_all, trees
 
 
@@ -156,22 +159,24 @@ def umap_embedding(cfg, file, model_name, n_cluster):
     return embed
 
 
-def umap_vis(cfg, file, embed, community_labels_all):
+def umap_vis(cfg, file, embed, community_labels, path_to_file):
     num_points = cfg['num_points']
-    if num_points > community_labels_all.shape[0]:
-        num_points = community_labels_all.shape[0]
-    print("Embedding %d data points.." %num_points)
+    if num_points > community_labels.shape[0]:
+        num_points = community_labels.shape[0]
+    print("Visualizing %d data points.." %num_points)
     
-    num = np.unique(community_labels_all)
+    num = np.unique(community_labels)
     
     fig = plt.figure(1)
-    plt.scatter(embed[:,0], embed[:,1],  c=community_labels_all[:num_points], cmap='Spectral', s=2, alpha=1)
-    plt.colorbar(boundaries=np.arange(np.max(num)+2)-0.5).set_ticks(np.arange(np.max(num)+1))
+    plt.scatter(embed[:,0], embed[:,1],  c=community_labels[:num_points], cmap='Spectral', s=2, alpha=1)
+    if num.shape[0]>1:
+        plt.colorbar(boundaries=np.arange(np.max(num)+2)-0.5).set_ticks(np.arange(np.max(num)+1))
     plt.gca().set_aspect('equal', 'datalim')
     plt.grid(False)
-    fig.savefig(os.path.join(cfg['project_path'], 'UMAP.tif'))
+    fig.savefig(os.path.join(path_to_file, file+'_UMAP.tif'))
+    plt.close('all')
 
-def community(config, show_umap=False, cut_tree=None):
+def community(config, show_umap=False, cut_tree=None, autofill=True):
     config_file = Path(config).resolve()
     cfg = read_config(config_file)
     model_name = cfg['model_name']
@@ -201,7 +206,7 @@ def community(config, show_umap=False, cut_tree=None):
     
     labels = get_labels(cfg, files, model_name, n_cluster)
     transition_matrices = compute_transition_matrices(files, labels, n_cluster)
-    communities_all, trees = create_community_bag(files, labels, transition_matrices, cut_tree, n_cluster)
+    communities_all, trees = create_community_bag(files, labels, transition_matrices, cut_tree, n_cluster, autofill=autofill)
     community_labels_all = get_community_labels(files, labels, communities_all)    
     
     for idx, file in enumerate(files):
@@ -217,7 +222,7 @@ def community(config, show_umap=False, cut_tree=None):
     
         if show_umap == True:
             embed = umap_embedding(cfg, file, model_name, n_cluster)
-            umap_vis(cfg, files, embed, community_labels_all[idx])
+            umap_vis(cfg, file, embed, community_labels_all[idx], path_to_file)
     
 # with open(os.path.join(path_to_file,"community","","hierarchy"+file+".txt"), "rb") as fp:   # Unpickling
 #     b = pickle.load(fp)
