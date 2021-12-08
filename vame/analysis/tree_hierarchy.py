@@ -466,7 +466,7 @@ def traverse_tree(T, root_node=None):
 def _traverse_tree_cutline(T, node, traverse_list, cutline, level, community_bag, community_list=None): 
     cmap = plt.get_cmap("tab10")
     traverse_list.append(node[0])
-    if community_list and not isinstance(node[0]), str):
+    if community_list and not isinstance(node[0], str):
         community_list.append(node[0])
     children = list(T.neighbors(node[0]))
     
