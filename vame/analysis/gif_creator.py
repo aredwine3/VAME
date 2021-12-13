@@ -49,7 +49,7 @@ def create_video(path_to_file, file, embed, clabel, frames, start, length, max_l
         ax2.imshow(frame, cmap=cmap_reversed)
         # ax2.set_title("Motif %d,\n Community: %s" % (lbl, motifs[lbl]), fontsize=10)
         fig.savefig(os.path.join(path_to_file,"gif_frames",file+'gif_%d.png') %i) 
-
+    plt.close('all')
 
 def gif(config, pose_ref_index, subtract_background=True, start=None, length=500, 
         max_lag=30, label='community', file_format='.mp4', crop_size=(300,300)):
@@ -86,45 +86,46 @@ def gif(config, pose_ref_index, subtract_background=True, start=None, length=500
         path_to_file=os.path.join(cfg['project_path'],"results",file,model_name,'kmeans-'+str(n_cluster),"")
         if not os.path.exists(os.path.join(path_to_file,"gif_frames")):
             os.mkdir(os.path.join(path_to_file,"gif_frames"))
-        
-        embed = np.load(os.path.join(path_to_file,"community","umap_embedding_"+file+'.npy'))
-        
-        try:
-            embed = np.load(os.path.join(path_to_file,"","community","","umap_embedding_"+file+".npy"))
-            num_points = cfg['num_points']
-            if num_points > embed.shape[0]:
-                num_points = embed.shape[0]
-        except:
-            print("Compute embedding for file %s" %file)
-            reducer = umap.UMAP(n_components=2, min_dist=cfg['min_dist'], n_neighbors=cfg['n_neighbors'], 
-                    random_state=cfg['random_state']) 
             
-            latent_vector = np.load(os.path.join(path_to_file,"",'latent_vector_'+file+'.npy'))
+            embed = np.load(os.path.join(path_to_file,"community","umap_embedding_"+file+'.npy'))
             
-            num_points = cfg['num_points']
-            if num_points > latent_vector.shape[0]:
-                num_points = latent_vector.shape[0]
-            print("Embedding %d data points.." %num_points)
+            try:
+                embed = np.load(os.path.join(path_to_file,"","community","","umap_embedding_"+file+".npy"))
+                num_points = cfg['num_points']
+                if num_points > embed.shape[0]:
+                    num_points = embed.shape[0]
+            except:
+                print("Compute embedding for file %s" %file)
+                reducer = umap.UMAP(n_components=2, min_dist=cfg['min_dist'], n_neighbors=cfg['n_neighbors'], 
+                        random_state=cfg['random_state']) 
+                
+                latent_vector = np.load(os.path.join(path_to_file,"",'latent_vector_'+file+'.npy'))
+                
+                num_points = cfg['num_points']
+                if num_points > latent_vector.shape[0]:
+                    num_points = latent_vector.shape[0]
+                print("Embedding %d data points.." %num_points)
+                
+                embed = reducer.fit_transform(latent_vector[:num_points,:])
+                np.save(os.path.join(path_to_file,"community","umap_embedding_"+file+'.npy'), embed)
             
-            embed = reducer.fit_transform(latent_vector[:num_points,:])
-            np.save(os.path.join(path_to_file,"community","umap_embedding_"+file+'.npy'), embed)
-        
-        if label == "motif":
-            umap_label = np.load(os.path.join(path_to_file,str(n_cluster)+"_km_label_"+file+'.npy'))
-        elif label == "community":
-            umap_label = np.load(os.path.join(path_to_file,"community","community_label_"+file+'.npy'))
-        elif label == None:
-            umap_label = None
-        
-        if start == None:
-            start = np.random.choice(embed[:num_points].shape[0]-length)
+            if label == "motif":
+                umap_label = np.load(os.path.join(path_to_file,str(n_cluster)+"_km_label_"+file+'.npy'))
+            elif label == "community":
+                umap_label = np.load(os.path.join(path_to_file,"community","community_label_"+file+'.npy'))
+            elif label == None:
+                umap_label = None
+            
+            if start == None:
+                start = np.random.choice(embed[:num_points].shape[0]-length)
+            else:
+                start = start
+            
+            frames = get_animal_frames(cfg, file, pose_ref_index, start, length, subtract_background, file_format, crop_size)
+            
+            create_video(path_to_file, file, embed, umap_label, frames, start, length, max_lag, num_points)
         else:
-            start = start
-        
-        frames = get_animal_frames(cfg, file, pose_ref_index, start, length, subtract_background, file_format, crop_size)
-        
-        create_video(path_to_file, file, embed, umap_label, frames, start, length, max_lag, num_points)
-                   
+            print(os.path.join(path_to_file,"gif_frames") + " already exists, to re-run delete this folder and run vame.gif again.")
         
 
 

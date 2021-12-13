@@ -64,7 +64,11 @@ def plot_reconstruction(filepath, test_loader, seq_len_half, model, model_name,
             axs[1,i].plot(fut[i,...], color='r', linestyle='dashed')
         axs[0,0].set(xlabel='time steps', ylabel='reconstruction')
         axs[1,0].set(xlabel='time steps', ylabel='predction')
-        fig.savefig(os.path.join(filepath,"evaluate",'Future_Reconstruction.png'))
+        if not suffix:
+            fig.savefig(os.path.join(filepath,"evaluate",'Future_Reconstruction.png'))
+        elif suffix:
+            fig.savefig(os.path.join(filepath,"evaluate",'Future_Reconstruction_'+suffix+'.png'))
+        plt.close('all')
 
     else:
         fig, ax1 = plt.subplots(1, 5)
@@ -78,9 +82,9 @@ def plot_reconstruction(filepath, test_loader, seq_len_half, model, model_name,
             fig.savefig(os.path.join(filepath,'evaluate','Reconstruction_'+model_name+'.png'), bbox_inches='tight')
         elif suffix:
             fig.savefig(os.path.join(filepath,'evaluate','Reconstruction_'+model_name+'_'+suffix+'.png'), bbox_inches='tight')
+        plt.close('all')
 
-
-def plot_loss(cfg, filepath, model_name):
+def plot_loss(cfg, filepath, model_name, suffix=None):
     basepath = os.path.join(cfg['project_path'],"model","model_losses")
     train_loss = np.load(os.path.join(basepath,'train_losses_'+model_name+'.npy'))
     test_loss = np.load(os.path.join(basepath,'test_losses_'+model_name+'.npy'))
@@ -109,8 +113,11 @@ def plot_loss(cfg, filepath, model_name):
     ax1.plot(fut_loss, label='Prediction-Loss')
     ax1.legend()
     #fig.savefig(filepath+'evaluate/'+'MSE-and-KL-Loss'+model_name+'.png')
-    fig.savefig(os.path.join(filepath,"evaluate",'MSE-and-KL-Loss'+model_name+'.png'))
-
+    if not suffix:
+        fig.savefig(os.path.join(filepath,"evaluate",'MSE-and-KL-Loss'+model_name+'.png'))
+    elif suffix:
+        fig.savefig(os.path.join(filepath,"evaluate",'MSE-and-KL-Loss'+model_name+'_'+suffix+'.png'))
+    plt.close('all')
 
     
 
@@ -143,7 +150,11 @@ def eval_temporal(cfg, use_gpu, model_name, legacy, snapshot=None, suffix=None):
         model = RNN_VAE(TEMPORAL_WINDOW,ZDIMS,NUM_FEATURES,FUTURE_DECODER,FUTURE_STEPS, hidden_size_layer_1,
                         hidden_size_layer_2, hidden_size_rec, hidden_size_pred, dropout_encoder,
                         dropout_rec, dropout_pred, softplus).cuda()
-        model.load_state_dict(torch.load(os.path.join(cfg['project_path'],"model","best_model",model_name+'_'+cfg['Project']+'.pkl')))
+        if not snapshot:
+            model.load_state_dict(torch.load(os.path.join(cfg['project_path'],"model","best_model",model_name+'_'+cfg['Project']+'.pkl')))
+        elif snapshot:
+            model.load_state_dict(torch.load(snapshot))
+
     else:
         model = RNN_VAE(TEMPORAL_WINDOW,ZDIMS,NUM_FEATURES,FUTURE_DECODER,FUTURE_STEPS, hidden_size_layer_1,
                         hidden_size_layer_2, hidden_size_rec, hidden_size_pred, dropout_encoder,
@@ -161,7 +172,10 @@ def eval_temporal(cfg, use_gpu, model_name, legacy, snapshot=None, suffix=None):
     elif snapshot:
         plot_reconstruction(filepath, test_loader, seq_len_half, model, model_name, FUTURE_DECODER, FUTURE_STEPS, suffix=suffix)#, 
     if use_gpu:
-        plot_loss(cfg, filepath, model_name)
+        if not suffix:
+            plot_loss(cfg, filepath, model_name)
+        elif suffix:
+            plot_loss(cfg, filepath, model_name, suffix=suffix)
     else:
         pass #note, loading of losses needs to be adapted for CPU use #TODO
     
@@ -203,7 +217,7 @@ def evaluate_model(config, model_name, use_snapshots=False):#, suffix=None
         snapshots=os.listdir(os.path.join(cfg['project_path'],'model','best_model','snapshots'))
         for snap in snapshots:
             fullpath = os.path.join(cfg['project_path'],"model","best_model","snapshots",snap)
-            epoch=snap.split('_')[-1]
+            epoch=snap.split('_')[-1].strip('.pkl')
             eval_temporal(cfg, use_gpu, model_name, snapshot=fullpath, legacy=legacy, suffix='snapshot'+str(epoch))
             eval_temporal(cfg, use_gpu, model_name, legacy=legacy, suffix='bestModel')
     print("You can find the results of the evaluation in '/Your-VAME-Project-Apr30-2020/model/evaluate/' \n"

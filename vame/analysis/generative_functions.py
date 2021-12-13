@@ -19,9 +19,10 @@ from vame.util.auxiliary import read_config
 from vame.model.rnn_model import RNN_VAE
 
 
-def random_generative_samples_motif(cfg, model, latent_vector,labels,n_cluster):
+def random_generative_samples_motif(cfg, model, latent_vector,labels,n_cluster, path):
     # Latent sampling and generative model
     time_window = cfg['time_window']
+    sampleName = path.split('/')[-4]
     for j in range(n_cluster):
         
         inds=np.where(labels==j)
@@ -45,6 +46,8 @@ def random_generative_samples_motif(cfg, model, latent_vector,labels,n_cluster):
             axs[0,i].plot(recon_sample[i,...])
             axs[1,i].plot(recon_sample[i+5,...])
         plt.suptitle('Generated samples for motif '+str(j))
+        fig.savefig(os.path.join(path, sampleName+'_GeneratedSamples_Motif'+str(j)+'.png'))
+        plt.close('all')
 
 def random_generative_samples(cfg, model, latent_vector):
     # Latent sampling and generative model
@@ -191,7 +194,7 @@ def generative_model(config, mode="sampling"):
         if mode == "motifs":
             latent_vector = np.load(os.path.join(path_to_file,'latent_vector_'+file+'.npy'))
             labels = np.load(os.path.join(path_to_file,"",str(n_cluster)+'_km_label_'+file+'.npy'))
-            random_generative_samples_motif(cfg, model, latent_vector,labels,n_cluster)            
+            random_generative_samples_motif(cfg, model, latent_vector,labels,n_cluster, path_to_file)            
 
     
 
