@@ -13,6 +13,8 @@ import os
 import tqdm
 import numpy as np
 from pathlib import Path
+import glob
+import shutil
 
 import torch
 from sklearn.cluster import KMeans
@@ -200,8 +202,10 @@ def pose_segmentation(config):
         else:
             print("CUDA is not working! Attempting to use the CPU...")
             torch.device("cpu")
-        
-        if not os.path.exists(os.path.join(cfg['project_path'],"results",file,model_name,'kmeans-'+str(n_cluster),"")):
+        firstFile=files[0]
+        latent_vec = glob.glob(os.path.join(cfg['project_path'],"results",firstFile,model_name,'kmeans-*','latent_vector_'+firstFile+'.npy'))
+        latent_vec_ncluster = latent_vec[0].split('/')[-2].split('-')[1]                    
+        if len(latent_vec)<1:
             new = True
             # print("Hello1")
             model = load_model(cfg, model_name, legacy)
@@ -215,11 +219,23 @@ def pose_segmentation(config):
                 labels, cluster_center, motif_usages = individual_parameterization(cfg, files, latent_vectors, n_cluster)
             
         else:
-            print('\n'
-                  'For model %s a latent vector embedding already exists. \n' 
-                  'Parameterization of latent vector with %d k-Means cluster' %(model_name, n_cluster))
+            for file in files:
+                latent_vec = glob.glob(os.path.join(cfg['project_path'],"results",file,model_name,'kmeans-*','latent_vector_'+file+'.npy'))
+                latent_vec_ncluster = latent_vec[0].split('/')[-2].split('-')[1]                    
+                if int(latent_vec_ncluster) is not n_cluster:
+                    src=latent_vec[0]
+                    dest=os.path.join(cfg['project_path'],"results",file,model_name,'kmeans-'+str(n_cluster),"")
+                    if not os.path.exists(os.path.join(cfg['project_path'],"results",file,model_name,'kmeans-'+str(n_cluster),"")):
+                        print("Latent vector found for "+str(latent_vec_ncluster)+" clusters. Copying file.")
+                        os.mkdir(os.path.join(cfg['project_path'],"results",file,model_name,'kmeans-'+str(n_cluster),""))
+                        shutil.copy(src, dest)
+                        print("Copied latent vector file from " + src + " to " + dest)
+                else:          
+                    print('\n'
+                          'For model %s a latent vector embedding already exists. \n' 
+                          'Parameterization of latent vector with %d k-Means cluster' %(model_name, n_cluster))
             
-            if os.path.exists(os.path.join(cfg['project_path'],"results",file,model_name,'kmeans-'+str(n_cluster),"")):
+            if os.path.exists(os.path.join(cfg['project_path'],"results",file,model_name,'kmeans-'+str(n_cluster),"cluster_center_"+file+".npy")):
                 flag = input('WARNING: A parameterization for the chosen cluster size of the model already exists! \n'
                              'Do you want to continue? A new k-Means assignment will be computed! (yes/no) ')
             else:
