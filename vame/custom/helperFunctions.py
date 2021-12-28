@@ -19,6 +19,7 @@ import seaborn as sns
 import glob
 import shutil
 
+
 def trimFrames(directory, begin=1500, end=1500):
     """Crop csv or data files within specific frames. Good for removing unuseful frames from beginning, end, or both.
     
@@ -65,6 +66,7 @@ def listBodyParts(config):
     bodyParts = list(set(bodyParts))
     return bodyParts
 
+
 def makeEgocentricCSV(h5Path, bodyPart):
     """Docstring:
         Deprecated. Use alignVideos.alignVideo() instead.
@@ -90,6 +92,7 @@ def makeEgocentricCSV(h5Path, bodyPart):
     if not os.path.exists(os.path.join(directory, 'egocentric/')):
         os.mkdir(os.path.join(directory, 'egocentric/'))
     df_ego.to_csv(os.path.join(directory, 'egocentric/' + f + '_egocentric.csv'))
+
 
 def makeEgocentricCSV_Center(h5Path, bodyPart1, bodyPart2, drop=None):
     """
@@ -172,6 +175,7 @@ def csv_to_numpy(projectPath, csvPath, pcutoff=.99):
     # save the final_positions array with np.save()
     np.save(os.path.join(projectPath, 'data/' + f + '/' + f + "-PE-seq.npy"), final_positions)
 
+
 def combineBehavior(config, save=True, cluster_method='kmeans', legacy=False):
     """
     Docstring:
@@ -224,6 +228,7 @@ def combineBehavior(config, save=True, cluster_method='kmeans', legacy=False):
         cat.to_csv(os.path.join(project_path, 'CombinedMotifUsage.csv'))
     return cat
 
+
 def parseIVSA(config, groups, presession=True):
     config_file = Path(config).resolve()
     cfg = read_config(config_file)
@@ -243,6 +248,7 @@ def parseIVSA(config, groups, presession=True):
             groupData.to_csv(os.path.join(projectPath, group + '_MotifUsage.csv'))
             if presession:
                 preData.to_csv(os.path.join(projectPath, 'Presession_'+group+'MotifUsage.csv'))
+                
                 
 def extractResults(projectPath, expDate, group1, group2, modelName, n_clusters, cluster_method='kmeans', phases=None):
     """Docstring:
@@ -307,23 +313,6 @@ def extractResults(projectPath, expDate, group1, group2, modelName, n_clusters, 
     comb = pd.concat([df1, df2], axis=1)
     comb.to_csv(os.path.join(saveDir, 'Combined_' + modelName + '_' + str(n_clusters) + 'Clusters_Results.csv'))
 
-#    cols = list(df1.columns)
-#    for col in cols:
-#        if col.endswith(expDate):
-#            newCol = '_'.join(col.split('_')[:-1])
-#            i = cols.index(col)
-#            cols.remove(col)
-#            cols.insert(i, newCol)
-#    df1.columns=cols
-    
-#    cols = list(df2.columns)
-#    for col in cols:
-#        if col.endswith(expDate):
-#            newCol = '_'.join(col.split('_')[:-1])
-#            i = cols.index(col)
-#            cols.remove(col)
-#            cols.insert(i, newCol)
-#    df2.columns=cols
     if phases:
         for phase in phases:
             df1_split = pd.DataFrame()
@@ -497,6 +486,7 @@ def dropBodyParts(config, bodyParts):
                 df.drop(labels=dropList, axis=1, inplace=True)
                 df.to_csv(os.path.join(projectPath, 'videos/pose_estimation/' + file))
 
+
 def plotAverageTransitionMatrices(config, group1, group2=None, g1name='Group1', g2name='Group2', cluster_method='kmeans'):
     cfg = read_config(config)
     projectPath = cfg['project_path']
@@ -545,9 +535,61 @@ def plotLoss(config, suffix=None):
     fig = df.plot(y=['Train_losses', 'Test_losses', 'MSE_losses']).get_figure()
     fig.savefig(os.path.join(lossPath, 'ModelLosses.png'))
     
+
+def countFramesBelowConfidence(config, pcutoff=None):
+    """Docstring:
+    Quantify # and % of frames in video with confidence below pcutoff.
     
     
-    
-    
-    
-    
+    Parameters
+    ----------
+    config : string
+        Path to config file.
+    pcutoff : float (optional)
+        Likelihood cutoff considered 'low confidence'. Default None reads from config file.
+
+    Returns
+    -------
+    DataFrame with concatenated data for all bodyParts in each video, and DataFrame with average numbers for each video.
+
+    """
+    cfg = read_config(config)
+    if not pcutoff:
+        pcutoff=cfg['pose_confidence']
+    projectPath = cfg['project_path']
+    dataDir = os.path.join(projectPath, 'videos', 'pose_estimation')
+    files = [x for x in os.listdir(dataDir) if x.endswith('.csv')]
+    cat = pd.DataFrame()
+    aves=pd.DataFrame()
+    for f in files:
+        n, e = os.path.splitext(f)
+        fullpath = os.path.join(dataDir, f)
+        df = pd.read_csv(fullpath, index_col=0, header=[0,1,2])
+        scorer = df.columns.levels[0][0]
+        bodyParts = df.columns.levels[1].tolist()
+        for bp in bodyParts:
+            lowConfFrames = df.loc[df[(scorer, bp, 'likelihood')] < pcutoff]
+            lowConfPercent = lowConfFrames.shape[0]/df.shape[0]
+            result=pd.DataFrame([n, bp, lowConfFrames.shape[0], lowConfPercent]).T
+            result.columns=['video', 'bodyPart', 'lowConfFrame#', 'lowConfFrame%']
+            cat = pd.concat([cat, result], axis=0)
+        average = np.mean(cat.loc[cat['video']==n]['lowConfFrame%'])
+        aveResult = pd.DataFrame([n, average]).T
+        aveResult.columns=['video', 'lowConfFrame_Mean']
+        aves = pd.concat([aves, aveResult])
+    cat.to_csv(os.path.join(projectPath, 'FrameConfidenceStatistics.csv'))
+    aves.to_csv(os.path.join(projectPath, 'VideoConfidenceStatistics.csv'))
+    return cat, aves
+
+
+def combineMotifUsage(config, files):
+    cat = pd.DataFrame()
+    for file in files:
+        n, e = os.path.splitext(os.path.basename(file))
+        name = n.split('_')[0]
+        df = pd.read_csv(file)
+        cat = pd.concat([cat, df], axis=0)
+    cat.to_csv('CombinedMotifUsage.csv')        
+
+
+

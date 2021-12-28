@@ -98,7 +98,7 @@ def traindata(cfg, files, testfraction, num_features, savgol_filter):
     num_frames = len(X_med.T)
     test = int(num_frames*testfraction)
     
-    z_test =X_med[:,:test]
+    z_test = X_med[:,:test]
     z_train = X_med[:,test:]
         
     #save numpy arrays the the test/train info:

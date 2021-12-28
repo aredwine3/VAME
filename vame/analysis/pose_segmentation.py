@@ -204,7 +204,7 @@ def pose_segmentation(config):
             torch.device("cpu")
         firstFile=files[0]
         latent_vec = glob.glob(os.path.join(cfg['project_path'],"results",firstFile,model_name,'kmeans-*','latent_vector_'+firstFile+'.npy'))
-        latent_vec_ncluster = latent_vec[0].split('/')[-2].split('-')[1]                    
+       # latent_vec_ncluster = latent_vec[0].split('/')[-2].split('-')[1]                    
         if len(latent_vec)<1:
             new = True
             # print("Hello1")
