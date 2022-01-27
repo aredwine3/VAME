@@ -183,7 +183,7 @@ def community(config, show_umap=False, cut_tree=None, autofill=True):
     n_cluster = cfg['n_cluster']
     
     files = []
-    if cfg['all_data'] == 'No':
+    if cfg['all_data'] == 'No' or cfg['all_data']=='no':
         all_flag = input("Do you want to write motif videos for your entire dataset? \n"
                      "If you only want to use a specific dataset type filename: \n"
                      "yes/no/filename ")
