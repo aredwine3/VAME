@@ -121,8 +121,8 @@ def init_new_project(project, videos, working_directory=None, videotype='.mp4'):
     cfg_file['model_snapshot']=3
     cfg_file['num_features']=12
     cfg_file['savgol_filter']=True
-    cfg_file['savgol_length']=7
-    cfg_file['savgol_order']=3
+    cfg_file['savgol_length']=5
+    cfg_file['savgol_order']=2
     cfg_file['hidden_size_layer_1']=256
     cfg_file['hidden_size_layer_2']=256
     cfg_file['dropout_encoder']=0
@@ -153,6 +153,7 @@ def init_new_project(project, videos, working_directory=None, videotype='.mp4'):
     cfg_file['random_state'] = 42
     cfg_file['num_points'] = 30000
     cfg_file['scheduler_gamma'] = 0.5
+    cfg_file['scheduler_threshold'] = .05
     cfg_file['softplus'] = False
     cfg_file['pose_confidence'] = 0.99
     cfg_file['iqr_factor'] = 4
