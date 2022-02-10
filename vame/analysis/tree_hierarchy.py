@@ -385,6 +385,7 @@ def draw_tree(T, file):
        os.mkdir('trees')
     fig.savefig('trees/'+file+'_tree.png') 
 
+"""
 def traverse_tree(T, root_node=None):
     if not root_node:
         node=['Root']
@@ -422,7 +423,7 @@ def traverse_tree(T, root_node=None):
     traverse_preorder += '}'
     
     return traverse_preorder
-
+"""
 
 
 def _traverse_tree(T, node, traverse_preorder,traverse_list):
