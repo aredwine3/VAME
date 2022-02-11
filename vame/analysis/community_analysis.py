@@ -160,6 +160,27 @@ def umap_embedding(cfg, file, model_name, n_cluster):
 
 
 def umap_vis(cfg, file, embed, community_labels, path_to_file):
+    """Visualize motif/community UMAPs.
+    
+
+    Parameters
+    ----------
+    cfg : ruamel.yaml.comments.CommentedMap (orderedDict)
+        Config dictionary.
+    file : string
+        Path to video file to visualize UMAP of.
+    embed : array-like
+        Embedding created with vame.umap_embedding function.
+    community_labels : array-like
+        Array of community labels for each frame in file.
+    path_to_file : string
+        Destination to save UMAP embedding.
+
+    Returns
+    -------
+    None.
+
+    """
     num_points = cfg['num_points']
     if num_points > community_labels.shape[0]:
         num_points = community_labels.shape[0]
@@ -177,6 +198,24 @@ def umap_vis(cfg, file, embed, community_labels, path_to_file):
     plt.close('all')
 
 def community(config, show_umap=False, cut_tree=None, autofill=True):
+    """Run community analysis to generate behavioral heirarchy "communities" and trees.
+
+    Parameters
+    ----------
+    config : string
+        Path to config.yaml file.
+    show_umap : bool, optional
+        Whether to show UMAP plots. The default is False.
+    cut_tree : int, optional
+        Level at which to cut the heirarchy tree, see main VAME docs. The default is None, which prompts you to input where to cut each tree individually.
+    autofill : bool, optional
+        Whether to fill any unfound communities with 0. The default is True, setting to False leads to error if any communities are found with 0 frames in any video.
+
+    Returns
+    -------
+    None.
+
+    """
     config_file = Path(config).resolve()
     cfg = read_config(config_file)
     model_name = cfg['model_name']

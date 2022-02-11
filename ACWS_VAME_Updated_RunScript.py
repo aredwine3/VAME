@@ -34,7 +34,8 @@ if new:
     videos = ['/d1/studies/DLC_Data/vGluT2_RTA-smith-2022-01-18/videos/']
     config = vame.init_new_project(project=project, videos=videos, working_directory=working_directory, videotype='.mp4')
 elif not new:
-    config = '/d1/studies/DLC_Data/MouseIVSA_VAME/MouseIVSA_SmithLabVAME-Dec22-2021/config.yaml'
+    config = '/d1/studies/DLC_Data/MouseIVSA_VAME/SideProfileRTA-Feb9-2022/config.yaml'
+    
 working_directory=os.path.dirname(config)
 os.chdir(working_directory)
 
@@ -86,16 +87,12 @@ vame.motif_videos(config, model_name='VAME', videoType='.mp4', fps=30)
 avw.motif_videos(config, model_name=modelName, videoType='.mp4', fps=30)
 
 #Generate transition matrices & average transition matrixes for groups:
-g1=glob.glob(os.path.join(projectPath, 'results', 'Cue*'))
-group1=[]
-g2=glob.glob(os.path.join(projectPath, 'results', 'Ext*'))
-group2=[]
-for g in g1:
-    fname = g.split('/')[-1]
-    group1.append(fname)
-for g in g2:
-    fname = g.split('/')[-1]
-    group2.append(fname)
+g1=glob.glob(os.path.join(projectPath, 'results', 'HR*'))
+group1 = [x.split('/')[-1] for x in g1]
+g1n = 'eNpHR'
+g2=glob.glob(os.path.join(projectPath, 'results', 'VG*'))
+group2 = [x.split('/')[-1] for x in g2]
+g2n = 'ChR2'
 
 hf.plotAverageTransitionMatrices(config, group1, group2=None, g1name='IVSA', g2name=None, cluster_method='kmeans')
 
