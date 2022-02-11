@@ -94,10 +94,10 @@ g2=glob.glob(os.path.join(projectPath, 'results', 'VG*'))
 group2 = [x.split('/')[-1] for x in g2]
 g2n = 'ChR2'
 
-hf.plotAverageTransitionMatrices(config, group1, group2=None, g1name='IVSA', g2name=None, cluster_method='kmeans')
+hf.plotAverageTransitionMatrices(config, group1, group2=None, g1name=g1n, g2name=None, cluster_method='kmeans')
 
 hf.combineBehavior(config, save=True, cluster_method='kmeans', legacy=False)
-hf.parseIVSA(config, groups=['IVSA', 'Ext', 'Reinstatement', 'Cue'])
+hf.parseIVSA(config, groups=['IVSA', 'Ext', 'Reinstatement', 'Cue'], presession=False)
 
 # OPTIONAL: Create behavioural hierarchies via community detection
 vame.community(config, show_umap=False, cut_tree=2)
@@ -118,8 +118,8 @@ vame.generative_model(config, mode="motifs") #options: mode: "sampling", "recons
 # and have something cool to show around ;) 
 # Note: This function is currently very slow. Once the frames are saved you can create a video
 # or gif via e.g. ImageJ or other tools
-vame.gif(config, pose_ref_index=[0,5], subtract_background=False, start=None, 
-         length=500, max_lag=30, label='motif', file_format='.mp4', crop_size=(350,350))
+vame.gif(config, pose_ref_index=[0,8], subtract_background=False, start=None, 
+         length=500, max_lag=30, label='motif', file_format='.mp4', crop_size=(400,400))
 
 
 files=["/d1/studies/DLC_Data/MouseIVSA_VAME/MouseIVSA_SmithLabVAME-Dec22-2021/IVSA_MotifUsage.csv",
@@ -127,4 +127,4 @@ files=["/d1/studies/DLC_Data/MouseIVSA_VAME/MouseIVSA_SmithLabVAME-Dec22-2021/IV
 "/d1/studies/DLC_Data/MouseIVSA_VAME/MouseIVSA_SmithLabVAME-Dec22-2021/Cue_MotifUsage.csv"]
 
 
-combineMotifUsage(config, files)
+hf.combineMotifUsage(config, files)
