@@ -525,7 +525,7 @@ def plotAverageTransitionMatrices(config, group1, group2=None, g1name='Group1', 
         plt.title("Averaged Transition matrix of {} clusters".format(tm.shape[0]), fontsize=18)
         fig.savefig(os.path.join(projectPath, g2name+'_AverageTransitionMatrix_' + str(n_cluster) + 'clusters_'+str(cluster_method)+'.png'), bbox_inches='tight')
         print("Figure saved to " + os.path.join(projectPath, g2name+'_AverageTransitionMatrix_' + str(n_cluster) + 'clusters_'+str(cluster_method)+'.png'))
-
+    plt.close('all')
 
 def plotLoss(config, suffix=None):
     cfg = read_config(config)
@@ -534,7 +534,7 @@ def plotLoss(config, suffix=None):
     df = pd.read_csv(os.path.join(lossPath, 'VAME_LossesSummary.csv'), index_col=0)
     fig = df.plot(y=['Train_losses', 'Test_losses', 'MSE_losses']).get_figure()
     fig.savefig(os.path.join(lossPath, 'ModelLosses.png'))
-    
+    plt.close('all')
 
 def countFramesBelowConfidence(config, pcutoff=None):
     """Docstring:
