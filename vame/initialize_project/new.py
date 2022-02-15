@@ -139,7 +139,7 @@ def init_new_project(project, videos, working_directory=None, videotype='.mp4'):
     cfg_file['scheduler']=1
     cfg_file['length_of_motif_video'] = 1000
     cfg_file['noise'] = False
-    cfg_file['scheduler_step_size'] = 100
+    cfg_file['scheduler_step_size'] = 3
     cfg_file['legacy'] = False
     cfg_file['individual_parameterization'] = False
     cfg_file['random_state_kmeans'] = 42
