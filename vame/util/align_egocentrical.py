@@ -322,7 +322,7 @@ def play_aligned_video(a, n, frame_count, path_to_file, save=False, filename=Non
     cv.destroyAllWindows()
 
 
-def alignment(config, filename, pose_ref_index, video_format, crop_size, use_video=False, check_video=False, save=False):
+def alignment(config, filename, pose_ref_index, video_format, crop_size, use_video=False, check_video=False, save=False, blank_background=True):
     """
     Parameters
     ----------
@@ -374,12 +374,14 @@ def alignment(config, filename, pose_ref_index, video_format, crop_size, use_vid
     pose_flip_ref = pose_ref_index
         
     if use_video:
+        if not blank_background:
         #compute background
-        bg = background(path_to_file,filename)
+            bg = background(path_to_file,filename)
+        elif blank_background:
+            bg=0
         capture = cv.VideoCapture(os.path.join(path_to_file,'videos',filename+video_format))
         if not capture.isOpened():
-            raise Exception("Unable to open video file: {0}".format(os.path.join(path_to_file,'videos',filename+video_format)))
-            
+            raise Exception("Unable to open video file: {0}".format(os.path.join(path_to_file,'videos',filename+video_format)))          
         frame_count = int(capture.get(cv.CAP_PROP_FRAME_COUNT))
         capture.release()
     else:
@@ -398,7 +400,7 @@ def alignment(config, filename, pose_ref_index, video_format, crop_size, use_vid
     return time_series, frames
 
 
-def egocentric_alignment(config, pose_ref_index=[0,5], crop_size=(300,300), use_video=False, video_format='.mp4', check_video=False, save=False):
+def egocentric_alignment(config, pose_ref_index=[0,5], crop_size=(300,300), use_video=False, video_format='.mp4', check_video=False, save=False, blank_background=True):
     """ Happy aligning """
     #config parameters
     if save and not use_video:
@@ -417,7 +419,7 @@ def egocentric_alignment(config, pose_ref_index=[0,5], crop_size=(300,300), use_
         if not os.path.exists(os.path.join(path_to_file,'data',file,file+'-PE-seq.npy')):
             print("Aligning data %s, Pose confidence value: %.2f" %(file, confidence))
             egocentric_time_series, frames = alignment(config, file, pose_ref_index, video_format, crop_size, 
-                                                       use_video=use_video, check_video=check_video, save=save)
+                                                       use_video=use_video, check_video=check_video, save=save, blank_background=blank_background)
             np.save(os.path.join(path_to_file,'data',file,file+'-PE-seq.npy'), egocentric_time_series)
         else:
             print("Aligned video data already exists. To realign this video delete the PE-seq.npy file from the data directory and run this function again")
