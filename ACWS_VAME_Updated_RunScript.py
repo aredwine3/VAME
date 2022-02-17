@@ -45,6 +45,7 @@ cluster_method='kmeans'
 projectPath = cfg['project_path']
 modelName = cfg['model_name']
 vids = cfg['video_sets']
+pcutoff = cfg['pose_confidence']
 
 #Note there is a vame.update_config(config) function that should be run after updating vame version.
 
@@ -56,7 +57,7 @@ hf.dropBodyParts(config, ['barrier', 'LED'])
 # pose_ref_index: list of reference coordinate indices for alignment
 # Example: 0: snout, 1: forehand_left, 2: forehand_right, 3: hindleft, 4: hindright, 5: tail
 # If you want to view the result, set check_video to True. If you want to save the result, set use_video, check_video, and save all to True.
-vame.egocentric_alignment(config, crop_size=(400,400), pose_ref_index=[0,8], use_video=False, check_video=False, save=False)
+vame.egocentric_alignment(config, crop_size=(400,400), pose_ref_index=[0,8], use_video=False, check_video=False, save=False, blank_background=False)
 
 # Step 1.3:
 # create the training set for the VAME model
@@ -100,12 +101,13 @@ hf.combineBehavior(config, save=True, cluster_method='kmeans', legacy=False)
 hf.parseIVSA(config, groups=['IVSA', 'Ext', 'Reinstatement', 'Cue'], presession=False)
 
 # OPTIONAL: Create behavioural hierarchies via community detection
+hf.drawHierarchyTrees(config)
 vame.community(config, show_umap=False, cut_tree=2)
 
 # OPTIONAL: Create community videos to get insights about behavior on a hierarchical scale
 vame.community_videos(config)
 
-# OPTIONAL: Down projection of latent vectors and visualization via UMAP
+# OPTIONAL:  Create UMAP plots for each video.
 vame.visualization(config, label='motif') #options: label: None, "motif", "community"
 
 # OPTIONAL: Use the generative model (reconstruction decoder) to sample from 
@@ -120,7 +122,6 @@ vame.generative_model(config, mode="motifs") #options: mode: "sampling", "recons
 # or gif via e.g. ImageJ or other tools
 vame.gif(config, pose_ref_index=[0,8], subtract_background=False, start=None, 
          length=500, max_lag=30, label='motif', file_format='.mp4', crop_size=(400,400))
-
 
 files=["/d1/studies/DLC_Data/MouseIVSA_VAME/MouseIVSA_SmithLabVAME-Dec22-2021/IVSA_MotifUsage.csv",
 "/d1/studies/DLC_Data/MouseIVSA_VAME/MouseIVSA_SmithLabVAME-Dec22-2021/Ext_MotifUsage.csv",

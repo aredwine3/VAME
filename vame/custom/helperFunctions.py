@@ -12,6 +12,7 @@ import os
 from pathlib import Path
 from vame.util.auxiliary import read_config
 from vame.analysis.behavior_structure import get_adjacency_matrix, get_transition_matrix
+from vame.analysis.tree_hierarchy import graph_to_tree, draw_tree
 from scipy.stats import ttest_ind
 from statsmodels.stats.multitest import multipletests
 import matplotlib.pyplot as plt
@@ -30,7 +31,7 @@ def trimFrames(directory, begin=1500, end=1500):
     startFrame : int (optional, default None)
         Starting frame for trimmed data.
     stopFrame : int (optional, default None)
-        Ending frame for trimmed data.
+        Number of frames to remove from end.
     """
     files = os.listdir(directory)
     saveDir = os.path.join(directory, 'trimmedData/')
@@ -51,6 +52,20 @@ def trimFrames(directory, begin=1500, end=1500):
             df = pd.read_hdf(fullpath)
             df = df[startFrame:stopFrame]
             df.to_hdf(os.path.join(saveDir, n + '_trimmed.csv'), key='df_with_missing')
+            
+def downsampleData(directory, frameRate, targetFPS=30, dtype='.csv'):
+    files = [x for x in os.listdir(directory) if x.endswith(dtype)]
+    downSampleFactor = frameRate/targetFPS
+    if not os.path.exists(os.path.join(directory, 'fullResData/')):
+        os.mkdir(os.path.join(directory, 'fullResData/'))
+    for f in files:
+        fullpath = os.path.join(directory, f)
+        if dtype=='.csv':
+            df = pd.read_csv(fullpath, index_col=0, header=[0,1,2])
+        elif dtype == '.h5':
+            df = pd.read_hdf(fullpath)
+        
+        
 
 def listBodyParts(config):
     cfg = read_config(config)
@@ -590,6 +605,20 @@ def combineMotifUsage(config, files):
         df = pd.read_csv(file)
         cat = pd.concat([cat, df], axis=0)
     cat.to_csv('CombinedMotifUsage.csv')        
+
+
+def drawHierarchyTrees(config):
+    cfg = read_config(config)
+    n_cluster = cfg['n_cluster']
+    projectPath = cfg['project_path']
+    modelName = cfg['model_name']
+    videos = cfg['video_sets']
+    for file in videos:
+        labels = np.load(os.path.join(projectPath, 'results', file, modelName, 'kmeans-'+str(n_cluster), str(n_cluster)+'_km_label_'+file+'.npy'))
+        motif_usage = np.load(os.path.join(projectPath, 'results', file, modelName, 'kmeans-'+str(n_cluster), 'motif_usage_'+file+'.npy'))
+        adj_mat, trans_mat = get_adjacency_matrix(labels, n_cluster)
+        T = graph_to_tree(motif_usage, trans_mat, n_cluster, merge_sel=1)
+        draw_tree(T, file)
 
 
 
