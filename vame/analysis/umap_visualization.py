@@ -25,7 +25,7 @@ def umap_vis(file, embed, num_points):
     plt.scatter(embed[:num_points,0], embed[:num_points,1], s=2, alpha=.5)
     plt.gca().set_aspect('equal', 'datalim')
     plt.grid(False)
-    
+    plt.close('all')
 
 def umap_label_vis(file, embed, label, n_cluster, num_points, path_to_file):
     fig = plt.figure(1)
@@ -43,7 +43,7 @@ def umap_vis_comm(file, embed, community_label, num_points):
     plt.colorbar(boundaries=np.arange(num+1)-0.5).set_ticks(np.arange(num))
     plt.gca().set_aspect('equal', 'datalim')
     plt.grid(False)
-    fig.savefig(os.path.join(path_to_file, file+'UMAP_LabeledMotifs.png'))    
+    fig.savefig(os.path.join(path_to_file, file+'UMAP_LabeledCommunities.png'))    
     plt.close('all')
 
 def visualization(config, label=None):
@@ -104,20 +104,17 @@ def visualization(config, label=None):
             umap_vis(file, embed, num_points)
             
         if label == 'motif':
-            motif_label = np.load(os.path.join(path_to_file,"",str(n_cluster)+'_km_label_'+file+'.npy'))
-            umap_label_vis(file, embed, motif_label, n_cluster, num_points, path_to_file)
+            if len(glob.glob(os.path.join(path_to_file,'*LabeledMotifs.png')))<1:
+                motif_label = np.load(os.path.join(path_to_file,str(n_cluster)+'_km_label_'+file+'.npy'))
+                umap_label_vis(file, embed, motif_label, n_cluster, num_points, path_to_file)
+            else:
+                print("Motif UMAP for " + file + " already found, skipping...")
 
         if label == "community":
-            community_label = np.load(os.path.join(path_to_file,"","community","","community_label_"+file+".npy"))
-            umap_vis_comm(file, embed, community_label, num_points, path_to_file)                                    
-
-
-
-
-
-
-
-
-
+            if len(glob.glob(os.path.join(path_to_file,'*LabeledCommunities.png')))<1:
+                community_label = np.load(os.path.join(path_to_file,"community","community_label_"+file+".npy"))
+                umap_vis_comm(file, embed, community_label, num_points, path_to_file)                                    
+            else:
+                print("Community UMAP for " + file + " already found, skipping...")
 
 
