@@ -20,7 +20,7 @@ import seaborn as sns
 import glob
 import shutil
 
-
+#%%
 def trimFrames(directory, begin=1500, end=1500):
     """Crop csv or data files within specific frames. Good for removing unuseful frames from beginning, end, or both.
     
@@ -52,8 +52,11 @@ def trimFrames(directory, begin=1500, end=1500):
             df = pd.read_hdf(fullpath)
             df = df[startFrame:stopFrame]
             df.to_hdf(os.path.join(saveDir, n + '_trimmed.csv'), key='df_with_missing')
-            
+
+#%%
 def downsampleData(directory, frameRate, targetFPS=30, dtype='.csv'):
+    """In progress
+    """
     files = [x for x in os.listdir(directory) if x.endswith(dtype)]
     downSampleFactor = frameRate/targetFPS
     if not os.path.exists(os.path.join(directory, 'fullResData/')):
@@ -64,9 +67,8 @@ def downsampleData(directory, frameRate, targetFPS=30, dtype='.csv'):
             df = pd.read_csv(fullpath, index_col=0, header=[0,1,2])
         elif dtype == '.h5':
             df = pd.read_hdf(fullpath)
-        
-        
 
+#%%
 def listBodyParts(config):
     cfg = read_config(config)
     projectPath = cfg['project_path']
@@ -81,7 +83,7 @@ def listBodyParts(config):
     bodyParts = list(set(bodyParts))
     return bodyParts
 
-
+#%%
 def makeEgocentricCSV(h5Path, bodyPart):
     """Docstring:
         Deprecated. Use alignVideos.alignVideo() instead.
@@ -108,7 +110,7 @@ def makeEgocentricCSV(h5Path, bodyPart):
         os.mkdir(os.path.join(directory, 'egocentric/'))
     df_ego.to_csv(os.path.join(directory, 'egocentric/' + f + '_egocentric.csv'))
 
-
+#%%
 def makeEgocentricCSV_Center(h5Path, bodyPart1, bodyPart2, drop=None):
     """
     Docstring:
@@ -141,7 +143,7 @@ def makeEgocentricCSV_Center(h5Path, bodyPart1, bodyPart2, drop=None):
         os.mkdir(os.path.join(directory, 'egocentric/'))
     df_ego.to_csv(os.path.join(directory, 'egocentric/' + f + '_egocentric_centered.csv'))
 
-    
+#%%
 def csv_to_numpy(projectPath, csvPath, pcutoff=.99):
     """
     Convert CSV to NumPy array.
@@ -190,7 +192,7 @@ def csv_to_numpy(projectPath, csvPath, pcutoff=.99):
     # save the final_positions array with np.save()
     np.save(os.path.join(projectPath, 'data/' + f + '/' + f + "-PE-seq.npy"), final_positions)
 
-
+#%%
 def combineBehavior(config, save=True, cluster_method='kmeans', legacy=False):
     """
     Docstring:
@@ -243,7 +245,7 @@ def combineBehavior(config, save=True, cluster_method='kmeans', legacy=False):
         cat.to_csv(os.path.join(project_path, 'CombinedMotifUsage.csv'))
     return cat
 
-
+#%%
 def parseIVSA(config, groups, presession=True):
     config_file = Path(config).resolve()
     cfg = read_config(config_file)
@@ -263,8 +265,8 @@ def parseIVSA(config, groups, presession=True):
             groupData.to_csv(os.path.join(projectPath, group + '_MotifUsage.csv'))
             if presession:
                 preData.to_csv(os.path.join(projectPath, 'Presession_'+group+'MotifUsage.csv'))
-                
-                
+
+#%%           
 def extractResults(projectPath, expDate, group1, group2, modelName, n_clusters, cluster_method='kmeans', phases=None):
     """Docstring:
     Compares motif usage between two groups with t-test.
@@ -300,11 +302,9 @@ def extractResults(projectPath, expDate, group1, group2, modelName, n_clusters, 
         clu = pd.DataFrame(clu_arr)
         clu.columns=[sample]
         cat = pd.concat([cat, clu], axis=1)
- #   cat.to_csv(os.path.join(projectPath, modelName + '_Results.csv'))
 
     df1=pd.DataFrame()
     df2=pd.DataFrame()
-
 
     for col in cat.columns:
         if col[:6] in group1:
@@ -388,8 +388,8 @@ def extractResults(projectPath, expDate, group1, group2, modelName, n_clusters, 
         summary['p-value'] = results['p-value']
         summary['q-value'] = results['q-value']
         summary.to_csv(os.path.join(saveDir, 'SummaryStatistics_' + str(n_clusters) + 'clusters.csv'))
-     
-        
+
+#%%
 def selectLimbs(projectPath, suffix):
     """Docstring:
         
@@ -461,7 +461,7 @@ def selectLimbs(projectPath, suffix):
         df.columns=ind
         df.to_csv(os.path.join(projectPath, 'videos/pose_estimation/' + f + suffix + '.csv'))
 
-
+#%%
 def dropBodyParts(config, bodyParts):
     """
     Drops specified body parts from CSV file. Creates a new folder called 'original/' and saves original CSVs there,
@@ -501,7 +501,7 @@ def dropBodyParts(config, bodyParts):
                 df.drop(labels=dropList, axis=1, inplace=True)
                 df.to_csv(os.path.join(projectPath, 'videos/pose_estimation/' + file))
 
-
+#%%
 def plotAverageTransitionMatrices(config, group1, group2=None, g1name='Group1', g2name='Group2', cluster_method='kmeans'):
     cfg = read_config(config)
     projectPath = cfg['project_path']
@@ -542,6 +542,7 @@ def plotAverageTransitionMatrices(config, group1, group2=None, g1name='Group1', 
         print("Figure saved to " + os.path.join(projectPath, g2name+'_AverageTransitionMatrix_' + str(n_cluster) + 'clusters_'+str(cluster_method)+'.png'))
     plt.close('all')
 
+#%%
 def plotLoss(config, suffix=None):
     cfg = read_config(config)
     projectPath = cfg['project_path']
@@ -551,6 +552,7 @@ def plotLoss(config, suffix=None):
     fig.savefig(os.path.join(lossPath, 'ModelLosses.png'))
     plt.close('all')
 
+#%%
 def countFramesBelowConfidence(config, pcutoff=None):
     """Docstring:
     Quantify # and % of frames in video with confidence below pcutoff.
@@ -596,7 +598,7 @@ def countFramesBelowConfidence(config, pcutoff=None):
     aves.to_csv(os.path.join(projectPath, 'VideoConfidenceStatistics.csv'))
     return cat, aves
 
-
+#%%
 def combineMotifUsage(config, files):
     cat = pd.DataFrame()
     for file in files:
@@ -606,7 +608,7 @@ def combineMotifUsage(config, files):
         cat = pd.concat([cat, df], axis=0)
     cat.to_csv('CombinedMotifUsage.csv')        
 
-
+#%%
 def drawHierarchyTrees(config):
     cfg = read_config(config)
     n_cluster = cfg['n_cluster']
@@ -619,6 +621,3 @@ def drawHierarchyTrees(config):
         adj_mat, trans_mat = get_adjacency_matrix(labels, n_cluster)
         T = graph_to_tree(motif_usage, trans_mat, n_cluster, merge_sel=1)
         draw_tree(T, file)
-
-
-

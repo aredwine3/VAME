@@ -182,7 +182,7 @@ def update_config(config):
     flag = input("ATTENTION! You are about to overwrite your current config.yaml. If you did changes, "
                  "back up your current version and compare to the updated version. Do you want to continue? (yes/no)")
     
-    if flag == 'yes':
+    if flag.lower.startswith('y'):
         cfg_file,ruamelFile = create_config_template()
         
         cfg_file['Project']=str(project)

@@ -16,7 +16,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
 from mpl_toolkits.mplot3d import Axes3D
-
+import glob
 from vame.util.auxiliary import read_config
 
 
