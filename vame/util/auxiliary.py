@@ -43,6 +43,7 @@ def create_config_template():
     all_data:
     \n
 # Creation of train set:
+    egocentric_data: 
     robust:
     iqr_factor:
     axis: 
@@ -77,6 +78,8 @@ def create_config_template():
     softplus: 
     \n
 # Segmentation:
+    parameterization:
+    hmm_trained: False
     load_data:
     individual_parameterization: 
     random_state_kmeans: 
@@ -245,6 +248,8 @@ def update_config(config):
         cfg_file['beta_norm'] = False
         cfg_file['n_layers'] = 1
         cfg_file['axis'] = 'None'
+        cfg_file['egocentric_data'] = True
+        cfg_file['parameterization'] = 'kmeans'
         
         projconfigfile=os.path.join(str(project_path),'config.yaml')
         # Write dictionary to yaml  config file

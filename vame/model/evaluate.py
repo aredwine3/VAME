@@ -119,16 +119,16 @@ def plot_loss(cfg, filepath, model_name, suffix=None):
         fig.savefig(os.path.join(filepath,"evaluate",'MSE-and-KL-Loss'+model_name+'_'+suffix+'.png'))
     plt.close('all')
 
-    
 
-def eval_temporal(cfg, use_gpu, model_name, legacy, snapshot=None, suffix=None):#, 
+def eval_temporal(cfg, use_gpu, model_name, fixed):
+
     SEED = 19
     ZDIMS = cfg['zdims']
     FUTURE_DECODER = cfg['prediction_decoder']
     TEMPORAL_WINDOW = cfg['time_window']*2
     FUTURE_STEPS = cfg['prediction_steps']
     NUM_FEATURES = cfg['num_features']
-    if legacy == False:
+    if fixed == False:
         NUM_FEATURES = NUM_FEATURES - 2
     TEST_BATCH_SIZE = 64
     PROJECT_PATH = cfg['project_path']
@@ -177,8 +177,8 @@ def eval_temporal(cfg, use_gpu, model_name, legacy, snapshot=None, suffix=None):
         elif suffix:
             plot_loss(cfg, filepath, model_name, suffix=suffix)
     else:
-        pass #note, loading of losses needs to be adapted for CPU use #TODO
-    
+        plot_loss(cfg, filepath, model_name)
+        # pass #note, loading of losses needs to be adapted for CPU use #TODO
 
 def evaluate_model(config, model_name, use_snapshots=False):#, suffix=None
     """
@@ -197,6 +197,7 @@ def evaluate_model(config, model_name, use_snapshots=False):#, suffix=None
     cfg = read_config(config_file)
     legacy = cfg['legacy']
     model_name = cfg['model_name']
+    fixed = cfg['egocentric_data']
 
     if not os.path.exists(os.path.join(cfg['project_path'],"model","evaluate")):
         os.mkdir(os.path.join(cfg['project_path'],"model","evaluate"))
@@ -212,14 +213,15 @@ def evaluate_model(config, model_name, use_snapshots=False):#, suffix=None
 
     print("\n\nEvaluation of %s model. \n" %model_name)   
     if not use_snapshots:
-        eval_temporal(cfg, use_gpu, model_name, legacy=legacy)#suffix=suffix
+        eval_temporal(cfg, use_gpu, model_name, fixed)#suffix=suffix
     elif use_snapshots:
         snapshots=os.listdir(os.path.join(cfg['project_path'],'model','best_model','snapshots'))
         for snap in snapshots:
             fullpath = os.path.join(cfg['project_path'],"model","best_model","snapshots",snap)
             epoch=snap.split('_')[-1].strip('.pkl')
-            eval_temporal(cfg, use_gpu, model_name, snapshot=fullpath, legacy=legacy, suffix='snapshot'+str(epoch))
-            eval_temporal(cfg, use_gpu, model_name, legacy=legacy, suffix='bestModel')
+            eval_temporal(cfg, use_gpu, model_name, fixed, snapshot=fullpath, suffix='snapshot'+str(epoch))
+            eval_temporal(cfg, use_gpu, model_name, fixed, suffix='bestModel')
+
     print("You can find the results of the evaluation in '/Your-VAME-Project-Apr30-2020/model/evaluate/' \n"
           "OPTIONS:\n"
           "- vame.pose_segmentation() to identify behavioral motifs.\n"

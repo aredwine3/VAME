@@ -82,6 +82,7 @@ def motif_videos(config, model_name, videoType='.mp4', fps=25, cluster_method="k
     cfg = read_config(config_file)
     model_name = cfg['model_name']
     n_cluster = cfg['n_cluster']
+    param = cfg['parameterization']
     flag = 'motif'
     
     files = []
@@ -105,9 +106,9 @@ def motif_videos(config, model_name, videoType='.mp4', fps=25, cluster_method="k
                 continue
     else:
         files.append(all_flag)
-        
-    for cluster in range(n_cluster):
-        print("Cluster size is: %d " %n_cluster)
+
+    print("Cluster size is: %d " %n_cluster)
+    for file in files:
         if rename:
             for file in files:
                 suffix=file.split('_')[-1]
@@ -117,21 +118,12 @@ def motif_videos(config, model_name, videoType='.mp4', fps=25, cluster_method="k
                 if not os.path.exists(os.path.join(path_to_file,"cluster_videos",file+'-motif_%d.avi' %cluster)):
                     if not os.path.exists(path_to_file+'/cluster_videos/'):
                             os.mkdir(path_to_file+'/cluster_videos/')
-    
-                    get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag, fps=fps, cluster_method=cluster_method, rename=rename)
-                else:
-                    print("Video for cluster %d already exists, skipping..." %cluster)
-        elif not rename:
-            for file in files:
-                path_to_file=os.path.join(cfg['project_path'], 'results/',file,model_name,cluster_method+'-'+str(n_cluster),'')
-                
-                if not os.path.exists(os.path.join(path_to_file,"cluster_videos",file+'-motif_%d.avi' %cluster)):
-                    if not os.path.exists(path_to_file+'/cluster_videos/'):
-                            os.mkdir(path_to_file+'/cluster_videos/')
-                        
-                    get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag, fps=fps, cluster_method=cluster_method, rename=None)
-                else:
-                    print("Video for cluster %d already exists, skipping..." %cluster)
+	elif not rename:
+            path_to_file=os.path.join(cfg['project_path'],"results",file,model_name,param+'-'+str(n_cluster),"")
+            if not os.path.exists(os.path.join(path_to_file,"cluster_videos")):
+                os.mkdir(os.path.join(path_to_file,"cluster_videos"))
+
+        get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag)
 
     print("All videos have been created!")
     

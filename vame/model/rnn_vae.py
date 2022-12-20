@@ -222,6 +222,7 @@ def train_model(config):
     model_name = cfg['model_name']
     pretrained_weights = cfg['pretrained_weights']
     pretrained_model = cfg['pretrained_model']
+    fixed = cfg['egocentric_data']
     
     print("Train Variational Autoencoder - model name: %s \n" %model_name)
     if not os.path.exists(os.path.join(cfg['project_path'],'model','best_model',"")):
@@ -252,7 +253,7 @@ def train_model(config):
     SNAPSHOT = cfg['model_snapshot']
     LEARNING_RATE = cfg['learning_rate']
     NUM_FEATURES = cfg['num_features']
-    if legacy == False:
+    if fixed == False:
         NUM_FEATURES = NUM_FEATURES - 2
     TEMPORAL_WINDOW = cfg['time_window']*2
     FUTURE_DECODER = cfg['prediction_decoder']
@@ -341,6 +342,7 @@ def train_model(config):
 
     if optimizer_scheduler:
         print('Scheduler step size: %d, Scheduler gamma: %.2f, Scheduler Threshold: %.5f\n' %(scheduler_step_size, cfg['scheduler_gamma'], scheduler_thresh))
+	# Thanks to @alexcwsmith for the optimized scheduler contribution
         scheduler = ReduceLROnPlateau(optimizer, 'min', factor=cfg['scheduler_gamma'], patience=cfg['scheduler_step_size'], threshold=scheduler_thresh, threshold_mode='rel', verbose=True)
     else:
         scheduler = StepLR(optimizer, step_size=scheduler_step_size, gamma=1, last_epoch=-1)
@@ -360,11 +362,7 @@ def train_model(config):
         current_loss, test_loss, test_list = test(test_loader, epoch, model, optimizer,
                                                   BETA, weight, TEMPORAL_WINDOW, MSE_REC_REDUCTION,
                                                   KMEANS_LOSS, KMEANS_LAMBDA, FUTURE_DECODER, TEST_BATCH_SIZE)
-        if not optimizer_scheduler:
-            if epoch % scheduler_step_size == 0 and epoch != 0:
-                for param_group in optimizer.param_groups:
-                    print('learning rate update: {}'.format(param_group['lr']))
-                    
+
         # logging losses
         train_losses.append(train_loss)
         test_losses.append(test_loss)
