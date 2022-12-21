@@ -120,7 +120,7 @@ def plot_loss(cfg, filepath, model_name, suffix=None):
     plt.close('all')
 
 
-def eval_temporal(cfg, use_gpu, model_name, fixed):
+def eval_temporal(cfg, use_gpu, model_name, fixed, snapshot=None, suffix=None):
 
     SEED = 19
     ZDIMS = cfg['zdims']

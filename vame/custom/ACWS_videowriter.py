@@ -60,6 +60,9 @@ def get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag, fps=30,
         labels = np.load(glob.glob(path_to_file+'/'+str(n_cluster)+'_km_label_'+'*.npy')[0])
     elif cluster_method == 'GMM':
         labels = np.load(glob.glob(path_to_file+'/'+str(n_cluster)+'_gmm_label_'+'*.npy')[0])
+    elif cluster_method == 'hmm':
+        labels = np.load(glob.glob(path_to_file+'/'+str(n_cluster)+'_km_label_'+'*.npy')[0])
+
     capture = cv.VideoCapture(os.path.join(cfg['project_path'],"videos",file+videoType))  
 
     if capture.isOpened():

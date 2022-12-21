@@ -113,12 +113,12 @@ def motif_videos(config, model_name, videoType='.mp4', fps=25, cluster_method="k
             for file in files:
                 suffix=file.split('_')[-1]
                 file = file.replace(suffix, rename[suffix])
-
+            
                 path_to_file=os.path.join(cfg['project_path'], 'results/',file,model_name,cluster_method+'-'+str(n_cluster),'')
                 if not os.path.exists(os.path.join(path_to_file,"cluster_videos",file+'-motif_%d.avi' %cluster)):
                     if not os.path.exists(path_to_file+'/cluster_videos/'):
                             os.mkdir(path_to_file+'/cluster_videos/')
-	elif not rename:
+        elif not rename:
             path_to_file=os.path.join(cfg['project_path'],"results",file,model_name,param+'-'+str(n_cluster),"")
             if not os.path.exists(os.path.join(path_to_file,"cluster_videos")):
                 os.mkdir(os.path.join(path_to_file,"cluster_videos"))
