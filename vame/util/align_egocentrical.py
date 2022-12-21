@@ -12,6 +12,7 @@ import cv2 as cv
 import numpy as np
 import pandas as pd
 import tqdm    
+import glob
 
 from pathlib import Path
 from vame.util.auxiliary import read_config  
@@ -283,7 +284,11 @@ def play_aligned_video(a, n, frame_count, path_to_file, save=False, filename=Non
     None.
 
     """
-    colors = [(255,0,0),(0,255,0),(0,0,255),(255,255,0),(255,0,255),(0,255,255),(0,0,0),(255,255,255)]
+    colors = [(255,0,0),(0,255,0),(0,0,255),
+              (255,255,0),(255,0,255),(0,255,255),
+              (0,0,0),(255,255,255), (255, 128, 0),
+              (255, 153, 255), (170, 86, 255), (97, 237, 97),
+              (62, 142, 142), (232,232,44)]
     if not os.path.exists(os.path.join(path_to_file, 'egocentricVideos/')):
         os.mkdir(os.path.join(path_to_file, 'egocentricVideos/'))
     if save:
@@ -355,7 +360,13 @@ def alignment(config, filename, pose_ref_index, video_format, crop_size, use_vid
     path_to_file = cfg['project_path']
     confidence = cfg['pose_confidence']
     #read out data
-    data = pd.read_csv(os.path.join(path_to_file,'videos','pose_estimation',filename+'.csv'), skiprows = 0, header=[1,2], index_col=0)
+    dataFile = glob.glob(os.path.join(path_to_file,'videos','pose_estimation',filename+'*.csv'))
+    if len(dataFile)>1:
+        raise KeyError("Multiple csv files match video filename")
+    else:
+        dataFile=dataFile[0]
+    data = pd.read_csv(dataFile, skiprows=0, index_col=0, header=[1,2])
+    #data = pd.read_csv(os.path.join(path_to_file,'videos','pose_estimation',filename+'.csv'), skiprows = 0, header=[1,2], index_col=0)
     data_mat = pd.DataFrame.to_numpy(data)
     
     # get the coordinates for alignment from data table
