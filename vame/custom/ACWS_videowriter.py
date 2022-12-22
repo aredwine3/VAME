@@ -10,6 +10,7 @@ Licensed under GNU General Public License v3.0
 """
 
 import os
+os.chdir('/d1/software/VAME')
 from pathlib import Path
 import numpy as np
 import pandas as pd
@@ -22,7 +23,7 @@ def consecutive(data, stepsize=1):
     data = data[:]
     return np.split(data, np.where(np.diff(data) != stepsize)[0]+1)
 
-def get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag, fps=30, bins=6, cluster_method='kmeans'):
+def get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag, fps=30, bins=6, cluster_method='kmeans', extractData=False):
     """This creates motif videos based on the longest sequences of each motif, rather than the first frames in that motif (the default in VAME).
     You can limit the length of each sequence used with 'bins', this parameter sets the minimum number of distinct examples that will be sampled
     in the video (if that many examples exist).
@@ -54,7 +55,7 @@ def get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag, fps=30,
     None. Saves motif videos.
     
     """
-    
+    projectPath=cfg['project_path']
     print("Videos being created for "+file+" ...")
     if cluster_method == 'kmeans':
         labels = np.load(glob.glob(path_to_file+'/'+str(n_cluster)+'_km_label_'+'*.npy')[0])
@@ -70,7 +71,12 @@ def get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag, fps=30,
         height = capture.get(cv.CAP_PROP_FRAME_HEIGHT)
     else:
         raise OSError("Could not open OpenCV capture device.")
-
+    
+    if extractData:
+        dataFile = glob.glob(os.path.join(projectPath, 'videos', 'pose_estimation', file+'*.csv'))
+        dataFile = dataFile[0] if dataFile else None
+        data = pd.read_csv(dataFile, index_col=0, header=[0,1,2])
+        
     for cluster in range(n_cluster):
         print('Cluster: %d' %(cluster))
         cluster_lbl = np.where(labels == cluster)
@@ -107,6 +113,9 @@ def get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag, fps=30,
                 else:
                     seq = seq[:vid_length//bins]
                     used_seqs.extend(sorted(seq))
+        if extractData:
+            clusterData = data.iloc[used_seqs,:]
+            clusterData.to_csv(os.path.join(path_to_file,"cluster_videos", 'DLC_Results_Cluster'+str(cluster)+'.csv'))
                
         if len(used_seqs) > vid_length:
             used_seqs = used_seqs[:vid_length]
@@ -137,7 +146,7 @@ def get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag, fps=30,
     capture.release()
 
 
-def motif_videos(config, model_name, videoType='.mp4', fps=25, bins=6, cluster_method="kmeans"):
+def motif_videos(config, model_name, videoType='.mp4', fps=30, bins=6, cluster_method="kmeans", extractData=False):
     """Create custom motif videos. This differs from the function in the main vame repository in that 
     rather than the first frames 1000 frames (or whatever number assigned in config.yaml) of each cluster,
     motif videos will sample the longest sequential number of frames in the same behavioral cluster.
@@ -159,7 +168,7 @@ def motif_videos(config, model_name, videoType='.mp4', fps=25, bins=6, cluster_m
     bins : int (optional, default 6)
         Minimum number of bins different behavioral epochs to include in motif videos.
     cluster_method : string (optional, default 'kmeans')
-        Method used for clustering.
+        Method used for clustering. Options are 'kmeans' or 'hmm'
     rename : tuple (optional, default None)
         In very early trial testing, but allows analysis of videos that have been renamed, 
         or that you want to rename during analysis.
@@ -202,7 +211,7 @@ def motif_videos(config, model_name, videoType='.mp4', fps=25, bins=6, cluster_m
         if not os.path.exists(path_to_file+'/cluster_videos/'):
             os.mkdir(path_to_file+'/cluster_videos/')
 
-        get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag, fps=fps, bins=bins, cluster_method=cluster_method)
+        get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag, fps=fps, bins=bins, cluster_method=cluster_method, extractData=extractData)
 
     print("All videos have been created!")
     
