@@ -161,11 +161,11 @@ def same_parameterization(cfg, files, latent_vector_files, states, parameterizat
             hmm_model.fit(latent_vector_cat)
             label = hmm_model.predict(latent_vector_cat)
             save_data = os.path.join(cfg['project_path'], "results", "")
-            with open(save_data+"hmm_trained.pkl", "wb") as file: pickle.dump(hmm_model, file)
+            with open(save_data+"hmm_trained_ncluster"+str(states)+".pkl", "wb") as file: pickle.dump(hmm_model, file)
         else:
             print("Using a pretrained HMM as parameterization!")
             save_data = os.path.join(cfg['project_path'], "results", "")
-            with open(save_data+"hmm_trained.pkl", "rb") as file:
+            with open(save_data+"hmm_trained_ncluster"+str(states)+".pkl", "rb") as file:
                 hmm_model = pickle.load(file)
             label = hmm_model.predict(latent_vector_cat)
         
@@ -291,16 +291,17 @@ def pose_segmentation(config):
             latent_vectors = load_latent_vectors(cfg, files)
             new = True
             
-        if ind_param == False:
-            print("For all animals the same parameterization of latent vectors is applied for %d cluster" %n_cluster)
-            labels, cluster_center, motif_usages = same_parameterization(cfg, files, latent_vectors, n_cluster, parameterization, hmm_iters=hmm_iters)
-        else:
-            print("Individual parameterization of latent vectors for %d cluster" %n_cluster)
-            labels, cluster_center, motif_usages = individual_parameterization(cfg, files, latent_vectors, n_cluster)
+#        if ind_param == False:
+#            print("For all animals the same parameterization of latent vectors is applied for %d cluster" %n_cluster)
+#            labels, cluster_center, motif_usages = same_parameterization(cfg, files, latent_vectors, n_cluster, parameterization, hmm_iters=hmm_iters)
+#        else:
+#            print("Individual parameterization of latent vectors for %d cluster" %n_cluster)
+#            labels, cluster_center, motif_usages = individual_parameterization(cfg, files, latent_vectors, n_cluster)
                     
         if os.path.exists(os.path.join(cfg['project_path'],"results",file,model_name, parameterization+'-'+str(n_cluster),"")):
             flag = input('WARNING: A parameterization for the chosen cluster size of the model already exists! \n'
-                        'Do you want to continue? A new parameterization will be computed! (yes/no) ').lower()
+                        'Do you want to continue? If hmm_trained in your config file is "false", a new parameterization will be computed.\n'
+                        'If hmm_trained is "true", the previous parameterization will be loaded (yes/no) ').lower()
         else:
             flag = 'yes'
         
