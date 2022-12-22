@@ -246,7 +246,7 @@ def combineBehavior(config, save=True, cluster_method='kmeans', legacy=False):
     return cat
 
 #%%
-def parseIVSA(config, groups, cluster_method='kmeans', presession=True):
+def parseBehavior(config, groups, cluster_method='kmeans', presession=True):
     config_file = Path(config).resolve()
     cfg = read_config(config_file)
     projectPath = cfg['project_path']
