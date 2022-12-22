@@ -246,12 +246,12 @@ def combineBehavior(config, save=True, cluster_method='kmeans', legacy=False):
     return cat
 
 #%%
-def parseIVSA(config, groups, presession=True):
+def parseIVSA(config, groups, cluster_method='kmeans', presession=True):
     config_file = Path(config).resolve()
     cfg = read_config(config_file)
     projectPath = cfg['project_path']
     files = cfg['video_sets']
-    cat = combineBehavior(config)
+    cat = combineBehavior(config, cluster_method=cluster_method)
     for group in groups:
         groupData=pd.DataFrame()
         if presession:
