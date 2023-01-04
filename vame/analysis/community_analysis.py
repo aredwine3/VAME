@@ -65,7 +65,7 @@ def get_transition_matrix(adjacency_matrix, threshold = 0.0):
 def get_labels(cfg, files, model_name, n_cluster):
     labels = []
     for file in files:
-        path_to_file = os.path.join(cfg['project_path'],"results",file,model_name,'kmeans-'+str(n_cluster),"")
+        path_to_file = os.path.join(cfg['project_path'],"results",file,model_name,cfg['parameterization']+'-'+str(n_cluster),"")
         label = np.load(os.path.join(path_to_file,str(n_cluster)+'_km_label_'+file+'.npy'))
         labels.append(label)
     return labels
@@ -146,7 +146,7 @@ def umap_embedding(cfg, file, model_name, n_cluster):
     
     print("UMAP calculation for file %s" %file)
     
-    folder = os.path.join(cfg['project_path'],"results",file,model_name,'kmeans-'+str(n_cluster),"")
+    folder = os.path.join(cfg['project_path'],"results",file,model_name,cfg['parameterization']+'-'+str(n_cluster),"")
     latent_vector = np.load(os.path.join(folder,'latent_vector_'+file+'.npy'))
     
     num_points = cfg['num_points']
@@ -220,6 +220,7 @@ def community(config, show_umap=False, cut_tree=None, autofill=True):
     cfg = read_config(config_file)
     model_name = cfg['model_name']
     n_cluster = cfg['n_cluster']
+    parameterization = cfg['parameterization']
     
     files = []
     if cfg['all_data'] == 'No' or cfg['all_data']=='no':
@@ -249,7 +250,7 @@ def community(config, show_umap=False, cut_tree=None, autofill=True):
     community_labels_all = get_community_labels(files, labels, communities_all)    
     
     for idx, file in enumerate(files):
-        path_to_file=os.path.join(cfg['project_path'],"results",file,model_name,'kmeans-'+str(n_cluster),"")
+        path_to_file=os.path.join(cfg['project_path'],"results",file,model_name,parameterization+'-'+str(n_cluster),"")
         if not os.path.exists(os.path.join(path_to_file,"community")):
             os.mkdir(os.path.join(path_to_file,"community"))
         
