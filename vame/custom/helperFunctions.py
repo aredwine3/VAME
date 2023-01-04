@@ -615,9 +615,10 @@ def drawHierarchyTrees(config):
     projectPath = cfg['project_path']
     modelName = cfg['model_name']
     videos = cfg['video_sets']
+    parameterization=cfg['parameterization']
     for file in videos:
-        labels = np.load(os.path.join(projectPath, 'results', file, modelName, 'kmeans-'+str(n_cluster), str(n_cluster)+'_km_label_'+file+'.npy'))
-        motif_usage = np.load(os.path.join(projectPath, 'results', file, modelName, 'kmeans-'+str(n_cluster), 'motif_usage_'+file+'.npy'))
+        labels = np.load(os.path.join(projectPath, 'results', file, modelName, parameterization+'-'+str(n_cluster), str(n_cluster)+'_km_label_'+file+'.npy'))
+        motif_usage = np.load(os.path.join(projectPath, 'results', file, modelName, parameterization+'-'+str(n_cluster), 'motif_usage_'+file+'.npy'))
         adj_mat, trans_mat = get_adjacency_matrix(labels, n_cluster)
         T = graph_to_tree(motif_usage, trans_mat, n_cluster, merge_sel=1)
         draw_tree(T, file)
