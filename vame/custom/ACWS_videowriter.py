@@ -73,14 +73,19 @@ def get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag, fps=30,
         raise OSError("Could not open OpenCV capture device.")
     
     if extractData:
+        if not os.path.exists(os.path.join(path_to_file, 'dlcPoseData')):
+            os.mkdir(os.path.join(path_to_file, 'dlcPoseData'))
         dataFile = glob.glob(os.path.join(projectPath, 'videos', 'pose_estimation', file+'*.csv'))
         dataFile = dataFile[0] if dataFile else None
         data = pd.read_csv(dataFile, index_col=0, header=[0,1,2])
         
     for cluster in range(n_cluster):
         print('Cluster: %d' %(cluster))
+        vid_length = cfg['length_of_motif_video']
         cluster_lbl = np.where(labels == cluster)
         cluster_lbl = cluster_lbl[0]
+        if cluster_lbl.shape[0] < vid_length:
+            vid_length=cluster_lbl.shape[0]-1
         cons_lbl = consecutive(cluster_lbl, 1)
         cons_df = pd.DataFrame(cons_lbl)
         try:
@@ -96,7 +101,6 @@ def get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag, fps=30,
         frames = cons_counts['startFrame'].tolist()
         lengths = cons_counts['length'].tolist()
 
-        vid_length = cfg['length_of_motif_video']
         used_seqs=[]
         while len(used_seqs)<vid_length:
             if lengths[0]==0:
@@ -115,7 +119,7 @@ def get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag, fps=30,
                     used_seqs.extend(sorted(seq))
         if extractData:
             clusterData = data.iloc[used_seqs,:]
-            clusterData.to_csv(os.path.join(path_to_file,"cluster_videos", 'DLC_Results_Cluster'+str(cluster)+'.csv'))
+            clusterData.to_csv(os.path.join(path_to_file,'dlcPoseData', 'DLC_Results_Cluster'+str(cluster)+'.csv'))
                
         if len(used_seqs) > vid_length:
             used_seqs = used_seqs[:vid_length]
