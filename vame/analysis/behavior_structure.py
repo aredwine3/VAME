@@ -65,8 +65,12 @@ def consecutive(data, stepsize=1):
     return np.split(data, np.where(np.diff(data) != stepsize)[0]+1)
     
     
-def get_network(path_to_file, file, cluster_method, n_cluster):
-    if cluster_method == 'kmeans':
+def get_network(path_to_file, file, cluster_method, n_cluster, plot=False):
+    if plot:
+        import seaborn as sns
+        import matplotlib.pyplot as plt
+        
+    if cluster_method == 'kmeans' or cluster_method=='hmm':
         labels = np.load(path_to_file + '/'+str(n_cluster)+'_km_label_'+file+'.npy')
     elif cluster_method=='ts-kmeans':
         labels = np.load(path_to_file + '/'+str(n_cluster)+'_ts-kmeans_label_'+file+'.npy')
@@ -91,12 +95,24 @@ def get_network(path_to_file, file, cluster_method, n_cluster):
     else:
         motif_usage = motif_usage[1]
     
-    np.save(path_to_file+'/behavior_quantification/adjacency_matrix.npy', adj_mat)
-    np.save(path_to_file+'/behavior_quantification/transition_matrix.npy', transition_matrix)
-    np.save(path_to_file+'/behavior_quantification/motif_usage.npy', motif_usage)   
-
+    np.save(os.path.join(path_to_file, 'behavior_quantification', 'adjacency_matrix.npy'), adj_mat)
+    np.save(os.path.join(path_to_file, 'behavior_quantification', 'transition_matrix.npy'), transition_matrix)
+    np.save(os.path.join(path_to_file, 'behavior_quantification', 'motif_usage.npy'), motif_usage)
     
-def behavior_quantification(config, model_name, cluster_method='kmeans', n_cluster=30, rename=False):
+    if plot:
+        tmplot = sns.heatmap(transition_matrix, annot=True)
+        plt.xlabel("Next frame behavior", fontsize=16)
+        plt.ylabel("Current frame behavior", fontsize=16)
+        plt.title("Averaged Transition matrix of " + str(n_cluster) + " clusters")
+        plt.savefig(os.path.join(path_to_file, 'behavior_quantification', file+'_transition_matrix.svg'), bbox_inches='tight')
+        plt.close()
+        
+        motplot = sns.barplot(x=list(range(n_cluster)), y=motif_usage)
+        plt.xlabel('Cluster ID', fontsize=16)
+        plt.ylabel('Number of frames in cluster', fontsize=16)
+        plt.savefig(os.path.join(path_to_file, 'behavior_quantification', file+'_motif_usage.svg'), bbox_inches='tight')
+    
+def behavior_quantification(config, model_name, cluster_method='kmeans', n_cluster=30, plot=False, rename=False):
     config_file = Path(config).resolve()
     cfg = read_config(config_file)
     
@@ -131,15 +147,15 @@ def behavior_quantification(config, model_name, cluster_method='kmeans', n_clust
         files = files[count:]
         
     for file in files:
-        path_to_file=cfg['project_path']+'results/'+file+'/'+model_name+'/'+cluster_method+'-'+str(n_cluster)
+        path_to_file=os.path.join(cfg['project_path'],'results',file,model_name,cluster_method+'-'+str(n_cluster))
        
-        if not os.path.exists(path_to_file+'/behavior_quantification/'):
-            os.mkdir(path_to_file+'/behavior_quantification/')
+        if not os.path.exists(os.path.join(path_to_file,'behavior_quantification')):
+            os.mkdir(os.path.join(path_to_file,'behavior_quantification'))
         if rename:
             for filename in glob.iglob(path_to_file+'/'+str(n_cluster) + '*.npy'):
                 file, ext = os.path.splitext(filename.split('/')[-1])
                 file = file.split(str(n_cluster)+'_km_label_')[-1]
-        get_network(path_to_file, file, cluster_method, n_cluster)
+        get_network(path_to_file, file, cluster_method, n_cluster, plot=plot)
 
         
 
