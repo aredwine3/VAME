@@ -261,17 +261,17 @@ def pose_segmentation(config):
             torch.device("cpu")
 
         for file in files:        
-            if glob.glob(os.path.join(cfg['project_path'], "results", files[-1], model_name, parameterization+'-*','latent_vector*')):
+            if glob.glob(os.path.join(cfg['project_path'], "results", files[-1], model_name, '*','latent_vector*')):
                 resultPath = os.path.join(cfg['project_path'],"results",file,model_name)                    
-                latent_vec = glob.glob(os.path.join(resultPath,parameterization+'-*','latent_vector_'+file+'.npy'))
+                latent_vec = glob.glob(os.path.join(resultPath,'*','latent_vector_'+file+'.npy'))
                 latent_vec_ncluster = latent_vec[0].split('/')[-2].split('-')[1]                    
-                if int(latent_vec_ncluster) is not n_cluster:
+                if not os.path.exists(os.path.join(resultPath,parameterization+'-'+str(n_cluster))):
+                    os.mkdir(os.path.join(resultPath, parameterization+'-'+str(n_cluster)))
+                    new = True
                     src=latent_vec[0]
                     dest=os.path.join(resultPath,parameterization+'-'+str(n_cluster))
-                    if not os.path.exists(os.path.join(resultPath,parameterization+'-'+str(n_cluster))):
-                        new = True
+                    if not glob.glob(os.path.join(dest, 'latent_vector*')):
                         print("Latent vector found for "+str(latent_vec_ncluster)+" clusters. Copying file.")
-                        os.mkdir(os.path.join(cfg['project_path'],"results",file,model_name,parameterization+'-'+str(n_cluster)))
                         shutil.copy(src, dest)
                   #      print("Copied latent vector for " + file + " from n_cluster" + str(latent_vec_ncluster) + " to " + str(n_cluster))
                 else:          
@@ -298,8 +298,8 @@ def pose_segmentation(config):
 #            print("Individual parameterization of latent vectors for %d cluster" %n_cluster)
 #            labels, cluster_center, motif_usages = individual_parameterization(cfg, files, latent_vectors, n_cluster)
                     
-        if os.path.exists(os.path.join(cfg['project_path'],"results",file,model_name, parameterization+'-'+str(n_cluster),"")):
-            flag = input('WARNING: A parameterization for the chosen cluster size of the model already exists! \n'
+        if os.path.exists(os.path.join(cfg['project_path'],"results",file,model_name, parameterization+'-'+str(n_cluster))):
+            flag = input('WARNING: A parameterization for the chosen cluster size of the model may already exist! \n'
                         'Do you want to continue? If hmm_trained in your config file is "false", a new parameterization will be computed.\n'
                         'If hmm_trained is "true", the previous parameterization will be loaded (yes/no) ').lower()
         else:
@@ -327,14 +327,14 @@ def pose_segmentation(config):
         # print("Hello2")
         if new == True:
             for idx, file in enumerate(files):
-                print(os.path.join(cfg['project_path'],"results",file,"",model_name,parameterization+'-'+str(n_cluster),""))
-                if not os.path.exists(os.path.join(cfg['project_path'],"results",file,model_name,parameterization+'-'+str(n_cluster),"")):                    
+                print(os.path.join(cfg['project_path'],"results",file,"",model_name,parameterization+'-'+str(n_cluster)))
+                if not os.path.exists(os.path.join(cfg['project_path'],"results",file,model_name,parameterization+'-'+str(n_cluster))):                    
                     try:
-                        os.mkdir(os.path.join(cfg['project_path'],"results",file,"",model_name,parameterization+'-'+str(n_cluster),""))
+                        os.mkdir(os.path.join(cfg['project_path'],"results",file,"",model_name,parameterization+'-'+str(n_cluster)))
                     except OSError as error:
                         print(error)   
                     
-                save_data = os.path.join(cfg['project_path'],"results",file,model_name,parameterization+'-'+str(n_cluster),"")
+                save_data = os.path.join(cfg['project_path'],"results",file,model_name,parameterization+'-'+str(n_cluster))
                 np.save(os.path.join(save_data,str(n_cluster)+'_km_label_'+file), labels[idx])
                 if parameterization=="kmeans":
                     np.save(os.path.join(save_data,'cluster_center_'+file), cluster_center[idx])
