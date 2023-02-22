@@ -75,7 +75,7 @@ def get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag, fps=30,
     if extractData:
         if not os.path.exists(os.path.join(path_to_file, 'dlcPoseData')):
             os.mkdir(os.path.join(path_to_file, 'dlcPoseData'))
-        dataFile = glob.glob(os.path.join(projectPath, 'videos', 'pose_estimation', file+'*.csv'))
+        dataFile = glob.glob(os.path.join(projectPath, 'videos', 'pose_estimation',file+'*.csv'))
         dataFile = dataFile[0] if dataFile else None
         data = pd.read_csv(dataFile, index_col=0, header=[0,1,2])
         

@@ -280,7 +280,7 @@ def pose_segmentation(config):
                           'Parameterization of latent vector with %d k-Means cluster' %(model_name, n_cluster))
                     
 
-        if not os.path.exists(os.path.join(cfg['project_path'],"results",file,model_name, parameterization+'-'+str(n_cluster),"")):
+        if not os.path.exists(os.path.join(cfg['project_path'],"results",file,model_name, parameterization+'-'+str(n_cluster))):
             new = True
             # print("Hello1")
             model = load_model(cfg, model_name, fixed)

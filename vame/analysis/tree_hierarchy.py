@@ -372,7 +372,7 @@ def draw_tree(T, file):
     fig = plt.figure()
     nx.draw_networkx(T, pos)  
     figManager = plt.get_current_fig_manager()
-    figManager.window.showMaximized()
+   # figManager.window.showMaximized()
     if not os.path.exists('trees/'):
        os.mkdir('trees')
     fig.savefig('trees/'+file+'_tree.png') 
