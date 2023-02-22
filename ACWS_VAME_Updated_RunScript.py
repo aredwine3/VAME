@@ -88,18 +88,21 @@ vame.motif_videos(config, model_name='VAME', videoType='.mp4', fps=30)
 avw.motif_videos(config, extractData=True, model_name=modelName, cluster_method='hmm', videoType='.mp4', fps=30)
 
 #%%Generate transition matrices & average transition matrixes for groups:
-g1=glob.glob(os.path.join(projectPath, 'results', 'Vehicle*'))
+g1=sorted(glob.glob(os.path.join(projectPath, 'results', 'Vehicle*')))
 group1 = [x.split('/')[-1] for x in g1]
 g1n = 'Cue1'
-g2=glob.glob(os.path.join(projectPath, 'results', 'LowDoseSalvinorinA*'))
+g2=sorted(glob.glob(os.path.join(projectPath, 'results', 'Treatment*')))
 group2 = [x.split('/')[-1] for x in g2]
 g2n='Cue2'
 
 hf.plotAverageTransitionMatrices(config, group1, group2=group2, g1name=g1n, g2name=g2n, cluster_method='hmm')
 
+#%% Generate transition matrix and motif usage plots for each video
+bs.behavior_quantification(config, modelName, cluster_method='hmm', n_cluster=15, plot=True)
+
 #%%Generate CSVs of frames per behavior, do visual QC (check no motifs are very disproportionate between animals)
 hf.combineBehavior(config, save=True, cluster_method='hmm', legacy=False)
-hf.parseBehavior(config, groups=['LowDoseSalvinorinA', 'LowDoseDOI', 'HighDoseDOI', 'Vehicle', 'Baseline'], cluster_method='hmm', presession=False)
+hf.parseBehavior(config, groups=['Vehicle', 'Treatment1', 'Treatment2', 'Treatment3'], cluster_method='hmm', presession=False)
 
 #%% OPTIONAL: Create behavioural hierarchies via community detection
 hf.drawHierarchyTrees(config)
