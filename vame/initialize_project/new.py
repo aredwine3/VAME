@@ -161,6 +161,7 @@ def init_new_project(project, videos, working_directory=None, videotype='.mp4'):
     cfg_file['beta_norm'] = False
     cfg_file['n_layers'] = 1
     cfg_file['axis'] = None
+    cfg_file['parameterization'] = 'hmm'
     cfg_file['hmm_trained'] = False
 
 
