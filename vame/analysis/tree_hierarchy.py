@@ -366,7 +366,7 @@ def graph_to_tree(motif_usage, transition_matrix, n_cluster, merge_sel=1):
     return T
 
 
-def draw_tree(T, file):
+def draw_tree(T, file, imagetype='.png'):
     # pos = nx.drawing.layout.fruchterman_reingold_layout(T)
     pos = hierarchy_pos(T,'Root',width=.5, vert_gap = 0.1, vert_loc = 0)#, xcenter = 50 
     fig = plt.figure()
@@ -375,7 +375,10 @@ def draw_tree(T, file):
    # figManager.window.showMaximized()
     if not os.path.exists('trees/'):
        os.mkdir('trees')
-    fig.savefig('trees/'+file+'_tree.png') 
+    if imagetype=='.pdf':
+        fig.savefig('trees/'+file+'_tree'+imagetype, transparent=True)
+    else:
+        fig.savefig('trees/'+file+'_tree'+imagetype) 
     plt.close('all')
 
 
