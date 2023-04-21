@@ -502,9 +502,11 @@ def dropBodyParts(config, bodyParts):
                 df.to_csv(os.path.join(projectPath, 'videos/pose_estimation/' + file))
 
 #%%
-def plotAverageTransitionMatrices(config, group1, group2=None, g1name='Group1', g2name='Group2', cluster_method='kmeans'):
+def plotAverageTransitionMatrices(config, group1, group2=None, g1name='Group1', g2name='Group2', 
+                                  imagetype='.png', plot_individuals=False):
     cfg = read_config(config)
     projectPath = cfg['project_path']
+    cluster_method=cfg['parameterization']
     n_cluster=cfg['n_cluster']
     model_name=cfg['model_name']
     resultDir = os.path.join(projectPath, 'results')    
@@ -516,11 +518,31 @@ def plotAverageTransitionMatrices(config, group1, group2=None, g1name='Group1', 
             labels = np.load(os.path.join(resultDir, file, model_name, cluster_method+'-'+str(n_cluster), str(n_cluster)+'_km_label_'+file+'.npy'))
             am, tm = get_adjacency_matrix(labels, n_cluster)
             g1tms.append(tm)
+            if plot_individuals:
+                if not os.path.exists(os.path.join(projectPath, 'transitionMatrices')):
+                    os.mkdir(os.path.join(projectPath, 'transitionMatrices'))
+                fig = plt.figure(figsize=(15,10))
+                sns.heatmap(tm, annot=True)
+                plt.xlabel("Next frame behavior", fontsize=16)
+                plt.ylabel("Current frame behavior", fontsize=16)
+                plt.title("Averaged Transition matrix of {} clusters".format(tm.shape[0]), fontsize=18)
+                fig.savefig(os.path.join(projectPath, 'transitionMatrices', file + '_' + str(n_cluster) + 'clusters_'+str(cluster_method)+imagetype), bbox_inches='tight', transparent=imagetype=='.pdf')
+                plt.close('all')
         if group2:
-         if file in group2:
-            labels = np.load(os.path.join(resultDir, file, model_name, cluster_method+'-'+str(n_cluster), str(n_cluster)+'_km_label_'+file+'.npy'))
-            am, tm = get_adjacency_matrix(labels, n_cluster)
-            g2tms.append(tm)
+            if file in group2:
+                labels = np.load(os.path.join(resultDir, file, model_name, cluster_method+'-'+str(n_cluster), str(n_cluster)+'_km_label_'+file+'.npy'))
+                am, tm = get_adjacency_matrix(labels, n_cluster)
+                g2tms.append(tm)
+                if plot_individuals:
+                    if not os.path.exists(os.path.join(projectPath, 'transitionMatrices')):
+                        os.mkdir(os.path.join(projectPath, 'transitionMatrices'))
+                    fig = plt.figure(figsize=(15,10))
+                    sns.heatmap(tm, annot=True)
+                    plt.xlabel("Next frame behavior", fontsize=16)
+                    plt.ylabel("Current frame behavior", fontsize=16)
+                    plt.title("Averaged Transition matrix of {} clusters".format(tm.shape[0]), fontsize=18)
+                    fig.savefig(os.path.join(projectPath, 'transitionMatrices', file + '_' + str(n_cluster) + 'clusters_'+str(cluster_method)+imagetype), bbox_inches='tight', transparent=imagetype=='.pdf')
+                    plt.close('all')            
     g1stack = np.stack(g1tms, axis=2)
     g1ave = np.mean(g1stack, axis=2)
     fig = plt.figure(figsize=(15,10))
@@ -528,8 +550,8 @@ def plotAverageTransitionMatrices(config, group1, group2=None, g1name='Group1', 
     plt.xlabel("Next frame behavior", fontsize=16)
     plt.ylabel("Current frame behavior", fontsize=16)
     plt.title("Averaged Transition matrix of {} clusters".format(tm.shape[0]), fontsize=18)
-    fig.savefig(os.path.join(projectPath, g1name+'_AverageTransitionMatrix_' + str(n_cluster) + 'clusters_'+str(cluster_method)+'.png'), bbox_inches='tight')
-    print("Figure saved to " + os.path.join(projectPath, g1name+'_AverageTransitionMatrix_' + str(n_cluster) + 'clusters_'+str(cluster_method)+'.png'))
+    fig.savefig(os.path.join(projectPath, g1name+'_AverageTransitionMatrix_' + str(n_cluster) + 'clusters_'+str(cluster_method)+'.png'), bbox_inches='tight', transparent=imagetype=='.pdf')
+    print("Figure saved to " + os.path.join(projectPath, g1name+'_AverageTransitionMatrix_' + str(n_cluster) + 'clusters_'+str(cluster_method)+imagetype))
     if group2:
         g2stack = np.stack(g2tms, axis=2)
         g2ave = np.mean(g2stack, axis=2)
@@ -538,7 +560,7 @@ def plotAverageTransitionMatrices(config, group1, group2=None, g1name='Group1', 
         plt.xlabel("Next frame behavior", fontsize=16)
         plt.ylabel("Current frame behavior", fontsize=16)
         plt.title("Averaged Transition matrix of {} clusters".format(tm.shape[0]), fontsize=18)
-        fig.savefig(os.path.join(projectPath, g2name+'_AverageTransitionMatrix_' + str(n_cluster) + 'clusters_'+str(cluster_method)+'.png'), bbox_inches='tight')
+        fig.savefig(os.path.join(projectPath, g2name+'_AverageTransitionMatrix_' + str(n_cluster) + 'clusters_'+str(cluster_method)+'.png'), bbox_inches='tight', transparent=imagetype=='.pdf')
         print("Figure saved to " + os.path.join(projectPath, g2name+'_AverageTransitionMatrix_' + str(n_cluster) + 'clusters_'+str(cluster_method)+'.png'))
     plt.close('all')
 
@@ -609,7 +631,7 @@ def combineMotifUsage(config, files):
     cat.to_csv('CombinedMotifUsage.csv')        
 
 #%%
-def drawHierarchyTrees(config):
+def drawHierarchyTrees(config, imagetype='.png'):
     cfg = read_config(config)
     n_cluster = cfg['n_cluster']
     projectPath = cfg['project_path']
@@ -621,4 +643,4 @@ def drawHierarchyTrees(config):
         motif_usage = np.load(os.path.join(projectPath, 'results', file, modelName, parameterization+'-'+str(n_cluster), 'motif_usage_'+file+'.npy'))
         adj_mat, trans_mat = get_adjacency_matrix(labels, n_cluster)
         T = graph_to_tree(motif_usage, trans_mat, n_cluster, merge_sel=1)
-        draw_tree(T, file)
+        draw_tree(T, file, imagetype=imagetype)
