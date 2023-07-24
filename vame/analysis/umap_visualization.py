@@ -36,7 +36,7 @@ def umap_label_vis(file, embed, label, n_cluster, num_points, path_to_file):
     fig.savefig(os.path.join(path_to_file, file+'UMAP_LabeledMotifs.png'))
     plt.close('all')
 
-def umap_vis_comm(file, embed, community_label, num_points):
+def umap_vis_comm(file, embed, community_label, num_points, path_to_file):
     num = np.unique(community_label).shape[0]
     fig = plt.figure(1)
     plt.scatter(embed[:num_points,0], embed[:num_points,1],  c=community_label[:num_points], cmap='Spectral', s=2, alpha=.7)
