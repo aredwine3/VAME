@@ -29,7 +29,8 @@ else:
 
 def plot_reconstruction(filepath, test_loader, seq_len_half, model, model_name,
                         FUTURE_DECODER, FUTURE_STEPS, suffix=None):
-    x = test_loader.__iter__().next()
+    x_iter = iter(test_loader)
+    x = next(x_iter)
     x = x.permute(0,2,1)
     if use_gpu:
         data = x[:,:seq_len_half,:].type('torch.FloatTensor').cuda()
