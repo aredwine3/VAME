@@ -15,6 +15,7 @@ import torch.utils.data as Data
 from torch.autograd import Variable
 from torch.optim.lr_scheduler import StepLR, ReduceLROnPlateau
 
+import random
 import os
 import numpy as np
 import pandas as pd
@@ -27,13 +28,22 @@ from vame.model.rnn_model import RNN_VAE, RNN_VAE_LEGACY
 
 # make sure torch uses cuda for GPU computing
 use_gpu = torch.cuda.is_available()
+use_mps = torch.backends.mps.is_available() and not use_gpu
+
 if use_gpu:
+    device = torch.device("cuda")
     torch.set_default_tensor_type('torch.cuda.FloatTensor')
     print("Using CUDA")
-    print('GPU active:',torch.cuda.is_available())
-    print('GPU used:',torch.cuda.get_device_name(0))
+    print('GPU active:', torch.cuda.is_available())
+    print('GPU used:', torch.cuda.get_device_name(0))
+elif use_mps:
+    device = torch.device("mps")
+    torch.tensor([1,2,3], device="mps")
+    torch.set_default_tensor_type('torch.FloatTensor')
+    print("Using MPS")
 else:
-    torch.device("cpu")
+    device = torch.device("cpu")
+    print("Using CPU")
 
 def reconstruction_loss(x, x_tilde, reduction):
     mse_loss = nn.MSELoss(reduction=reduction)
@@ -113,6 +123,9 @@ def train(train_loader, epoch, model, optimizer, anneal_function, BETA, kl_start
         if use_gpu:
             data = data_item[:,:seq_len_half,:].type('torch.cuda.FloatTensor')
             fut = data_item[:,seq_len_half:seq_len_half+future_steps,:].type('torch.cuda.FloatTensor')
+        elif use_mps:
+            data = data_item[:,:seq_len_half,:].type('torch.FloatTensor').to(device)
+            fut = data_item[:,seq_len_half:seq_len_half+future_steps,:].type('torch.FloatTensor').to(device)
         else:
             data = data_item[:,:seq_len_half,:].type('torch.FloatTensor').to()
             fut = data_item[:,seq_len_half:seq_len_half+future_steps,:].type('torch.FloatTensor').to()
@@ -185,6 +198,8 @@ def test(test_loader, epoch, model, optimizer, BETA, kl_weight, seq_len, mse_red
             data_item = data_item.permute(0,2,1)
             if use_gpu:
                 data = data_item[:,:seq_len_half,:].type('torch.cuda.FloatTensor')
+            elif use_mps:
+                data = data_item[:,:seq_len_half,:].type('torch.FloatTensor').to(device)
             else:
                 data = data_item[:,:seq_len_half,:].type('torch.FloatTensor').to()
 
@@ -230,12 +245,21 @@ def train_model(config):
         os.mkdir(os.path.join(cfg['project_path'],'model','best_model','snapshots',""))
         os.mkdir(os.path.join(cfg['project_path'],'model','model_losses',""))
 
-    # make sure torch uses cuda for GPU computing
+    # make sure torch uses cuda or MPS for GPU computing
     use_gpu = torch.cuda.is_available()
+    use_mps = torch.backends.mps.is_available() and not use_gpu
+
     if use_gpu:
+        device = torch.device("cuda")
+        torch.set_default_tensor_type('torch.cuda.FloatTensor')
         print("Using CUDA")
-        print('GPU active:',torch.cuda.is_available())
-        print('GPU used: ',torch.cuda.get_device_name(0))
+        print('GPU active:', torch.cuda.is_available())
+        print('GPU used:', torch.cuda.get_device_name(0))
+    elif use_mps:
+        device = torch.device("mps")
+        torch.tensor([1,2,3], device="mps")
+        torch.set_default_tensor_type('torch.FloatTensor')
+        print("Using MPS")
     else:
         torch.device("cpu")
         print("warning, a GPU was not found... proceeding with CPU (slow!) \n")
@@ -243,7 +267,7 @@ def train_model(config):
         
     """ HYPERPARAMTERS """
     # General
-    CUDA = use_gpu
+    # CUDA = use_gpu
     SEED = 19
     TRAIN_BATCH_SIZE = cfg['batch_size']
     TEST_BATCH_SIZE = int(cfg['batch_size']/4)
@@ -304,11 +328,16 @@ def train_model(config):
     else:
         RNN = RNN_VAE_LEGACY
     
-    if CUDA:
+    if device == torch.device("cuda"):
         torch.cuda.manual_seed(SEED)
         model = RNN(TEMPORAL_WINDOW,ZDIMS,NUM_FEATURES,FUTURE_DECODER,FUTURE_STEPS, hidden_size_layer_1,
                         hidden_size_layer_2, hidden_size_rec, hidden_size_pred, dropout_encoder,
                         dropout_rec, dropout_pred, softplus).cuda()
+    elif device == torch.device("mps"):
+        torch.cuda.manual_seed(SEED)
+        model = RNN(TEMPORAL_WINDOW,ZDIMS,NUM_FEATURES,FUTURE_DECODER,FUTURE_STEPS, hidden_size_layer_1,
+                        hidden_size_layer_2, hidden_size_rec, hidden_size_pred, dropout_encoder,
+                        dropout_rec, dropout_pred, softplus).to(device)
     else: #cpu support ...
         torch.cuda.manual_seed(SEED)
         model = RNN(TEMPORAL_WINDOW,ZDIMS,NUM_FEATURES,FUTURE_DECODER,FUTURE_STEPS, hidden_size_layer_1,
