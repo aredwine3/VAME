@@ -48,7 +48,7 @@ def plot_reconstruction(filepath, test_loader, seq_len_half, model, model_name,
     if use_gpu:
         data = x[:,:seq_len_half,:].type('torch.FloatTensor').cuda()
         data_fut = x[:,seq_len_half:seq_len_half+FUTURE_STEPS,:].type('torch.FloatTensor').cuda()
-    if use_mps:
+    elif use_mps:
         data = x[:,:seq_len_half,:].type('torch.FloatTensor').to(device)
         data_fut = x[:,seq_len_half:seq_len_half+FUTURE_STEPS,:].type('torch.FloatTensor').to(device)
     else:
