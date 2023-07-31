@@ -14,7 +14,7 @@ import numpy as np
 import pandas as pd
 from pathlib import Path
 import scipy.signal
-from scipy.stats import iqr
+from scipy.stats import iqr # type: ignore
 import matplotlib.pyplot as plt
 
 from vame.util.auxiliary import read_config
@@ -127,13 +127,7 @@ def traindata_aligned(cfg, files, testfraction, num_features, savgol_filter, che
         if cfg['robust'] == True:
             iqr_val = iqr(X_z)
             print("IQR value: %.2f, IQR cutoff: %.2f" %(iqr_val, cfg['iqr_factor']*iqr_val))
-            for i in range(X_z.shape[0]):
-                for marker in range(X_z.shape[1]):
-                    if X_z[i,marker] > cfg['iqr_factor']*iqr_val:
-                        X_z[i,marker] = np.nan
-                        
-                    elif X_z[i,marker] < -cfg['iqr_factor']*iqr_val:
-                        X_z[i,marker] = np.nan       
+            X_z[(X_z > cfg['iqr_factor']*iqr_val) |  (X_z < -cfg['iqr_factor']*iqr_val)] = np.nan
 
             X_z = interpol(X_z)
              
@@ -221,15 +215,15 @@ def traindata_fixed(cfg, files, testfraction, num_features, savgol_filter, check
         if cfg['robust'] == True:
             iqr_val = iqr(X_z)
             print("IQR value: %.2f, IQR cutoff: %.2f" %(iqr_val, cfg['iqr_factor']*iqr_val))
-            for i in range(X_z.shape[0]):
-                for marker in range(X_z.shape[1]):
-                    if X_z[i,marker] > cfg['iqr_factor']*iqr_val:
-                        X_z[i,marker] = np.nan
-                        
-                    elif X_z[i,marker] < -cfg['iqr_factor']*iqr_val:
-                        X_z[i,marker] = np.nan       
-
-                X_z[i,:] = interpol(X_z[i,:])      
+            
+            # Create a mask for values that are outside the acceptable range
+            mask = np.abs(X_z) > cfg['iqr_factor']*iqr_val
+            
+            # Set those values to NaN
+            X_z[mask] = np.nan
+            
+            # Interpolate NaN values
+            X_z = np.apply_along_axis(interpol, axis=1, arr=X_z)
         
         X_len = len(data.T)
         pos_temp += X_len
