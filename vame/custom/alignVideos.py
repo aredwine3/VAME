@@ -114,7 +114,7 @@ def background(path_to_file,filename,file_format='.mp4',num_frames=1000):
     
     print('Finishing up!')
     medFrame = np.median(frames,2)
-    background = scipy.ndimage.median_filter(medFrame, (5,5))
+    background = scipy.ndimage.median_filter(medFrame, (5,5)) # type: ignore
     
     # np.save(path_to_file+'videos/'+'background/'+filename+'-background.npy',background)
     
