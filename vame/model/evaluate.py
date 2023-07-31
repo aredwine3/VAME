@@ -20,11 +20,24 @@ from vame.util.auxiliary import read_config
 from vame.model.rnn_vae import RNN_VAE
 from vame.model.dataloader import SEQUENCE_DATASET
 
+# make sure torch uses cuda for GPU computing
 use_gpu = torch.cuda.is_available()
+use_mps = torch.backends.mps.is_available() and not use_gpu
+
 if use_gpu:
-    pass
+    device = torch.device("cuda")
+    torch.set_default_tensor_type('torch.cuda.FloatTensor')
+    print("Using CUDA")
+    print('GPU active:', torch.cuda.is_available())
+    print('GPU used:', torch.cuda.get_device_name(0))
+elif use_mps:
+    device = torch.device("mps")
+    torch.tensor([1,2,3], device="mps")
+    torch.set_default_tensor_type('torch.FloatTensor')
+    print("Using MPS")
 else:
-    torch.device("cpu")
+    device = torch.device("cpu")
+    print("Using CPU")
     
 
 def plot_reconstruction(filepath, test_loader, seq_len_half, model, model_name,
@@ -35,6 +48,9 @@ def plot_reconstruction(filepath, test_loader, seq_len_half, model, model_name,
     if use_gpu:
         data = x[:,:seq_len_half,:].type('torch.FloatTensor').cuda()
         data_fut = x[:,seq_len_half:seq_len_half+FUTURE_STEPS,:].type('torch.FloatTensor').cuda()
+    if use_mps:
+        data = x[:,:seq_len_half,:].type('torch.FloatTensor').to(device)
+        data_fut = x[:,seq_len_half:seq_len_half+FUTURE_STEPS,:].type('torch.FloatTensor').to(device)
     else:
         data = x[:,:seq_len_half,:].type('torch.FloatTensor').to()
         data_fut = x[:,seq_len_half:seq_len_half+FUTURE_STEPS,:].type('torch.FloatTensor').to()
@@ -121,7 +137,7 @@ def plot_loss(cfg, filepath, model_name, suffix=None):
     plt.close('all')
 
 
-def eval_temporal(cfg, use_gpu, model_name, fixed, snapshot=None, suffix=None):
+def eval_temporal(cfg, use_gpu, use_mps, model_name, fixed, snapshot=None, suffix=None):
 
     SEED = 19
     ZDIMS = cfg['zdims']
@@ -155,7 +171,15 @@ def eval_temporal(cfg, use_gpu, model_name, fixed, snapshot=None, suffix=None):
             model.load_state_dict(torch.load(os.path.join(cfg['project_path'],"model","best_model",model_name+'_'+cfg['Project']+'.pkl')))
         elif snapshot:
             model.load_state_dict(torch.load(snapshot))
-
+    elif use_mps:
+        torch.manual_seed(SEED)
+        model = RNN_VAE(TEMPORAL_WINDOW,ZDIMS,NUM_FEATURES,FUTURE_DECODER,FUTURE_STEPS, hidden_size_layer_1,
+                        hidden_size_layer_2, hidden_size_rec, hidden_size_pred, dropout_encoder,
+                        dropout_rec, dropout_pred, softplus).to(device)
+        if not snapshot:
+            model.load_state_dict(torch.load(os.path.join(cfg['project_path'],"model","best_model",model_name+'_'+cfg['Project']+'.pkl')))
+        elif snapshot:
+            model.load_state_dict(torch.load(snapshot)) 
     else:
         model = RNN_VAE(TEMPORAL_WINDOW,ZDIMS,NUM_FEATURES,FUTURE_DECODER,FUTURE_STEPS, hidden_size_layer_1,
                         hidden_size_layer_2, hidden_size_rec, hidden_size_pred, dropout_encoder,
@@ -173,6 +197,11 @@ def eval_temporal(cfg, use_gpu, model_name, fixed, snapshot=None, suffix=None):
     elif snapshot:
         plot_reconstruction(filepath, test_loader, seq_len_half, model, model_name, FUTURE_DECODER, FUTURE_STEPS, suffix=suffix)#, 
     if use_gpu:
+        if not suffix:
+            plot_loss(cfg, filepath, model_name)
+        elif suffix:
+            plot_loss(cfg, filepath, model_name, suffix=suffix)
+    elif use_mps:
         if not suffix:
             plot_loss(cfg, filepath, model_name)
         elif suffix:
@@ -199,29 +228,39 @@ def evaluate_model(config, model_name, use_snapshots=False):#, suffix=None
     legacy = cfg['legacy']
     model_name = cfg['model_name']
     fixed = cfg['egocentric_data']
+    
 
     if not os.path.exists(os.path.join(cfg['project_path'],"model","evaluate")):
         os.mkdir(os.path.join(cfg['project_path'],"model","evaluate"))
 
     use_gpu = torch.cuda.is_available()
+    use_mps = torch.backends.mps.is_available() and not use_gpu
+
     if use_gpu:
+        device = torch.device("cuda")
+        torch.set_default_tensor_type('torch.cuda.FloatTensor')
         print("Using CUDA")
-        print('GPU active:',torch.cuda.is_available())
-        print('GPU used:',torch.cuda.get_device_name(0))
+        print('GPU active:', torch.cuda.is_available())
+        print('GPU used:', torch.cuda.get_device_name(0))
+    elif use_mps:
+        device = torch.device("mps")
+        torch.set_default_tensor_type('torch.FloatTensor')
+        print("Using MPS")
     else:
-        torch.device("cpu")
-        print("CUDA is not working, or a GPU is not found; using CPU!")
+        device = torch.device("cpu")
+        print("Using CPU")
 
     print("\n\nEvaluation of %s model. \n" %model_name)   
+
     if not use_snapshots:
-        eval_temporal(cfg, use_gpu, model_name, fixed)#suffix=suffix
+        eval_temporal(cfg, use_gpu, use_mps, model_name, fixed)#suffix=suffix
     elif use_snapshots:
         snapshots=os.listdir(os.path.join(cfg['project_path'],'model','best_model','snapshots'))
         for snap in snapshots:
             fullpath = os.path.join(cfg['project_path'],"model","best_model","snapshots",snap)
             epoch=snap.split('_')[-1].strip('.pkl')
-            eval_temporal(cfg, use_gpu, model_name, fixed, snapshot=fullpath, suffix='snapshot'+str(epoch))
-            eval_temporal(cfg, use_gpu, model_name, fixed, suffix='bestModel')
+            eval_temporal(cfg, use_gpu, use_mps, model_name, fixed, snapshot=fullpath, suffix='snapshot'+str(epoch))
+            eval_temporal(cfg, use_gpu, use_mps, model_name, fixed, suffix='bestModel')
 
     print("You can find the results of the evaluation in '/Your-VAME-Project-Apr30-2020/model/evaluate/' \n"
           "OPTIONS:\n"
