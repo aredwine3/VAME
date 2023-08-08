@@ -15,7 +15,6 @@ import torch.utils.data as Data
 from torch.autograd import Variable
 from torch.optim.lr_scheduler import StepLR, ReduceLROnPlateau
 
-import random
 import os
 import numpy as np
 import pandas as pd
