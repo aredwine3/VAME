@@ -8,6 +8,7 @@ This file converts a multi-animal DLC CSV to several single animal DLC files.
 Those can be used as input to run VAME.
 """
 
+import sys
 import pandas as pd
 import numpy as np
 import os
@@ -24,3 +25,11 @@ def convert_multi_csv_to_individual_csv(csv_files_path):
             fname_temp = fname[ind]
             fname_temp_path = os.path.splitext(csv)[0] + '_' + ind + '.csv'
             fname_temp.to_csv(fname_temp_path, index=True, header=True)
+
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print("Usage: python convert_maDLC_csv_individual_csv.py <csv_files_path>")
+        sys.exit(1)
+
+    csv_files_path = sys.argv[1]
+    convert_multi_csv_to_individual_csv(csv_files_path)
