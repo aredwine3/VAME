@@ -18,11 +18,18 @@ import cv2 as cv
 import tqdm
 from vame.util.auxiliary import read_config
 import glob
+import matplotlib.pyplot as plt
+from matplotlib.collections import LineCollection
+from matplotlib.animation import FFMpegWriter
+from tqdm import trange
+from vame.util import auxiliary as aux
 
+#%%
 def consecutive(data, stepsize=1):
     data = data[:]
     return np.split(data, np.where(np.diff(data) != stepsize)[0]+1)
 
+#%%
 def get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag, fps=30, bins=6, cluster_method='kmeans', extractData=False):
     """This creates motif videos based on the longest sequences of each motif, rather than the first frames in that motif (the default in VAME).
     You can limit the length of each sequence used with 'bins', this parameter sets the minimum number of distinct examples that will be sampled
@@ -149,7 +156,7 @@ def get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag, fps=30,
             video.release()
     capture.release()
 
-
+#%%
 def motif_videos(config, model_name, videoType='.mp4', fps=30, bins=6, cluster_method="kmeans", extractData=False):
     """Create custom motif videos. This differs from the function in the main vame repository in that 
     rather than the first frames 1000 frames (or whatever number assigned in config.yaml) of each cluster,
@@ -219,7 +226,7 @@ def motif_videos(config, model_name, videoType='.mp4', fps=30, bins=6, cluster_m
 
     print("All videos have been created!")
     
-    
+#%%
 def community_videos(config, videoType='.mp4'):
     config_file = Path(config).resolve()
     cfg = read_config(config_file)
@@ -258,3 +265,114 @@ def community_videos(config, videoType='.mp4'):
         get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag)
     
     print("All videos have been created!")
+    
+    
+#%%
+def reformat_aligned_array(array, dlc_data, output_dir, filename):
+  #  arr = np.load(array)
+    dfa = pd.DataFrame(array).T
+    num_insertions=(dfa.shape[1])//2
+ #   n, e = os.path.splitext(os.path.basename(dlc_data))
+    for i in range(num_insertions):
+        insert_position = (i + 1) * 2 + i  # Calculate the position for insertion
+        new_column_name = 'likelihood_'+str(i)
+        dfa.insert(insert_position, new_column_name, np.ones(dfa.shape[0]))
+    dfa.columns=dlc_data.columns
+    if output_dir:
+        dfa.to_csv(os.path.join(output_dir, filename+'_Aligned.csv'))
+    return dfa
+
+#%% This is taken exactly from DeepLabCut, credit to the authors www.github.com/deeplabcut/deeplabcut
+def create_video_with_keypoints_only(
+    df,
+    output_name,
+    ind_links=None,
+    pcutoff=0.6,
+    dotsize=8,
+    alpha=0.7,
+    background_color="k",
+    skeleton_color="navy",
+    color_by="bodypart",
+    colormap="viridis",
+    fps=25,
+    dpi=200,
+    codec="h264",
+):
+    bodyparts = df.columns.get_level_values("bodyparts")[::3]
+    bodypart_names = bodyparts.unique()
+    n_bodyparts = len(bodypart_names)
+    nx = int(np.nanmax(df.xs("x", axis=1, level="coords")))
+    ny = int(np.nanmax(df.xs("y", axis=1, level="coords")))
+
+    n_frames = df.shape[0]
+    xyp = df.values.reshape((n_frames, -1, 3))
+
+    if color_by == "bodypart":
+        map_ = bodyparts.map(dict(zip(bodypart_names, range(n_bodyparts))))
+        cmap = plt.get_cmap(colormap, n_bodyparts)
+    elif color_by == "individual":
+        try:
+            individuals = df.columns.get_level_values("individuals")[::3]
+            individual_names = individuals.unique().to_list()
+            n_individuals = len(individual_names)
+            map_ = individuals.map(dict(zip(individual_names, range(n_individuals))))
+            cmap = plt.get_cmap(colormap, n_individuals)
+        except KeyError as e:
+            raise Exception(
+                "Coloring by individuals is only valid for multi-animal data"
+            ) from e
+    else:
+        raise ValueError(f"Invalid color_by={color_by}")
+
+    prev_backend = plt.get_backend()
+    plt.switch_backend("agg")
+    fig = plt.figure(frameon=False, figsize=(nx / dpi, ny / dpi))
+    ax = fig.add_subplot(111)
+    scat = ax.scatter([], [], s=dotsize ** 2, alpha=alpha)
+    coords = xyp[0, :, :2]
+    coords[xyp[0, :, 2] < pcutoff] = np.nan
+    scat.set_offsets(coords)
+    colors = cmap(map_)
+    scat.set_color(colors)
+    segs = coords[tuple(zip(*tuple(ind_links))), :].swapaxes(0, 1) if ind_links else []
+    coll = LineCollection(segs, colors=skeleton_color, alpha=alpha)
+    ax.add_collection(coll)
+    ax.set_xlim(0, nx)
+    ax.set_ylim(0, ny)
+    ax.axis("off")
+    ax.add_patch(
+        plt.Rectangle(
+            (0, 0), 1, 1, facecolor=background_color, transform=ax.transAxes, zorder=-1
+        )
+    )
+    ax.invert_yaxis()
+    plt.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
+
+    writer = FFMpegWriter(fps=fps, codec=codec)
+    with writer.saving(fig, output_name, dpi=dpi):
+        writer.grab_frame()
+        for index, _ in enumerate(trange(n_frames - 1), start=1):
+            coords = xyp[index, :, :2]
+            coords[xyp[index, :, 2] < pcutoff] = np.nan
+            scat.set_offsets(coords)
+            if ind_links:
+                segs = coords[tuple(zip(*tuple(ind_links))), :].swapaxes(0, 1)
+            coll.set_segments(segs)
+            writer.grab_frame()
+    plt.close(fig)
+    plt.switch_backend(prev_backend)
+
+#%%
+def create_egocentric_videos(config, output_dir, colormap='viridis', dotsize=4, fps=25):
+    cfg=aux.read_config(config)
+    if not output_dir:
+        output_dir=cfg['project_path']
+    vids = cfg['video_sets']
+    for v in vids:
+        arr = np.load(os.path.join(cfg['project_path'], 'data', v, v+'-PE-seq.npy'))
+        dlcs = glob.glob(os.path.join(cfg['project_path'], 'videos', 'pose_estimation', v+'*'))
+        n, e = os.path.splitext(os.path.basename(dlcs[0]))
+        dlc_data = pd.read_csv(dlcs[0], index_col=0, header=[0,1,2])
+        dfa = reformat_aligned_array(arr, dlc_data, output_dir, n)
+        create_video_with_keypoints_only(dfa, os.path.join(output_dir, v+'_aligned.mp4'), dotsize=dotsize, colormap=colormap, fps=fps)
+        

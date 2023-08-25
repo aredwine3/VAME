@@ -568,8 +568,9 @@ def plotAverageTransitionMatrices(config, group1, group2=None, g1name='Group1', 
 def plotLoss(config, suffix=None):
     cfg = read_config(config)
     projectPath = cfg['project_path']
+    model_name = cfg['model_name']
     lossPath = os.path.join(projectPath, 'model', 'model_losses')
-    df = pd.read_csv(os.path.join(lossPath, 'VAME_LossesSummary.csv'), index_col=0)
+    df = pd.read_csv(os.path.join(lossPath, model_name+'_LossesSummary.csv'), index_col=0)
     fig = df.plot(y=['Train_losses', 'Test_losses', 'MSE_losses']).get_figure()
     fig.savefig(os.path.join(lossPath, 'ModelLosses.png'))
     plt.close('all')
