@@ -160,7 +160,7 @@ def same_parameterization(cfg, files, latent_vector_files, states, parameterizat
             hmm_model = hmm.GaussianHMM(n_components=states, covariance_type="full", n_iter=hmm_iters, verbose=True)
             hmm_model.fit(latent_vector_cat)
             label = hmm_model.predict(latent_vector_cat)
-            save_data = os.path.join(cfg['project_path'], "results", "")
+            save_data = os.path.join(cfg['project_path'], "results")
             with open(save_data+"hmm_trained_ncluster"+str(states)+".pkl", "wb") as file: pickle.dump(hmm_model, file)
         else:
             print("Using a pretrained HMM as parameterization!")
@@ -211,7 +211,8 @@ def pose_segmentation(config):
     n_cluster = cfg['n_cluster']
     fixed = cfg['egocentric_data']
     parameterization = cfg['parameterization']
-    hmm_iters=cfg['hmm_iters']
+    if parameterization=='hmm':
+        hmm_iters=cfg['hmm_iters']
     
     print('Pose segmentation for VAME model: %s \n' %model_name)
     
@@ -315,7 +316,7 @@ def pose_segmentation(config):
                 
             if ind_param == False:
                 print("For all animals the same parameterization of latent vectors is applied for %d cluster" %n_cluster)
-                labels, cluster_center, motif_usages = same_parameterization(cfg, files, latent_vectors, n_cluster, parameterization)
+                labels, cluster_center, motif_usages = same_parameterization(cfg, files, latent_vectors, n_cluster, parameterization, hmm_iters=hmm_iters)
             else:
                 print("Individual parameterization of latent vectors for %d cluster" %n_cluster)
                 labels, cluster_center, motif_usages = individual_parameterization(cfg, files, latent_vectors, n_cluster)
