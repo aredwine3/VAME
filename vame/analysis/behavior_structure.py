@@ -65,7 +65,7 @@ def consecutive(data, stepsize=1):
     return np.split(data, np.where(np.diff(data) != stepsize)[0]+1)
     
     
-def get_network(path_to_file, file, cluster_method, n_cluster, plot=False):
+def get_network(path_to_file, file, cluster_method, n_cluster, plot=False, imagetype='.pdf'):
     if plot:
         import seaborn as sns
         import matplotlib.pyplot as plt
@@ -104,15 +104,15 @@ def get_network(path_to_file, file, cluster_method, n_cluster, plot=False):
         plt.xlabel("Next frame behavior", fontsize=16)
         plt.ylabel("Current frame behavior", fontsize=16)
         plt.title("Averaged Transition matrix of " + str(n_cluster) + " clusters")
-        plt.savefig(os.path.join(path_to_file, 'behavior_quantification', file+'_transition_matrix.svg'), bbox_inches='tight')
+        plt.savefig(os.path.join(path_to_file, 'behavior_quantification', file+'_transition_matrix'+imagetype), bbox_inches='tight', transparent=imagetype=='.pdf')
         plt.close()
         
         motplot = sns.barplot(x=list(range(n_cluster)), y=motif_usage)
         plt.xlabel('Cluster ID', fontsize=16)
         plt.ylabel('Number of frames in cluster', fontsize=16)
-        plt.savefig(os.path.join(path_to_file, 'behavior_quantification', file+'_motif_usage.svg'), bbox_inches='tight')
+        plt.savefig(os.path.join(path_to_file, 'behavior_quantification', file+'_motif_usage'+imagetype), bbox_inches='tight', transparent=imagetype=='.pdf')
     
-def behavior_quantification(config, model_name, cluster_method='kmeans', n_cluster=30, plot=False, rename=False):
+def behavior_quantification(config, model_name, cluster_method='kmeans', n_cluster=30, plot=False, rename=False, imagetype='.pdf'):
     config_file = Path(config).resolve()
     cfg = read_config(config_file)
     
@@ -155,7 +155,7 @@ def behavior_quantification(config, model_name, cluster_method='kmeans', n_clust
             for filename in glob.iglob(path_to_file+'/'+str(n_cluster) + '*.npy'):
                 file, ext = os.path.splitext(filename.split('/')[-1])
                 file = file.split(str(n_cluster)+'_km_label_')[-1]
-        get_network(path_to_file, file, cluster_method, n_cluster, plot=plot)
+        get_network(path_to_file, file, cluster_method, n_cluster, plot=plot, imagetype=imagetype)
 
         
 
