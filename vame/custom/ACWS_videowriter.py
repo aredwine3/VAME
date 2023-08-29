@@ -126,7 +126,7 @@ def get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag, fps=30,
                     used_seqs.extend(sorted(seq))
         if extractData:
             clusterData = data.iloc[used_seqs,:]
-            clusterData.to_csv(os.path.join(path_to_file,'dlcPoseData', 'DLC_Results_Cluster'+str(cluster)+'.csv'))
+            clusterData.to_csv(os.path.join(path_to_file,'dlcPoseData', file+'_DLC_Results_Cluster'+str(cluster)+'.csv'))
                
         if len(used_seqs) > vid_length:
             used_seqs = used_seqs[:vid_length]
@@ -363,16 +363,25 @@ def create_video_with_keypoints_only(
     plt.switch_backend(prev_backend)
 
 #%%
-def create_egocentric_videos(config, output_dir, colormap='viridis', dotsize=4, fps=25):
+def create_egocentric_videos(config, output_dir, colormap='viridis', dotsize=4, fps=25, num_vids=None, vid_index=None):
     cfg=aux.read_config(config)
     if not output_dir:
         output_dir=cfg['project_path']
     vids = cfg['video_sets']
-    for v in vids:
+    if not num_vids:
+        num_vids = len(vids)
+        print("Creating egocentrically aligned video for " + str(num_vids) + " videos")
+    if vid_index:
+        vids = [vids[vid_index]]
+    for v in vids[:num_vids]:
         arr = np.load(os.path.join(cfg['project_path'], 'data', v, v+'-PE-seq.npy'))
         dlcs = glob.glob(os.path.join(cfg['project_path'], 'videos', 'pose_estimation', v+'*'))
         n, e = os.path.splitext(os.path.basename(dlcs[0]))
-        dlc_data = pd.read_csv(dlcs[0], index_col=0, header=[0,1,2])
+        if e=='.csv':
+            dlc_data = pd.read_csv(dlcs[0], index_col=0, header=[0,1,2])
+        elif e=='.h5':
+            dlc_data = pd.read_hdf(dlcs[0])
         dfa = reformat_aligned_array(arr, dlc_data, output_dir, n)
+        print("Creating video for "+v)
         create_video_with_keypoints_only(dfa, os.path.join(output_dir, v+'_aligned.mp4'), dotsize=dotsize, colormap=colormap, fps=fps)
         
