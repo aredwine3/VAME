@@ -182,6 +182,27 @@ def train(train_loader, epoch, model, optimizer, anneal_function, BETA, kl_start
 
 
 def test(test_loader, epoch, model, optimizer, BETA, kl_weight, seq_len, mse_red, kloss, klmbda, future_decoder, bsize):
+    """
+    Evaluate the performance of a model on a test dataset.
+
+    Args:
+        test_loader (DataLoader): The data loader for the test dataset.
+        epoch (int): The current epoch number.
+        model (nn.Module): The model to be evaluated.
+        optimizer (Optimizer): The optimizer used for training the model.
+        BETA (float): The weight for the KL loss term in the overall loss calculation.
+        kl_weight (float): The weight for the Kmeans loss term in the overall loss calculation.
+        seq_len (int): The length of the input sequence.
+        mse_red (str): The reduction method for the MSE loss calculation.
+        kloss (int): The number of singular values to consider in the cluster loss calculation.
+        klmbda (float): The weight for the cluster loss term in the overall loss calculation.
+        future_decoder (bool): A boolean flag indicating whether to use the future decoder in the model.
+        bsize (int): The batch size.
+
+    Returns:
+        tuple: A tuple containing the average MSE loss, average test loss, and total Kmeans loss multiplied by kl_weight.
+
+    """
     model.eval() # toggle model to inference mode
     test_loss = 0.0
     mse_loss = 0.0
