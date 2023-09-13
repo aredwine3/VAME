@@ -12,19 +12,19 @@ setup(
     description="Variational Animal Motion Embedding.",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://https://github.com/LINCellularNeuroscience/VAME/",
+    url="https://github.com/LINCellularNeuroscience/VAME/",
     setup_requires=[
         "pytest",
-    ],	
+    ],  
     install_requires=[
         "pytest-shutil",
         "scipy",
         "numpy",
         "matplotlib",
         "pathlib",
-	    "pandas",
+        "pandas",
         "ruamel.yaml",
-	    "scikit-learn",
+        "scikit-learn",
         "pyyaml",
         "opencv-python",
         "statsmodels"
