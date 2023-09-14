@@ -260,10 +260,9 @@ def train_model(config):
     fixed = cfg['egocentric_data']
     
     print("Train Variational Autoencoder - model name: %s \n" %model_name)
-    if not os.path.exists(os.path.join(cfg['project_path'],'model','best_model',"")):
-        os.mkdir(os.path.join(cfg['project_path'],'model','best_model',""))
-        os.mkdir(os.path.join(cfg['project_path'],'model','best_model','snapshots',""))
-        os.mkdir(os.path.join(cfg['project_path'],'model','model_losses',""))
+    os.makedirs(os.path.join(cfg['project_path'],'model','best_model'), exist_ok=True)
+    os.makedirs(os.path.join(cfg['project_path'],'model','best_model','snapshots'), exist_ok=True)
+    os.makedirs(os.path.join(cfg['project_path'],'model','model_losses',""), exist_ok=True)
 
     # make sure torch uses cuda or MPS for GPU computing
     use_gpu = torch.cuda.is_available()

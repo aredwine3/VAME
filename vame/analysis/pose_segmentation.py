@@ -123,6 +123,12 @@ def consecutive(data, stepsize=1):
 
 def get_motif_usage(label, n_cluster):
     motif_usage = np.unique(label, return_counts=True)
+    motif_usage=list(motif_usage)
+    for i in range(n_cluster):
+        if motif_usage[0][i]!=i:
+            motif_usage[0] = np.insert(motif_usage[0], i, i, axis=0)
+            motif_usage[1] = np.insert(motif_usage[1], i, 0, axis=0)
+    motif_usage = tuple(motif_usage)
     cons = consecutive(motif_usage[0])
     if len(cons) != 1:
         used_motifs = list(motif_usage[0])
@@ -160,12 +166,12 @@ def same_parameterization(cfg, files, latent_vector_files, states, parameterizat
             hmm_model = hmm.GaussianHMM(n_components=states, covariance_type="full", n_iter=hmm_iters, verbose=True)
             hmm_model.fit(latent_vector_cat)
             label = hmm_model.predict(latent_vector_cat)
-            save_data = os.path.join(cfg['project_path'], "results", "")
-            with open(save_data+"hmm_trained_ncluster"+str(states)+".pkl", "wb") as file: pickle.dump(hmm_model, file)
+            save_data = os.path.join(cfg['project_path'], "results")
+            with open(os.path.join(save_data, "hmm_trained_ncluster"+str(states)+".pkl"), "wb") as file: pickle.dump(hmm_model, file)
         else:
             print("Using a pretrained HMM as parameterization!")
-            save_data = os.path.join(cfg['project_path'], "results", "")
-            with open(save_data+"hmm_trained_ncluster"+str(states)+".pkl", "rb") as file:
+            save_data = os.path.join(cfg['project_path'], "results")
+            with open(os.path.join(save_data, "hmm_trained_ncluster"+str(states)+".pkl"), "rb") as file:
                 hmm_model = pickle.load(file)
             label = hmm_model.predict(latent_vector_cat)
         
@@ -211,7 +217,8 @@ def pose_segmentation(config):
     n_cluster = cfg['n_cluster']
     fixed = cfg['egocentric_data']
     parameterization = cfg['parameterization']
-    hmm_iters=cfg['hmm_iters']
+    if parameterization=='hmm':
+        hmm_iters=cfg['hmm_iters']
     
     print('Pose segmentation for VAME model: %s \n' %model_name)
     
@@ -315,7 +322,7 @@ def pose_segmentation(config):
                 
             if ind_param == False:
                 print("For all animals the same parameterization of latent vectors is applied for %d cluster" %n_cluster)
-                labels, cluster_center, motif_usages = same_parameterization(cfg, files, latent_vectors, n_cluster, parameterization)
+                labels, cluster_center, motif_usages = same_parameterization(cfg, files, latent_vectors, n_cluster, parameterization, hmm_iters=hmm_iters)
             else:
                 print("Individual parameterization of latent vectors for %d cluster" %n_cluster)
                 labels, cluster_center, motif_usages = individual_parameterization(cfg, files, latent_vectors, n_cluster)
