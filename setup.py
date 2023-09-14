@@ -27,6 +27,7 @@ setup(
         "scikit-learn",
         "pyyaml",
         "opencv-python",
-        "statsmodels"
+        "statsmodels",
+        "torch"
     ],
 )
