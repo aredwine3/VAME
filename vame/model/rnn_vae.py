@@ -134,16 +134,32 @@ def train(train_loader, epoch, model, optimizer, anneal_function, BETA, kl_start
         data_item = Variable(data_item)
         data_item = data_item.permute(0,2,1)
 
+        #if use_gpu:
+        #    data = data_item[:,:seq_len_half,:].type('torch.cuda.FloatTensor')
+        #    fut = data_item[:,seq_len_half:seq_len_half+future_steps,:].type('torch.cuda.FloatTensor')
+        #elif use_mps:
+        #    data = data_item[:,:seq_len_half,:].type('torch.FloatTensor').to(device)
+        #    fut = data_item[:,seq_len_half:seq_len_half+future_steps,:].type('torch.FloatTensor').to(device)
+        #else:
+        #    data = data_item[:,:seq_len_half,:].type('torch.FloatTensor').to()
+        #    fut = data_item[:,seq_len_half:seq_len_half+future_steps,:].type('torch.FloatTensor').to()
+        
+        dtype = None
         if use_gpu:
-            data = data_item[:,:seq_len_half,:].type('torch.cuda.FloatTensor')
-            fut = data_item[:,seq_len_half:seq_len_half+future_steps,:].type('torch.cuda.FloatTensor')
+            dtype = torch.cuda.FloatTensor
         elif use_mps:
-            data = data_item[:,:seq_len_half,:].type('torch.FloatTensor').to(device)
-            fut = data_item[:,seq_len_half:seq_len_half+future_steps,:].type('torch.FloatTensor').to(device)
+            dtype = torch.FloatTensor
         else:
-            data = data_item[:,:seq_len_half,:].type('torch.FloatTensor').to()
-            fut = data_item[:,seq_len_half:seq_len_half+future_steps,:].type('torch.FloatTensor').to()
-        if noise == True:
+            dtype = torch.FloatTensor
+
+        for idx, data_item in enumerate(train_loader):
+            data_item = Variable(data_item)
+            data_item = data_item.permute(0,2,1)
+            data = data_item[:,:seq_len_half,:].type(dtype)
+            fut = data_item[:,seq_len_half:seq_len_half+future_steps,:].type(dtype)
+
+
+        if noise:
             data_gaussian = gaussian(data,True,seq_len_half)
         else:
             data_gaussian = data
@@ -231,12 +247,25 @@ def test(test_loader, epoch, model, optimizer, BETA, kl_weight, seq_len, mse_red
             # we're only going to infer, so no autograd at all required
             data_item = Variable(data_item)
             data_item = data_item.permute(0,2,1)
+            #if use_gpu:
+            #    data = data_item[:,:seq_len_half,:].type('torch.cuda.FloatTensor')
+            #elif use_mps:
+            #    data = data_item[:,:seq_len_half,:].type('torch.FloatTensor').to(device)
+            #else:
+            #    data = data_item[:,:seq_len_half,:].type('torch.FloatTensor').to()
+
+            dtype = None
             if use_gpu:
-                data = data_item[:,:seq_len_half,:].type('torch.cuda.FloatTensor')
+                dtype = torch.cuda.FloatTensor
             elif use_mps:
-                data = data_item[:,:seq_len_half,:].type('torch.FloatTensor').to(device)
+                dtype = torch.FloatTensor
             else:
-                data = data_item[:,:seq_len_half,:].type('torch.FloatTensor').to()
+                dtype = torch.FloatTensor
+
+            for idx, data_item in enumerate(test_loader):
+                data_item = Variable(data_item)
+                data_item = data_item.permute(0,2,1)
+                data = data_item[:,:seq_len_half,:].type(dtype)
 
             if future_decoder:
                 recon_images, _, latent, mu, logvar = model(data)
@@ -291,11 +320,10 @@ def train_model(config):
         print('GPU used:', torch.cuda.get_device_name(0))
     elif use_mps:
         device = torch.device("mps")
-        torch.tensor([1,2,3], device="mps")
         torch.set_default_tensor_type('torch.FloatTensor')
         print("Using MPS")
     else:
-        torch.device("cpu")
+        device = torch.device("cpu")
         print("warning, a GPU was not found... proceeding with CPU (slow!) \n")
         #raise NotImplementedError('GPU Computing is required!')
         
@@ -362,21 +390,36 @@ def train_model(config):
     else:
         RNN = RNN_VAE_LEGACY
     
+    #if device == torch.device("cuda"):
+    #    torch.cuda.manual_seed(SEED)
+    #    model = RNN(TEMPORAL_WINDOW,ZDIMS,NUM_FEATURES,FUTURE_DECODER,FUTURE_STEPS, hidden_size_layer_1,
+    #                    hidden_size_layer_2, hidden_size_rec, hidden_size_pred, dropout_encoder,
+    #                    dropout_rec, dropout_pred, softplus).cuda()
+    #elif device == torch.device("mps"):
+    #    torch.cuda.manual_seed(SEED)
+    #    model = RNN(TEMPORAL_WINDOW,ZDIMS,NUM_FEATURES,FUTURE_DECODER,FUTURE_STEPS, hidden_size_layer_1,
+    #                    hidden_size_layer_2, hidden_size_rec, hidden_size_pred, dropout_encoder,
+    #                    dropout_rec, dropout_pred, softplus).to(device)
+    #else: #cpu support ...
+    #    torch.cuda.manual_seed(SEED)
+    #    model = RNN(TEMPORAL_WINDOW,ZDIMS,NUM_FEATURES,FUTURE_DECODER,FUTURE_STEPS, hidden_size_layer_1,
+    #                    hidden_size_layer_2, hidden_size_rec, hidden_size_pred, dropout_encoder,
+    #                    dropout_rec, dropout_pred, softplus).to()
+   
     if device == torch.device("cuda"):
         torch.cuda.manual_seed(SEED)
-        model = RNN(TEMPORAL_WINDOW,ZDIMS,NUM_FEATURES,FUTURE_DECODER,FUTURE_STEPS, hidden_size_layer_1,
-                        hidden_size_layer_2, hidden_size_rec, hidden_size_pred, dropout_encoder,
-                        dropout_rec, dropout_pred, softplus).cuda()
-    elif device == torch.device("mps"):
-        torch.cuda.manual_seed(SEED)
-        model = RNN(TEMPORAL_WINDOW,ZDIMS,NUM_FEATURES,FUTURE_DECODER,FUTURE_STEPS, hidden_size_layer_1,
-                        hidden_size_layer_2, hidden_size_rec, hidden_size_pred, dropout_encoder,
-                        dropout_rec, dropout_pred, softplus).to(device)
-    else: #cpu support ...
-        torch.cuda.manual_seed(SEED)
-        model = RNN(TEMPORAL_WINDOW,ZDIMS,NUM_FEATURES,FUTURE_DECODER,FUTURE_STEPS, hidden_size_layer_1,
-                        hidden_size_layer_2, hidden_size_rec, hidden_size_pred, dropout_encoder,
-                        dropout_rec, dropout_pred, softplus).to()
+    else:
+        torch.manual_seed(SEED)
+    
+    # Initialize the model
+    model = RNN(TEMPORAL_WINDOW, ZDIMS, NUM_FEATURES, FUTURE_DECODER, FUTURE_STEPS, hidden_size_layer_1,
+                hidden_size_layer_2, hidden_size_rec, hidden_size_pred, dropout_encoder,
+                dropout_rec, dropout_pred, softplus)
+
+    # Move the model to the appropriate device
+    model = model.to(device)
+
+    
 
     if pretrained_weights:
         try:
@@ -520,11 +563,13 @@ def train_model(config):
             BEST_LOSS = current_loss
             print("Saving model!")
 
-            if use_gpu:
-                torch.save(model.state_dict(), os.path.join(cfg['project_path'],"model", "best_model",model_name+'_'+cfg['Project']+'.pkl'))
+            torch.save(model.state_dict(), os.path.join(cfg['project_path'],"model", "best_model",model_name+'_'+cfg['Project']+'.pkl'))
 
-            else:
-                torch.save(model.state_dict(), os.path.join(cfg['project_path'],"model", "best_model",model_name+'_'+cfg['Project']+'.pkl'))
+            #if use_gpu:
+            #    torch.save(model.state_dict(), os.path.join(cfg['project_path'],"model", "best_model",model_name+'_'+cfg['Project']+'.pkl'))
+
+            #else:
+            #    torch.save(model.state_dict(), os.path.join(cfg['project_path'],"model", "best_model",model_name+'_'+cfg['Project']+'.pkl'))
 
             convergence = 0
         else:
