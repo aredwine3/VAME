@@ -457,8 +457,13 @@ def train_model(config):
     #train_loader = Data.DataLoader(trainset, batch_size=TRAIN_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4)
     #test_loader = Data.DataLoader(testset, batch_size=TEST_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4)
 
-    train_loader = Data.DataLoader(trainset, batch_size=TRAIN_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4, worker_init_fn=worker_init_fn)
-    test_loader = Data.DataLoader(testset, batch_size=TEST_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4, worker_init_fn=worker_init_fn)
+    #train_loader = Data.DataLoader(trainset, batch_size=TRAIN_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4, worker_init_fn=worker_init_fn)
+    #test_loader = Data.DataLoader(testset, batch_size=TEST_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4, worker_init_fn=worker_init_fn)
+
+    cuda_generator = torch.Generator(device='cuda')
+
+    train_loader = Data.DataLoader(trainset, batch_size=TRAIN_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4, worker_init_fn=worker_init_fn, generator=cuda_generator)
+    test_loader = Data.DataLoader(testset, batch_size=TEST_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4, worker_init_fn=worker_init_fn, generator=cuda_generator)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE, amsgrad=True)
 
@@ -561,18 +566,18 @@ def train_model(config):
         lr = optimizer.param_groups[0]['lr']
         learn_rates.append(lr)
 
-       
-        wandb.log({'learning_rate': lr,
-                'train_loss': train_loss,
-                'test_loss': test_loss,
-                'kmeans_loss': km_loss,
-                'kl_loss': kl_loss,
-                'weight': weight,
-                'mse_loss': mse_loss,
-                'fut_loss': fut_loss,
-                'epoch': epoch,
-                'convergence': convergence
-                })
+        if wandb_logging:
+            wandb.log({'learning_rate': lr,
+                    'train_loss': train_loss,
+                    'test_loss': test_loss,
+                    'kmeans_loss': km_loss,
+                    'kl_loss': kl_loss,
+                    'weight': weight,
+                    'mse_loss': mse_loss,
+                    'fut_loss': fut_loss,
+                    'epoch': epoch,
+                    'convergence': convergence
+                    })
         
         # save best model
         if weight > 0.99 and current_loss <= BEST_LOSS:
@@ -605,7 +610,11 @@ def train_model(config):
         np.save(os.path.join(cfg['project_path'],'model','model_losses','weight_values_'+model_name), weight_values)
         np.save(os.path.join(cfg['project_path'],'model','model_losses','mse_train_losses_'+model_name), mse_losses)
         np.save(os.path.join(cfg['project_path'],'model','model_losses','mse_test_losses_'+model_name), current_loss)
-        np.save(os.path.join(cfg['project_path'],'model','model_losses','fut_losses_'+model_name), fut_losses)
+        #np.save(os.path.join(cfg['project_path'],'model','model_losses','fut_losses_'+model_name), fut_losses)
+        
+        fut_losses_array = np.concatenate([tensor.cpu().numpy() for tensor in fut_losses])
+        np.save(os.path.join(cfg['project_path'],'model','model_losses','fut_losses_'+model_name), fut_losses_array)
+        #np.save(os.path.join(cfg['project_path'],'model','model_losses','fut_losses_'+model_name), fut_losses.cpu().numpy())
 
         df = pd.DataFrame([train_losses, test_losses, kmeans_losses, kl_losses, weight_values, mse_losses, fut_losses, learn_rates, conv_counter]).T
         df.columns=['Train_losses', 'Test_losses', 'Kmeans_losses', 'KL_losses', 'Weight_values', 'MSE_losses', 'Future_losses', 'Learning_Rate', 'Convergence_counter']
@@ -630,6 +639,6 @@ def train_model(config):
               'with vame.evaluate_model(). If your satisfied you can continue with \n'
               'Use vame.behavior_segmentation() to identify behavioral motifs!\n\n'
               'OPTIONAL: You can re-run vame.rnn_model() to improve performance.')
-        
-    wandb.finish()
+    if wandb_logging:    
+        wandb.finish()
 
