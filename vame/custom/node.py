@@ -5,7 +5,7 @@ Created on Thu Dec 10 10:40:09 2020
 
 @author: smith
 """
-
+import os
 import numpy as np
 import matplotlib
 

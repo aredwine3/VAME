@@ -11,10 +11,18 @@ Licensed under GNU General Public License v3.0
 
 import os
 import numpy as np
+import matplotlib
+# Set the Matplotlib backend based on the environment.
+if os.environ.get('DISPLAY', '') == '':
+    matplotlib.use('Agg')  # Use this backend for headless environments (e.g., Google Colab, some remote servers)
+else:
+    matplotlib.use('Qt5Agg')  # Use this backend for environments with a display server
+
 
 from pathlib import Path
 import warnings
 import matplotlib.cbook
+
 warnings.filterwarnings("ignore",category=matplotlib.cbook.mplDeprecation)
 
 from vame.util.auxiliary import read_config

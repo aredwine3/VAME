@@ -7,7 +7,7 @@ Created on Thu Dec 10 10:39:34 2020
 """
 
 import numpy as np
-
+import os
 import matplotlib
 
 # Set the Matplotlib backend based on the environment.

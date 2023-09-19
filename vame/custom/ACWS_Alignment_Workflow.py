@@ -7,6 +7,15 @@ Created on Mon Nov 23 11:30:24 2020
 """
 
 import os
+
+import matplotlib
+
+# Set the Matplotlib backend based on the environment.
+if os.environ.get('DISPLAY', '') == '':
+    matplotlib.use('Agg')  # Use this backend for headless environments (e.g., Google Colab, some remote servers)
+else:
+    matplotlib.use('Qt5Agg')  # Use this backend for environments with a display server
+    
 os.chdir('/d1/studies/VAME/')
 import cv2 as cv
 import numpy as np
