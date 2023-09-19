@@ -182,16 +182,3 @@ Lenght of test data: 210600
 # Train VAME
 config = '/Volumes/G-DRIVE_SSD/VAME_working/ALR_VAME_1-Sep15-2023/config.yaml'
 vame.train_model(config)
-
-
-import numpy as np
-
-# Replace with your .npy file path
-file_path = '/Volumes/G-DRIVE_SSD/VAME_working/ALR_VAME_1-Sep15-2023/data/train/train_seq.npy'
-file_path = '/Volumes/G-DRIVE_SSD/VAME_working/ALR_VAME_1-Sep15-2023/data/22-01-10_Baseline_1_DJL_TABB_cropped_CRF0_0min_to_15min_Rat1/22-01-10_Baseline_1_DJL_TABB_cropped_CRF0_0min_to_15min_Rat1-PE-seq.npy'
-
-# Load the data
-data = np.load(file_path)
-
-# Print the shape of the data
-print("Data shape:", data.shape)
