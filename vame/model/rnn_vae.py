@@ -117,6 +117,9 @@ def gaussian(ins, is_training, seq_len, std_n=0.8):
         return ins + (noise*emp_std)
     return ins
 
+def worker_init_fn(worker_id):
+    np.random.seed(np.random.get_state()[1][0] + worker_id)
+
 
 def train(train_loader, epoch, model, optimizer, anneal_function, BETA, kl_start,
           annealtime, seq_len, future_decoder, future_steps, scheduler, mse_red, 
@@ -442,8 +445,11 @@ def train_model(config):
     trainset = SEQUENCE_DATASET(os.path.join(cfg['project_path'],"data", "train",""), data='train_seq.npy', train=True, temporal_window=TEMPORAL_WINDOW)
     testset = SEQUENCE_DATASET(os.path.join(cfg['project_path'],"data", "train",""), data='test_seq.npy', train=False, temporal_window=TEMPORAL_WINDOW)
 
-    train_loader = Data.DataLoader(trainset, batch_size=TRAIN_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4)
-    test_loader = Data.DataLoader(testset, batch_size=TEST_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4)
+    #train_loader = Data.DataLoader(trainset, batch_size=TRAIN_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4)
+    #test_loader = Data.DataLoader(testset, batch_size=TEST_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4)
+
+    train_loader = Data.DataLoader(trainset, batch_size=TRAIN_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4, worker_init_fn=worker_init_fn)
+    test_loader = Data.DataLoader(testset, batch_size=TEST_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4, worker_init_fn=worker_init_fn)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE, amsgrad=True)
 
