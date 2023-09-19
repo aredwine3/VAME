@@ -610,10 +610,10 @@ def train_model(config):
         np.save(os.path.join(cfg['project_path'],'model','model_losses','weight_values_'+model_name), weight_values)
         np.save(os.path.join(cfg['project_path'],'model','model_losses','mse_train_losses_'+model_name), mse_losses)
         np.save(os.path.join(cfg['project_path'],'model','model_losses','mse_test_losses_'+model_name), current_loss)
-        #np.save(os.path.join(cfg['project_path'],'model','model_losses','fut_losses_'+model_name), fut_losses)
+        np.save(os.path.join(cfg['project_path'],'model','model_losses','fut_losses_'+model_name), fut_losses)
         
-        fut_losses_array = np.concatenate([tensor.cpu().numpy() for tensor in fut_losses])
-        np.save(os.path.join(cfg['project_path'],'model','model_losses','fut_losses_'+model_name), fut_losses_array)
+        #fut_losses_array = np.concatenate([tensor.cpu().numpy() for tensor in fut_losses])
+        #np.save(os.path.join(cfg['project_path'],'model','model_losses','fut_losses_'+model_name), fut_losses_array)
         #np.save(os.path.join(cfg['project_path'],'model','model_losses','fut_losses_'+model_name), fut_losses.cpu().numpy())
 
         df = pd.DataFrame([train_losses, test_losses, kmeans_losses, kl_losses, weight_values, mse_losses, fut_losses, learn_rates, conv_counter]).T
