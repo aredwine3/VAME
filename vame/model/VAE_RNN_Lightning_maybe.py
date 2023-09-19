@@ -83,14 +83,14 @@ class VAEModel(LightningModule):
         seq_len_half = int(self.seq_len/2)
         data_item = data_item.permute(0,2,1)
 
-        if future_decoder:
+        if self.future_decoder:
                 recon_images, _, latent, mu, logvar = model(data)
                 rec_loss = reconstruction_loss(data, recon_images, mse_red)
                 kl_loss = kullback_leibler_loss(mu, logvar)
                 kmeans_loss = cluster_loss(latent.T, kloss, klmbda, bsize)
                 loss = rec_loss + BETA*kl_weight*kl_loss+ kl_weight*kmeans_loss
 
-            else:
+        else:
                 recon_images, latent, mu, logvar = model(data)
                 rec_loss = reconstruction_loss(data, recon_images, mse_red)
                 kl_loss = kullback_leibler_loss(mu, logvar)
@@ -115,7 +115,7 @@ class VAEModel(LightningModule):
         return DataLoader(self.trainset, batch_size=TRAIN_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4)
 
     def val_dataloader(self):
-        return DataLoader(self.valset, batch_size=TEST_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4)
+        return self.DataLoader(self.valset, batch_size=TEST_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4)
     
     def validation_epoch_end(self, outputs):
         avg_val_loss = torch.stack([x['val_loss'] for x in outputs]).mean()
@@ -127,10 +127,3 @@ class VAEModel(LightningModule):
         self.log('avg_mse_loss', avg_mse_loss)
         self.log('avg_kl_loss', avg_kl_loss)
         self.log('avg_kmeans_loss', avg_kmeans_loss)
-
-
-Fix undefined variables.
-Complete the SEQUENCE_DATASET initialization.
-Define the missing batch sizes.
-Ensure the loss values are tensors before stacking.
-Remove unused variables.
