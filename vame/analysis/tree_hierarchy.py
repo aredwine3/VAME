@@ -10,12 +10,19 @@ Licensed under GNU General Public License v3.0
 """
 
 import os
+import matplotlib
+
+# Set the Matplotlib backend based on the environment.
+if os.environ.get('DISPLAY', '') == '':
+    matplotlib.use('Agg')  # Use this backend for headless environments (e.g., Google Colab, some remote servers)
+else:
+    matplotlib.use('Qt5Agg')  # Use this backend for environments with a display server
+
 import numpy as np
 import networkx as nx
 import random
 from matplotlib import pyplot as plt
-import matplotlib
-matplotlib.use('Qt5Agg')
+
 
 def hierarchy_pos_original(G, root=None, width=.5, vert_gap = 0.2, vert_loc = 0, xcenter = 0.5):
 

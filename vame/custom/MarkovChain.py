@@ -7,6 +7,16 @@ Created on Thu Dec 10 10:39:34 2020
 """
 
 import numpy as np
+
+import matplotlib
+
+# Set the Matplotlib backend based on the environment.
+if os.environ.get('DISPLAY', '') == '':
+    matplotlib.use('Agg')  # Use this backend for headless environments (e.g., Google Colab, some remote servers)
+else:
+    matplotlib.use('Qt5Agg')  # Use this backend for environments with a display server
+
+
 import matplotlib.patches as mpatches 
 from matplotlib.collections import PatchCollection
 import matplotlib.pyplot as plt

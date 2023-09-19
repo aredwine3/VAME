@@ -12,9 +12,16 @@ import os
 import torch
 import numpy as np
 from pathlib import Path
+import matplotlib
+
+# Set the Matplotlib backend based on the environment.
+if os.environ.get('DISPLAY', '') == '':
+    matplotlib.use('Agg')  # Use this backend for headless environments (e.g., Google Colab, some remote servers)
+else:
+    matplotlib.use('Qt5Agg')  # Use this backend for environments with a display server
+
 import matplotlib.pyplot as plt
 from sklearn.mixture import GaussianMixture
-
 from vame.util.auxiliary import read_config
 from vame.model.rnn_model import RNN_VAE
 

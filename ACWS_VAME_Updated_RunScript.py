@@ -8,12 +8,17 @@ Leibniz Institute for Neurobiology, Magdeburg, Germany
 https://github.com/LINCellularNeuroscience/VAME
 Licensed under GNU General Public License v3.0
 """
-
+import os
 import matplotlib
-matplotlib.use('Qt5Agg')
+# Set the Matplotlib backend based on the environment.
+if os.environ.get('DISPLAY', '') == '':
+    matplotlib.use('Agg')  # Use this backend for headless environments (e.g., Google Colab, some remote servers)
+else:
+    matplotlib.use('Qt5Agg')  # Use this backend for environments with a display server
+
 import matplotlib.pyplot as plt
 
-import os
+
 os.chdir('/d1/software/VAME')
 import vame
 import numpy as np

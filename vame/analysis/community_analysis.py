@@ -15,9 +15,17 @@ import scipy
 import pickle
 import numpy as np
 from pathlib import Path
-import matplotlib.pyplot as plt
+
 import matplotlib
-matplotlib.use('Qt5Agg')
+
+
+# Set the Matplotlib backend based on the environment.
+if os.environ.get('DISPLAY', '') == '':
+    matplotlib.use('Agg')  # Use this backend for headless environments (e.g., Google Colab, some remote servers)
+else:
+    matplotlib.use('Qt5Agg')  # Use this backend for environments with a display server
+
+import matplotlib.pyplot as plt
 
 from vame.util.auxiliary import read_config
 from vame.analysis.tree_hierarchy import graph_to_tree, draw_tree, traverse_tree_cutline

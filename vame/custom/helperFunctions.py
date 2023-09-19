@@ -16,11 +16,20 @@ from vame.analysis.tree_hierarchy import graph_to_tree, draw_tree
 from scipy.stats import ttest_ind
 from statsmodels.stats.multitest import multipletests
 from collections import defaultdict
+import matplotlib
+
+
+# Set the Matplotlib backend based on the environment.
+if os.environ.get('DISPLAY', '') == '':
+    matplotlib.use('Agg')  # Use this backend for headless environments (e.g., Google Colab, some remote servers)
+else:
+    matplotlib.use('Qt5Agg')  # Use this backend for environments with a display server
+
+
 import matplotlib.pyplot as plt
 import seaborn as sns
 import glob
 import shutil
-import yaml
 from ruamel.yaml import YAML
 import csv
 import re
