@@ -133,9 +133,9 @@ def train(train_loader, epoch, model, optimizer, anneal_function, BETA, kl_start
     loss = 0.0
     seq_len_half = int(seq_len / 2)
 
-    for idx, data_item in enumerate(train_loader):
-        data_item = Variable(data_item)
-        data_item = data_item.permute(0,2,1)
+    #for idx, data_item in enumerate(train_loader):
+    #    data_item = Variable(data_item)
+    #    data_item = data_item.permute(0,2,1)
 
         #if use_gpu:
         #    data = data_item[:,:seq_len_half,:].type('torch.cuda.FloatTensor')
@@ -146,20 +146,24 @@ def train(train_loader, epoch, model, optimizer, anneal_function, BETA, kl_start
         #else:
         #    data = data_item[:,:seq_len_half,:].type('torch.FloatTensor').to()
         #    fut = data_item[:,seq_len_half:seq_len_half+future_steps,:].type('torch.FloatTensor').to()
-        
-        dtype = None
-        if use_gpu:
-            dtype = torch.cuda.FloatTensor
-        elif use_mps:
-            dtype = torch.FloatTensor
-        else:
-            dtype = torch.FloatTensor
+        # make sure torch uses cuda or MPS for GPU computing
+    use_gpu = torch.cuda.is_available()
+    use_mps = torch.backends.mps.is_available() and not use_gpu
 
-        for idx, data_item in enumerate(train_loader):
-            data_item = Variable(data_item)
-            data_item = data_item.permute(0,2,1)
-            data = data_item[:,:seq_len_half,:].type(dtype)
-            fut = data_item[:,seq_len_half:seq_len_half+future_steps,:].type(dtype)
+    dtype = None
+    if use_gpu:
+        dtype = torch.cuda.FloatTensor
+    elif use_mps:
+        dtype = torch.FloatTensor
+    else:
+        dtype = torch.FloatTensor
+
+    for idx, data_item in enumerate(train_loader):
+        data_item = data_item.to(device)
+        data_item = Variable(data_item)
+        data_item = data_item.permute(0,2,1)
+        data = data_item[:,:seq_len_half,:].type(dtype)
+        fut = data_item[:,seq_len_half:seq_len_half+future_steps,:].type(dtype)
 
 
         if noise:
@@ -246,29 +250,34 @@ def test(test_loader, epoch, model, optimizer, BETA, kl_weight, seq_len, mse_red
     seq_len_half = int(seq_len / 2)
 
     with torch.no_grad():
-        for idx, data_item in enumerate(test_loader):
+        #for idx, data_item in enumerate(test_loader):
             # we're only going to infer, so no autograd at all required
-            data_item = Variable(data_item)
-            data_item = data_item.permute(0,2,1)
+        #    data_item = Variable(data_item)
+        #    data_item = data_item.permute(0,2,1)
             #if use_gpu:
             #    data = data_item[:,:seq_len_half,:].type('torch.cuda.FloatTensor')
             #elif use_mps:
             #    data = data_item[:,:seq_len_half,:].type('torch.FloatTensor').to(device)
             #else:
             #    data = data_item[:,:seq_len_half,:].type('torch.FloatTensor').to()
+            
+        # make sure torch uses cuda or MPS for GPU computing
+        use_gpu = torch.cuda.is_available()
+        use_mps = torch.backends.mps.is_available() and not use_gpu
 
-            dtype = None
-            if use_gpu:
-                dtype = torch.cuda.FloatTensor
-            elif use_mps:
-                dtype = torch.FloatTensor
-            else:
-                dtype = torch.FloatTensor
+        dtype = None
+        if use_gpu:
+            dtype = torch.cuda.FloatTensor
+        elif use_mps:
+            dtype = torch.FloatTensor
+        else:
+            dtype = torch.FloatTensor
 
-            for idx, data_item in enumerate(test_loader):
-                data_item = Variable(data_item)
-                data_item = data_item.permute(0,2,1)
-                data = data_item[:,:seq_len_half,:].type(dtype)
+        for idx, data_item in enumerate(test_loader):
+            data_item = data_item.to(device)
+            data_item = Variable(data_item)
+            data_item = data_item.permute(0,2,1)
+            data = data_item[:,:seq_len_half,:].type(dtype)
 
             if future_decoder:
                 recon_images, _, latent, mu, logvar = model(data)
