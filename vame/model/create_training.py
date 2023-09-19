@@ -184,6 +184,7 @@ def traindata_aligned(cfg, files, testfraction, num_features, savgol_filter, che
         
         for i, file in enumerate(files):
             np.save(os.path.join(cfg['project_path'],"data", file, file+'-PE-seq-clean.npy'), X_med[:,pos[i]:pos[i+1]])
+            
         
         print('Lenght of train data: %d' %len(z_train.T))
         print('Lenght of test data: %d' %len(z_test.T))
@@ -251,9 +252,21 @@ def traindata_fixed(cfg, files, testfraction, num_features, savgol_filter, check
         np.save(os.path.join(cfg['project_path'],"data", "train",'train_seq.npy'), z_train)
         np.save(os.path.join(cfg['project_path'],"data", "train", 'test_seq.npy'), z_test)
         
+        # Have the user choose a suffix to denote this training set
+        suffix = input("Please enter a suffix to denote this training set: ")
+
+        # Get the current date
+        from datetime import date
+        today = date.today()
+
+        # Update the config file with the suffix, adding the suffix to load_data: -PE-seq-clean_{suffix}.npy after wiping the text that was there before
+        cfg['load_data'] = cfg['load_data'].split('_')[0] + f"_PE-seq-clean_{today}_{suffix}.npy"
+
         for i, file in enumerate(files):
-            np.save(os.path.join(cfg['project_path'],"data", file, file+'-PE-seq-clean.npy'), X_med[:,pos[i]:pos[i+1]])
+            #np.save(os.path.join(cfg['project_path'],"data", file, file+'-PE-seq-clean.npy'), X_med[:,pos[i]:pos[i+1]])
+            np.save(os.path.join(cfg['project_path'],"data", file, f"{file}-PE-seq-clean_{today}_{suffix}.npy"), X_med[:,pos[i]:pos[i+1]])
         
+            
         print('Lenght of train data: %d' %len(z_train.T))
         print('Lenght of test data: %d' %len(z_test.T))
 
@@ -270,11 +283,23 @@ def create_trainset(config, check_parameter=False):
     files = []
     if cfg['all_data'] == 'No':
         for file in cfg['video_sets']:
-            use_file = input("Do you want to train on " + file + "? yes/no: ")
-            if use_file == 'yes':
-                files.append(file)
-            if use_file == 'no':
-                continue
+            use_list = input("Do you have a list of videos you want to use for training? yes/no: ")
+            if use_list == 'yes':
+                files_input = input("Please enter the list of videos you want to use for training: ")
+                files = [f.strip() for f in files_input.split(',')]
+                # Drop file extensions if they were included
+                files = [os.path.splitext(f)[0] for f in files]
+                # Remove single quotes between filenames if they were included
+                files = [f.replace("'", "") for f in files] 
+                break
+            elif use_list == 'no':
+                use_file = input("Do you want to train on " + file + "? yes/no: ")
+                if use_file == 'yes':
+                    files.append(file)
+                if use_file == 'no':
+                    continue
+            else:
+                print("Invalid input. Please enter 'yes' or 'no'.")
     else:
         for file in cfg['video_sets']:
             files.append(file)
