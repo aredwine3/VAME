@@ -132,4 +132,4 @@ files=["/d1/studies/DLC_Data/MouseIVSA_VAME/MouseIVSA_SmithLabVAME-Dec22-2021/IV
 "/d1/studies/DLC_Data/MouseIVSA_VAME/MouseIVSA_SmithLabVAME-Dec22-2021/Cue_MotifUsage.csv"]
 
 
-combineMotifUsage(config, files)
+hf.combineMotifUsage(config, files)
