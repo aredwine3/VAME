@@ -14,6 +14,8 @@ from torch import nn
 import torch.utils.data as Data
 from torch.autograd import Variable
 from torch.optim.lr_scheduler import StepLR, ReduceLROnPlateau
+import warnings
+
 
 import os
 import numpy as np
@@ -21,9 +23,22 @@ import pandas as pd
 from pathlib import Path
 import time
 
+
+
+import wandb
+import getpass
 from vame.util.auxiliary import read_config
 from vame.model.dataloader import SEQUENCE_DATASET
 from vame.model.rnn_model import RNN_VAE, RNN_VAE_LEGACY
+from numba import NumbaDeprecationWarning, NumbaPendingDeprecationWarning
+
+# Ignore these specific types of warnings
+warnings.filterwarnings("ignore", category=NumbaDeprecationWarning)
+warnings.filterwarnings("ignore", category=NumbaPendingDeprecationWarning)
+
+
+
+
 
 # make sure torch uses cuda for GPU computing
 use_gpu = torch.cuda.is_available()
@@ -395,6 +410,70 @@ def train_model(config):
     else:
         scheduler = StepLR(optimizer, step_size=scheduler_step_size, gamma=1, last_epoch=-1)
     
+    # Ask the user if the script should be run with wandb logging
+    wandb_logging = input("Do you want to use wandb logging? (y/n) ").lower()
+
+    if wandb_logging not in ['y', 'n']:
+        raise ValueError("Please enter 'y' or 'n'.")
+
+    if wandb_logging == 'y':
+        wandb_username = input("Please enter your wandb username: ")
+        wandb_api_key = getpass.getpass("Please enter your wandb API key: ")
+        wandb_project_name = input("Please enter your wandb project name: ")
+        wandb_run_name = input("Please enter a name for your wandb run: ")
+        wandb.login(key=wandb_api_key)
+        # Group all hyperparameters together in a dict
+
+        config_dict = {
+            'SEED': SEED,
+            'TRAIN_BATCH_SIZE': TRAIN_BATCH_SIZE,
+            'TEST_BATCH_SIZE': TEST_BATCH_SIZE,
+            'EPOCHS': EPOCHS,
+            'ZDIMS': ZDIMS,
+            'BETA': BETA,
+            'SNAPSHOT': SNAPSHOT,
+            'LEARNING_RATE': LEARNING_RATE,
+            'NUM_FEATURES': NUM_FEATURES,
+            'TEMPORAL_WINDOW': TEMPORAL_WINDOW,
+            'FUTURE_DECODER': FUTURE_DECODER,
+            'FUTURE_STEPS': FUTURE_STEPS,
+            'hidden_size_layer_1': hidden_size_layer_1,
+            'hidden_size_layer_2': hidden_size_layer_2,
+            'hidden_size_rec': hidden_size_rec,
+            'hidden_size_pred': hidden_size_pred,
+            'dropout_encoder': dropout_encoder,
+            'dropout_rec': dropout_rec,
+            'dropout_pred': dropout_pred,
+            'noise': noise,
+            'sheduler_step_size': scheduler_step_size,
+            'scheduler_thresh': scheduler_thresh,
+            'softplus': softplus,
+            'MSE_REC_REDUCTION': MSE_REC_REDUCTION,
+            'MSE_PRED_REDUCTION': MSE_PRED_REDUCTION,
+            'KMEANS_LOSS': KMEANS_LOSS,
+            'KMEANS_LAMBDA': KMEANS_LAMBDA,
+            'KL_START': KL_START,
+            'ANNEALTIME': ANNEALTIME,
+            'anneal_function': anneal_function,
+            'optimizer_scheduler': optimizer_scheduler
+        }
+        
+    # Print and confirm hyperparameters
+        print("\nHere are the configurations:")
+        for key, value in config_dict.items():
+            print(f"{key}: {value}")
+        
+        confirm = input("\nDo these look correct? (y/n) ").lower()
+        if confirm == 'y':
+            wandb.init(project=wandb_project_name, entity=wandb_username, name=wandb_run_name)
+            
+            # Use dictionary unpacking to assign values to wandb.config
+            wandb.config.update(config_dict)
+        else:
+            print("Please modify your configurations and try again.")
+            exit()
+
+
     print("Start training... ")
 
     for epoch in range(1,EPOCHS):
@@ -422,6 +501,19 @@ def train_model(config):
         
         lr = optimizer.param_groups[0]['lr']
         learn_rates.append(lr)
+
+       
+        wandb.log({'learning_rate': lr,
+                'train_loss': train_loss,
+                'test_loss': test_loss,
+                'kmeans_loss': km_loss,
+                'kl_loss': kl_loss,
+                'weight': weight,
+                'mse_loss': mse_loss,
+                'fut_loss': fut_loss,
+                'epoch': epoch,
+                'convergence': convergence
+                })
         
         # save best model
         if weight > 0.99 and current_loss <= BEST_LOSS:
@@ -441,6 +533,8 @@ def train_model(config):
         if epoch % SNAPSHOT == 0:
             print("Saving model snapshot!\n")
             torch.save(model.state_dict(), os.path.join(cfg['project_path'],'model','best_model','snapshots',model_name+'_'+cfg['Project']+'_epoch_'+str(epoch)+'.pkl'))
+            if wandb_logging:
+                wandb.save(os.path.join(cfg['project_path'],'model','best_model','snapshots',model_name+'_'+cfg['Project']+'_epoch_'+str(epoch)+'.pkl'))
 
         # save logged losses
         np.save(os.path.join(cfg['project_path'],'model','model_losses','train_losses_'+model_name), train_losses)
@@ -475,4 +569,6 @@ def train_model(config):
               'with vame.evaluate_model(). If your satisfied you can continue with \n'
               'Use vame.behavior_segmentation() to identify behavioral motifs!\n\n'
               'OPTIONAL: You can re-run vame.rnn_model() to improve performance.')
+        
+    wandb.finish()
 
