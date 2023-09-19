@@ -107,3 +107,13 @@ ENV/
 vame/.DS_Store
 .DS_Store
 .vscode/settings.json
+wandb/run-20230919_121717-jdd70kpi/run-jdd70kpi.wandb
+wandb/latest-run
+wandb/run-20230919_121717-jdd70kpi/files/config.yaml
+wandb/run-20230919_121717-jdd70kpi/files/output.log
+wandb/run-20230919_121717-jdd70kpi/files/conda-environment.yaml
+wandb/run-20230919_121717-jdd70kpi/files/wandb-metadata.json
+wandb/run-20230919_121717-jdd70kpi/logs/debug.log
+wandb/run-20230919_121717-jdd70kpi/logs/debug-internal.log
+wandb/debug.log
+wandb/debug-internal.log
