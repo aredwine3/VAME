@@ -384,6 +384,7 @@ def train_model(config):
     conv_counter = []
 
     torch.manual_seed(SEED)
+    np.random.seed(SEED)
 
     if legacy == False:
         RNN = RNN_VAE
