@@ -81,9 +81,13 @@ def embedd_latent_vectors(cfg, files, model, fixed):
         
     latent_vector_files = [] 
 
+    # Get the text following "load_data:" in the config file
+    load_data = cfg['load_data']
+
     for file in files:
         print('Embedding of latent vector for file %s' %file)
-        data = np.load(os.path.join(project_path,'data',file,file+'-PE-seq-clean.npy'))
+        data = np.load(os.path.join(project_path,'data',file,file+load_data+'.npy'))
+        #data = np.load(os.path.join(project_path,'data',file,file+'-PE-seq-clean.npy'))
         latent_vector_list = []
         with torch.no_grad(): 
             for i in tqdm.tqdm(range(data.shape[1] - temp_win)):
