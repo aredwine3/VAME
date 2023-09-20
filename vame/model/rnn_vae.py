@@ -460,10 +460,18 @@ def train_model(config):
     #train_loader = Data.DataLoader(trainset, batch_size=TRAIN_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4, worker_init_fn=worker_init_fn)
     #test_loader = Data.DataLoader(testset, batch_size=TEST_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4, worker_init_fn=worker_init_fn)
 
-    cuda_generator = torch.Generator(device='cuda')
+    
+    if device == torch.device("cuda"): 
+        cuda_generator = torch.Generator(device='cuda')
 
-    train_loader = Data.DataLoader(trainset, batch_size=TRAIN_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4, worker_init_fn=worker_init_fn, generator=cuda_generator)
-    test_loader = Data.DataLoader(testset, batch_size=TEST_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4, worker_init_fn=worker_init_fn, generator=cuda_generator)
+        train_loader = Data.DataLoader(trainset, batch_size=TRAIN_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4, generator=cuda_generator)
+        test_loader = Data.DataLoader(testset, batch_size=TEST_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4, generator=cuda_generator)
+    else:
+        train_loader = Data.DataLoader(trainset, batch_size=TRAIN_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4)
+        test_loader = Data.DataLoader(testset, batch_size=TEST_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4)
+
+    #train_loader = Data.DataLoader(trainset, batch_size=TRAIN_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4, worker_init_fn=worker_init_fn, generator=cuda_generator)
+    #test_loader = Data.DataLoader(testset, batch_size=TEST_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4, worker_init_fn=worker_init_fn, generator=cuda_generator)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE, amsgrad=True)
 
@@ -474,6 +482,7 @@ def train_model(config):
     else:
         scheduler = StepLR(optimizer, step_size=scheduler_step_size, gamma=1, last_epoch=-1)
     
+    """ WANDB LOGGING """
     # Ask the user if the script should be run with wandb logging
     wandb_logging = input("Do you want to use wandb logging? (y/n) ").lower()
 
@@ -639,6 +648,9 @@ def train_model(config):
               'with vame.evaluate_model(). If your satisfied you can continue with \n'
               'Use vame.behavior_segmentation() to identify behavioral motifs!\n\n'
               'OPTIONAL: You can re-run vame.rnn_model() to improve performance.')
+    
     if wandb_logging:    
         wandb.finish()
+    
+    
 
