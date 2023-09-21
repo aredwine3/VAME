@@ -52,7 +52,6 @@ if use_gpu:
     print('GPU used:', torch.cuda.get_device_name(0))
 elif use_mps:
     device = torch.device("mps")
-    torch.tensor([1,2,3], device="mps")
     torch.set_default_tensor_type('torch.FloatTensor')
     print("Using MPS")
 else:
@@ -463,7 +462,6 @@ def train_model(config):
     
     if device == torch.device("cuda"): 
         cuda_generator = torch.Generator(device='cuda')
-
         train_loader = Data.DataLoader(trainset, batch_size=TRAIN_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4, generator=cuda_generator)
         test_loader = Data.DataLoader(testset, batch_size=TEST_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4, generator=cuda_generator)
     else:
@@ -575,7 +573,7 @@ def train_model(config):
         lr = optimizer.param_groups[0]['lr']
         learn_rates.append(lr)
 
-        if wandb_logging:
+        if wandb_logging and wandb.run is not None:
             wandb.log({'learning_rate': lr,
                     'train_loss': train_loss,
                     'test_loss': test_loss,
@@ -619,6 +617,31 @@ def train_model(config):
         np.save(os.path.join(cfg['project_path'],'model','model_losses','weight_values_'+model_name), weight_values)
         np.save(os.path.join(cfg['project_path'],'model','model_losses','mse_train_losses_'+model_name), mse_losses)
         np.save(os.path.join(cfg['project_path'],'model','model_losses','mse_test_losses_'+model_name), current_loss)
+        
+        #print all of the details of (fut_losses)
+        print("fut_losses: ", fut_losses)
+        print("fut_losses type: ", type(fut_losses))
+        #print("fut_losses shape: ", fut_losses.shape)
+        print("fut_losses dtype: ", fut_losses.dtype)
+        print("fut_losses device: ", fut_losses.device)
+        print("fut_losses requires_grad: ", fut_losses.requires_grad)  
+        print("fut_losses grad: ", fut_losses.grad)
+        print("fut_losses grad_fn: ", fut_losses.grad_fn)
+        print("fut_losses is_leaf: ", fut_losses.is_leaf)
+        print("fut_losses layout: ", fut_losses.layout)
+        print("fut_losses storage: ", fut_losses.storage())
+        print("fut_losses number of elements: ", fut_losses.numel())
+        print("fut_losses stride: ", fut_losses.stride())
+        print("fut_losses is contiguous: ", fut_losses.is_contiguous())
+        print("fut_losses dimension names: ", fut_losses.names)
+        print("fut_losses is quantized: ", fut_losses.is_quantized)
+        print("fut_losses backward hooks: ", fut_losses._backward_hooks)
+
+
+        # Move fut_losses to cpu and convert to numpy array before saving
+        fut_losses = fut_losses.cpu().numpy()
+
+
         np.save(os.path.join(cfg['project_path'],'model','model_losses','fut_losses_'+model_name), fut_losses)
         
         #fut_losses_array = np.concatenate([tensor.cpu().numpy() for tensor in fut_losses])
@@ -652,5 +675,5 @@ def train_model(config):
     if wandb_logging:    
         wandb.finish()
     
-    
+
 

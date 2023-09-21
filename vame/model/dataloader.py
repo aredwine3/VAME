@@ -47,9 +47,7 @@ class SEQUENCE_DATASET(Dataset):
         
         nf = self.data_points
         
-        #start = np.random.choice(nf-temp_window)
-        
-        start = torch.randint(0, nf-temp_window, (1,)).item()
+        start = np.random.choice(nf-temp_window)
 
         end = start+temp_window
         
