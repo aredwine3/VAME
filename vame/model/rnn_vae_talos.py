@@ -384,7 +384,7 @@ def train_model(config):
                                                                          MSE_PRED_REDUCTION, KMEANS_LOSS, KMEANS_LAMBDA,
                                                                          TRAIN_BATCH_SIZE, noise)
 
-        current_loss, test_loss, test_list = test(test_loader, epoch, model, optimizer,
+        test_mse_loss, test_loss, test_list = test(test_loader, epoch, model, optimizer,
                                                   BETA, weight, TEMPORAL_WINDOW, MSE_REC_REDUCTION,
                                                   KMEANS_LOSS, KMEANS_LAMBDA, FUTURE_DECODER, TEST_BATCH_SIZE)
         if not optimizer_scheduler:
@@ -405,8 +405,8 @@ def train_model(config):
         learn_rates.append(lr)
         
         # save best model
-        if weight > 0.99 and current_loss <= BEST_LOSS:
-            BEST_LOSS = current_loss
+        if weight > 0.99 and test_mse_loss <= BEST_LOSS:
+            BEST_LOSS = test_mse_loss
             print("Saving model!")
 
             if use_gpu:
@@ -430,7 +430,7 @@ def train_model(config):
         np.save(os.path.join(cfg['project_path'],'model','model_losses','kl_losses_'+model_name), kl_losses)
         np.save(os.path.join(cfg['project_path'],'model','model_losses','weight_values_'+model_name), weight_values)
         np.save(os.path.join(cfg['project_path'],'model','model_losses','mse_train_losses_'+model_name), mse_losses)
-        np.save(os.path.join(cfg['project_path'],'model','model_losses','mse_test_losses_'+model_name), current_loss)
+        np.save(os.path.join(cfg['project_path'],'model','model_losses','mse_test_losses_'+model_name), test_mse_loss)
         np.save(os.path.join(cfg['project_path'],'model','model_losses','fut_losses_'+model_name), fut_losses)
 
         df = pd.DataFrame([train_losses, test_losses, kmeans_losses, kl_losses, weight_values, mse_losses, fut_losses, learn_rates, conv_counter]).T

@@ -219,27 +219,6 @@ def train(train_loader, epoch, model, optimizer, anneal_function, BETA, kl_start
 
 
 def test(test_loader, epoch, model, optimizer, BETA, kl_weight, seq_len, mse_red, kloss, klmbda, future_decoder, bsize):
-    """
-    Evaluate the performance of a model on a test dataset.
-
-    Args:
-        test_loader (DataLoader): The data loader for the test dataset.
-        epoch (int): The current epoch number.
-        model (nn.Module): The model to be evaluated.
-        optimizer (Optimizer): The optimizer used for training the model.
-        BETA (float): The weight for the KL loss term in the overall loss calculation.
-        kl_weight (float): The weight for the Kmeans loss term in the overall loss calculation.
-        seq_len (int): The length of the input sequence.
-        mse_red (str): The reduction method for the MSE loss calculation.
-        kloss (int): The number of singular values to consider in the cluster loss calculation.
-        klmbda (float): The weight for the cluster loss term in the overall loss calculation.
-        future_decoder (bool): A boolean flag indicating whether to use the future decoder in the model.
-        bsize (int): The batch size.
-
-    Returns:
-        tuple: A tuple containing the average MSE loss, average test loss, and total Kmeans loss multiplied by kl_weight.
-
-    """
     model.eval() # toggle model to inference mode
     test_loss = 0.0
     mse_loss = 0.0
@@ -557,7 +536,7 @@ def train_model(config):
                                                                          MSE_PRED_REDUCTION, KMEANS_LOSS, KMEANS_LAMBDA,
                                                                          TRAIN_BATCH_SIZE, noise)
 
-        current_loss, test_loss, test_list = test(test_loader, epoch, model, optimizer,
+        test_mse_loss, test_loss, test_list = test(test_loader, epoch, model, optimizer,
                                                   BETA, weight, TEMPORAL_WINDOW, MSE_REC_REDUCTION,
                                                   KMEANS_LOSS, KMEANS_LAMBDA, FUTURE_DECODER, TEST_BATCH_SIZE)
 
@@ -587,8 +566,8 @@ def train_model(config):
                     })
         
         # save best model
-        if weight > 0.99 and current_loss <= BEST_LOSS:
-            BEST_LOSS = current_loss
+        if weight > 0.99 and test_mse_loss <= BEST_LOSS:
+            BEST_LOSS = test_mse_loss
             print("Saving model!")
 
             torch.save(model.state_dict(), os.path.join(cfg['project_path'],"model", "best_model",model_name+'_'+cfg['Project']+'.pkl'))
@@ -616,37 +595,11 @@ def train_model(config):
         np.save(os.path.join(cfg['project_path'],'model','model_losses','kl_losses_'+model_name), kl_losses)
         np.save(os.path.join(cfg['project_path'],'model','model_losses','weight_values_'+model_name), weight_values)
         np.save(os.path.join(cfg['project_path'],'model','model_losses','mse_train_losses_'+model_name), mse_losses)
-        np.save(os.path.join(cfg['project_path'],'model','model_losses','mse_test_losses_'+model_name), current_loss)
-        
-        #print all of the details of (fut_losses)
-        print("fut_losses: ", fut_losses)
-        print("fut_losses type: ", type(fut_losses))
-        #print("fut_losses shape: ", fut_losses.shape)
-        print("fut_losses dtype: ", fut_losses.dtype)
-        print("fut_losses device: ", fut_losses.device)
-        print("fut_losses requires_grad: ", fut_losses.requires_grad)  
-        print("fut_losses grad: ", fut_losses.grad)
-        print("fut_losses grad_fn: ", fut_losses.grad_fn)
-        print("fut_losses is_leaf: ", fut_losses.is_leaf)
-        print("fut_losses layout: ", fut_losses.layout)
-        print("fut_losses storage: ", fut_losses.storage())
-        print("fut_losses number of elements: ", fut_losses.numel())
-        print("fut_losses stride: ", fut_losses.stride())
-        print("fut_losses is contiguous: ", fut_losses.is_contiguous())
-        print("fut_losses dimension names: ", fut_losses.names)
-        print("fut_losses is quantized: ", fut_losses.is_quantized)
-        print("fut_losses backward hooks: ", fut_losses._backward_hooks)
-
-
-        # Move fut_losses to cpu and convert to numpy array before saving
-        fut_losses = fut_losses.cpu().numpy()
-
-
-        np.save(os.path.join(cfg['project_path'],'model','model_losses','fut_losses_'+model_name), fut_losses)
-        
-        #fut_losses_array = np.concatenate([tensor.cpu().numpy() for tensor in fut_losses])
-        #np.save(os.path.join(cfg['project_path'],'model','model_losses','fut_losses_'+model_name), fut_losses_array)
-        #np.save(os.path.join(cfg['project_path'],'model','model_losses','fut_losses_'+model_name), fut_losses.cpu().numpy())
+        np.save(os.path.join(cfg['project_path'],'model','model_losses','mse_test_losses_'+model_name), test_mse_loss)
+        #np.save(os.path.join(cfg['project_path'],'model','model_losses','fut_losses_'+model_name), fut_losses)
+        fut_losses = torch.tensor(fut_losses)
+        fut_losses_array = fut_losses.cpu().detach().numpy()
+        np.save(os.path.join(cfg['project_path'], 'model', 'model_losses', 'fut_losses_' + model_name), fut_losses_array)
 
         df = pd.DataFrame([train_losses, test_losses, kmeans_losses, kl_losses, weight_values, mse_losses, fut_losses, learn_rates, conv_counter]).T
         df.columns=['Train_losses', 'Test_losses', 'Kmeans_losses', 'KL_losses', 'Weight_values', 'MSE_losses', 'Future_losses', 'Learning_Rate', 'Convergence_counter']
