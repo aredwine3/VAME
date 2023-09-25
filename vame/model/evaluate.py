@@ -24,6 +24,8 @@ from pathlib import Path
 from matplotlib import pyplot as plt
 import torch.utils.data as Data
 
+from torch.utils.data import DataLoader
+
 from vame.util.auxiliary import read_config
 from vame.model.rnn_vae import RNN_VAE
 from vame.model.dataloader import SEQUENCE_DATASET
@@ -50,33 +52,35 @@ else:
 
 def plot_reconstruction(filepath, test_loader, seq_len_half, model, model_name,
                         FUTURE_DECODER, FUTURE_STEPS, suffix=None):
+    if torch.cuda.is_available():
+        device = torch.device("cuda")
+    elif hasattr(torch.backends, 'mps') and torch.backends.mps.is_available():
+        device = torch.device("mps")
+    else:
+        device = torch.device("cpu")
+
+    # Ensure the model is on the correct device
+    model = model.to(device)
+
     x_iter = iter(test_loader)
     x = next(x_iter)
+    x = x.to('cuda')
     x = x.permute(0,2,1)
-    if use_gpu:
-        data = x[:,:seq_len_half,:].type('torch.FloatTensor').cuda()
-        data_fut = x[:,seq_len_half:seq_len_half+FUTURE_STEPS,:].type('torch.FloatTensor').cuda()
-    elif use_mps:
-        data = x[:,:seq_len_half,:].type('torch.FloatTensor').to(device)
-        data_fut = x[:,seq_len_half:seq_len_half+FUTURE_STEPS,:].type('torch.FloatTensor').to(device)
-    else:
-        data = x[:,:seq_len_half,:].type('torch.FloatTensor').to()
-        data_fut = x[:,seq_len_half:seq_len_half+FUTURE_STEPS,:].type('torch.FloatTensor').to()
+
+    data = x[:,:seq_len_half,:].float().to(device)
+    data_fut = x[:,seq_len_half:seq_len_half+FUTURE_STEPS,:].float().to(device)
+    
     if FUTURE_DECODER:
         x_tilde, future, latent, mu, logvar = model(data)
 
-        fut_orig = data_fut.cpu()
-        fut_orig = fut_orig.data.numpy()
-        fut = future.cpu()
-        fut = fut.detach().numpy()
+        fut_orig = to_cpu_numpy(data_fut)
+        fut = to_cpu_numpy(future)
 
     else:
         x_tilde, latent, mu, logvar = model(data)
 
-    data_orig = data.cpu()
-    data_orig = data_orig.data.numpy()
-    data_tilde = x_tilde.cpu()
-    data_tilde = data_tilde.detach().numpy()
+    data_orig = to_cpu_numpy(data)
+    data_tilde = to_cpu_numpy(x_tilde)
 
     if FUTURE_DECODER:
         fig, axs = plt.subplots(2, 5)
@@ -196,10 +200,14 @@ def eval_temporal(cfg, use_gpu, use_mps, model_name, fixed, snapshot=None, suffi
             model.load_state_dict(torch.load(os.path.join(cfg['project_path'],"model","best_model",model_name+'_'+cfg['Project']+'.pkl'), map_location=torch.device('cpu')))
         elif snapshot:
             model.load_state_dict(torch.load(snapshot), map_location=torch.device('cpu'))
+    
     model.eval() #toggle evaluation mode
 
     testset = SEQUENCE_DATASET(os.path.join(cfg['project_path'],"data", "train",""), data='test_seq.npy', train=False, temporal_window=TEMPORAL_WINDOW)
-    test_loader = Data.DataLoader(testset, batch_size=TEST_BATCH_SIZE, shuffle=True, drop_last=True)
+    # Create a generator and place it on the right device
+    generator = torch.Generator(device='cuda' if use_gpu else 'cpu')
+    test_loader = Data.DataLoader(testset, batch_size=TEST_BATCH_SIZE, shuffle=True, drop_last=True, pin_memory=True, generator=generator) # added pin_memory=True
+    
     if not snapshot:
         plot_reconstruction(filepath, test_loader, seq_len_half, model, model_name, FUTURE_DECODER, FUTURE_STEPS)#, suffix=suffix
     elif snapshot:
