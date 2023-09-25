@@ -1,0 +1,144 @@
+sweep_config:
+  program: train_model_wandb.py
+  method: random
+  metric:
+    name: train_loss
+    goal: minimize
+  early_terminate:
+    type: hyperband
+    min_iter: 3
+  parameters:
+    Project:
+      value: 
+        - ALR_VAME_1
+    project_path:
+      value: 
+        - "/content/VAME_files/ALR_VAME_1-Sep15-2023"
+    model_name:
+      value: 
+        - "VAME"
+    pretrained_model:
+      value: 
+        - None
+    pretrained_weights:
+      value: 
+        - false
+    num_features:
+      value: 
+        - 28
+    batch_size:
+      distribution: log_uniform
+      min: 256
+      max: 2048
+    max_epochs:
+      distribution: uniform
+      min: 250
+      max: 500
+    model_snapshot:
+      value: 
+        - 15
+    model_convergence:
+      value: 
+        - 50
+    transition_function:
+      value: 
+        - "GRU"
+    beta:
+      value: 
+        - 1
+    beta_norm:
+      value: 
+        - false
+    zdims:
+      distribution: uniform
+      min: 15
+      max: 60
+    learning_rate:
+      distribution: log_uniform
+      min: 0.0001
+      max: 0.01
+    time_window:
+      min: 30
+      max: 120
+    prediction_decoder:
+      value: 
+        - 1
+    prediction_steps:
+      distribution: uniform
+      min: 15
+      max: 30
+    noise:
+      values: 
+        - true
+        - false
+    scheduler:
+      value: 
+        - 1
+    scheduler_step_size:
+      distribution: uniform
+      min: 50
+      max: 300
+    scheduler_gamma:
+      distribution: uniform
+      min: 0.1
+      max: 0.9
+    scheduler_threshold:
+      distribution: log_uniform
+      min: 0.0001
+      max: 0.1
+    softplus:
+      values: 
+        - true
+        - false
+    hidden_layer_size_1:
+      value: 
+        - 256
+    hidden_layer_size_2:
+      value: 
+        - 256
+    dropout_encoder:
+      values: 
+        - 0
+        - 1
+    hidden_size_rec:
+      value: 
+        - 256
+    dropout_rec:
+      values: 
+        - 0
+        - 1
+    n_layers:
+      value: 
+        - 1
+    hidden_size_pred:
+      value: 
+        - 256
+    dropout_pred:
+      values: 
+        - 0
+        - 1
+    mse_reconstruction_reduction:
+      values: 
+        - sum
+    mse_prediction_reduction:
+      value: 
+        - sum
+    kmeans_loss:
+      value: 
+        - 30
+    kmeans_lambda:
+      value: 
+        - 0.1
+    anneal_function:
+      values: 
+        - linear
+        - sigmoid
+    kl_start:
+      value: 
+        - 2
+    annealtime:
+      value: 
+        - 4
+    legacy:
+      values: 
+      - false
