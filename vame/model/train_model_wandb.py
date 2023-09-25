@@ -275,7 +275,7 @@ def train_model(config, wandb_usage='n'):
         model_name = config['model_name']
         pretrained_weights = config['pretrained_weights']
         pretrained_model = config['pretrained_model']
-        #fixed = config['egocentric_data']
+        fixed = config.get('egocentric_data', '')
 
         print("Train Variational Autoencoder - model name: %s \n" %model_name)
         os.makedirs(os.path.join(project_path,'model','best_model'), exist_ok=True)
