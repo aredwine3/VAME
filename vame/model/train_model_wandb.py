@@ -410,6 +410,7 @@ def train_model(config, wandb_usage='n'):
     fut_losses = []
     learn_rates = []
     conv_counter = []
+    test_mse_losses = []
 
     torch.manual_seed(SEED)
     np.random.seed(SEED)
@@ -548,65 +549,67 @@ def train_model(config, wandb_usage='n'):
         learn_rates.append(lr)
 
         if wandb_usage == 'l':
-            wandb.log({'learning_rate': lr,
-                    'train_loss': train_loss,
-                    'mse_loss_train': mse_loss,
-                    'test_loss': test_loss,
-                    'mse_loss_test': test_mse_loss,
-                    'kmeans_loss': km_loss,
-                    'kl_loss': kl_loss,
-                    'weight': weight,
-                    'fut_loss': fut_loss,
-                    'epoch': epoch,
-                    'convergence': convergence
-                    'max_epochs': EPOCHS,
-                    'zdims': ZDIMS,
-                    'batch_size': TRAIN_BATCH_SIZE
-                    })
+            wandb.log({
+                'learning_rate': lr,
+                'train_loss': train_loss,
+                'mse_loss_train': mse_loss,
+                'test_loss': test_loss,
+                'mse_loss_test': test_mse_loss,
+                'kmeans_loss': km_loss,
+                'kl_loss': kl_loss,
+                'weight': weight,
+                'fut_loss': fut_loss,
+                'epoch': epoch,
+                'convergence': convergence
+                'max_epochs': EPOCHS,
+                'zdims': ZDIMS,
+                'batch_size': TRAIN_BATCH_SIZE
+                })
         
         elif wandb_usage == 's':
-            wandb.log({'learning_rate': lr,
-                    'train_loss': train_loss,
-                    'mse_loss_train': mse_loss,
-                    'test_loss': test_loss,
-                    'mse_loss_test': test_mse_loss,
-                    'kmeans_loss': km_loss,
-                    'kl_loss': kl_loss,
-                    'weight': weight,
-                    'fut_loss': fut_loss,
-                    'epoch': epoch,
-                    'convergence': convergence,
-                    'max_epochs': EPOCHS,
-                    'zdims': ZDIMS,
-                    'beta': BETA,
-                    'model_snapshot': SNAPSHOT,
-                    'learning_rate': LEARNING_RATE,
-                    'num_features': NUM_FEATURES,
-                    'time_window': TEMPORAL_WINDOW,
-                    'prediction_decoder': FUTURE_DECODER,
-                    'prediction_steps': FUTURE_STEPS,
-                    'hidden_size_layer_1': hidden_size_layer_1,
-                    'hidden_size_layer_2': hidden_size_layer_2,
-                    'hidden_size_rec': hidden_size_rec,
-                    'hidden_size_pred': hidden_size_pred,
-                    'dropout_encoder': dropout_encoder,
-                    'dropout_rec': dropout_rec,
-                    'dropout_pred': dropout_pred,
-                    'noise': noise,
-                    'scheduler': optimizer_scheduler,
-                    'scheduler_step_size': scheduler_step_size,
-                    'scheduler_threshold': scheduler_thresh,
-                    'scheduler_gamma': scheduler_gamma,
-                    'softplus': softplus,
-                    'mse_reconstruction_reduction': MSE_REC_REDUCTION,
-                    'mse_prediction_reduction': MSE_PRED_REDUCTION,
-                    'kmeans_loss': KMEANS_LOSS,
-                    'kmeans_lambda': KMEANS_LAMBDA,
-                    'kl_start': KL_START,
-                    'annealtime': ANNEALTIME,
-                    'anneal_function': anneal_function,
-                    'batch_size': TRAIN_BATCH_SIZE
-                    })
+            wandb.log({
+                'learning_rate': lr,
+                'train_loss': train_loss,
+                'mse_loss_train': mse_loss,
+                'test_loss': test_loss,
+                'mse_loss_test': test_mse_loss,
+                'kmeans_loss': km_loss,
+                'kl_loss': kl_loss,
+                'weight': weight,
+                'fut_loss': fut_loss,
+                'epoch': epoch,
+                'convergence': convergence,
+                'max_epochs': EPOCHS,
+                'zdims': ZDIMS,
+                'beta': BETA,
+                'model_snapshot': SNAPSHOT,
+                'learning_rate': LEARNING_RATE,
+                'num_features': NUM_FEATURES,
+                'time_window': TEMPORAL_WINDOW,
+                'prediction_decoder': FUTURE_DECODER,
+                'prediction_steps': FUTURE_STEPS,
+                'hidden_size_layer_1': hidden_size_layer_1,
+                'hidden_size_layer_2': hidden_size_layer_2,
+                'hidden_size_rec': hidden_size_rec,
+                'hidden_size_pred': hidden_size_pred,
+                'dropout_encoder': dropout_encoder,
+                'dropout_rec': dropout_rec,
+                'dropout_pred': dropout_pred,
+                'noise': noise,
+                'scheduler': optimizer_scheduler,
+                'scheduler_step_size': scheduler_step_size,
+                'scheduler_threshold': scheduler_thresh,
+                'scheduler_gamma': scheduler_gamma,
+                'softplus': softplus,
+                'mse_reconstruction_reduction': MSE_REC_REDUCTION,
+                'mse_prediction_reduction': MSE_PRED_REDUCTION,
+                'kmeans_loss': KMEANS_LOSS,
+                'kmeans_lambda': KMEANS_LAMBDA,
+                'kl_start': KL_START,
+                'annealtime': ANNEALTIME,
+                'anneal_function': anneal_function,
+                'batch_size': TRAIN_BATCH_SIZE
+                })
         
         # save best model
         if weight > 0.99 and test_mse_loss <= BEST_LOSS:
