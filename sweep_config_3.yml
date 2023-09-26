@@ -1,144 +1,160 @@
-sweep_config:
-  program: train_model_wandb.py
-  method: random
-  metric:
-    name: train_loss
-    goal: minimize
-  early_terminate:
-    type: hyperband
-    min_iter: 3
-  parameters:
-    Project:
-      value: 
-        - ALR_VAME_1
-    project_path:
-      value: 
-        - "/content/VAME_files/ALR_VAME_1-Sep15-2023"
-    model_name:
-      value: 
-        - "VAME"
-    pretrained_model:
-      value: 
-        - None
-    pretrained_weights:
-      value: 
-        - false
-    num_features:
-      value: 
-        - 28
-    batch_size:
-      distribution: log_uniform
-      min: 256
-      max: 2048
-    max_epochs:
-      distribution: uniform
-      min: 250
-      max: 500
-    model_snapshot:
-      value: 
-        - 15
-    model_convergence:
-      value: 
-        - 50
-    transition_function:
-      value: 
-        - "GRU"
-    beta:
-      value: 
-        - 1
-    beta_norm:
-      value: 
-        - false
-    zdims:
-      distribution: uniform
-      min: 15
-      max: 60
-    learning_rate:
-      distribution: log_uniform
-      min: 0.0001
-      max: 0.01
-    time_window:
-      min: 30
-      max: 120
-    prediction_decoder:
-      value: 
-        - 1
-    prediction_steps:
-      distribution: uniform
-      min: 15
-      max: 30
-    noise:
-      values: 
-        - true
-        - false
-    scheduler:
-      value: 
-        - 1
-    scheduler_step_size:
-      distribution: uniform
-      min: 50
-      max: 300
-    scheduler_gamma:
-      distribution: uniform
-      min: 0.1
-      max: 0.9
-    scheduler_threshold:
-      distribution: log_uniform
-      min: 0.0001
-      max: 0.1
-    softplus:
-      values: 
-        - true
-        - false
-    hidden_layer_size_1:
-      value: 
-        - 256
-    hidden_layer_size_2:
-      value: 
-        - 256
-    dropout_encoder:
-      values: 
-        - 0
-        - 1
-    hidden_size_rec:
-      value: 
-        - 256
-    dropout_rec:
-      values: 
-        - 0
-        - 1
-    n_layers:
-      value: 
-        - 1
-    hidden_size_pred:
-      value: 
-        - 256
-    dropout_pred:
-      values: 
-        - 0
-        - 1
-    mse_reconstruction_reduction:
-      values: 
-        - sum
-    mse_prediction_reduction:
-      value: 
-        - sum
-    kmeans_loss:
-      value: 
-        - 30
-    kmeans_lambda:
-      value: 
-        - 0.1
-    anneal_function:
-      values: 
-        - linear
-        - sigmoid
-    kl_start:
-      value: 
-        - 2
-    annealtime:
-      value: 
-        - 4
-    legacy:
-      values: 
+program: train_model_wandb_2.py
+method: random
+metric:
+  name: train_loss
+  goal: minimize
+early_terminate:
+  type: hyperband
+  min_iter: 3
+parameters:
+  Project:
+    values: 
+      - ALR_VAME_1
+    distribution: categorical
+  project_path:
+    values: 
+      - /content/VAME_files/ALR_VAME_1-Sep15-2023
+    distribution: categorical
+  model_name:
+    values: 
+      - VAME
+    distribution: categorical
+  pretrained_model:
+    values: 
+      - null
+    distribution: categorical
+  pretrained_weights:
+    values: 
       - false
+    distribution: categorical
+  num_features:
+    value: 28
+    distribution: constant
+  batch_size:
+    min: 256
+    max: 2048
+    distribution: int_uniform
+  max_epochs:
+    min: 250
+    max: 500
+    distribution: int_uniform
+  model_snapshot:
+    value: 15
+    distribution: constant
+  model_convergence:
+    value: 50
+    distribution: constant
+  transition_function:
+    values: 
+      - "GRU"
+    distribution: categorical
+  beta:
+    value: 1
+    distribution: constant
+  beta_norm:
+    values: 
+      - false
+    distribution: categorical
+  zdims:
+    min: 15
+    max: 60
+    distribution: int_uniform
+  learning_rate:
+    min: 0.0001
+    max: 0.01
+    distribution: log_uniform_values
+  time_window:
+    min: 30
+    max: 120
+    distribution: int_uniform
+  prediction_decoder:
+    value: 1
+    distribution: constant
+  prediction_steps:
+    min: 15
+    max: 30
+    distribution: int_uniform
+  noise:
+    values: 
+      - true
+      - false
+    distribution: categorical
+  scheduler:
+    value: 1
+    distribution: constant
+  scheduler_step_size:
+    min: 50
+    max: 300
+    distribution: int_uniform
+  scheduler_gamma:
+    min: 0.1
+    max: 0.9
+    distribution: uniform
+  scheduler_threshold:
+    min: 0.0001
+    max: 0.1
+    distribution: uniform
+  softplus:
+    values: [true, false]
+  hidden_layer_size_1:
+    value: 256
+    distribution: constant
+  hidden_layer_size_2:
+    value: 256
+    distribution: constant
+  dropout_encoder:
+    values:
+      - 0
+      - 1
+    distribution: categorical
+  hidden_size_rec:
+    value: 256
+    distribution: constant
+  dropout_rec:
+    values:
+      - 0
+      - 1
+    distribution: categorical
+  n_layers:
+    min: 1
+    max: 2
+    distribution: int_uniform
+  hidden_size_pred:
+    value: 256
+    distribution: constant
+  dropout_pred:
+    values:
+      - 0
+      - 1
+    distribution: categorical
+  mse_reconstruction_reduction:
+    values: 
+      - sum
+    distribution: categorical
+  mse_prediction_reduction:
+    values: 
+      - sum
+    distribution: categorical
+  kmeans_loss:
+    min: 30
+    max: 45
+    distribution: int_uniform
+  kmeans_lambda:
+    min: 0.1
+    max: 0.2
+    distribution: uniform
+  anneal_function:
+    values: 
+      - linear
+      - sigmoid
+    distribution: categorical
+  kl_start:
+    value: 2
+    distribution: constant
+  annealtime:
+    value: 4
+    distribution: constant
+  legacy:
+    values: 
+      - false
+    distribution: categorical
