@@ -14,6 +14,7 @@ sys.dont_write_bytecode = True
 from vame.initialize_project import init_new_project
 from vame.model import create_trainset
 from vame.model import train_model
+from vame.model import train_model_fabric
 from vame.model import evaluate_model
 from vame.analysis import pose_segmentation
 from vame.analysis import motif_videos
