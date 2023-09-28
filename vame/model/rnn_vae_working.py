@@ -16,6 +16,7 @@ from pathlib import Path
 # Third-party libraries
 import wandb
 import torch
+import yaml
 import getpass
 import numpy as np
 import pandas as pd
@@ -178,7 +179,7 @@ def train(train_loader, epoch, model, optimizer, anneal_function, BETA, kl_start
         loss.backward()
         optimizer.step()
         
-        # torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm = 5)
+        torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm = 5)
 
         train_loss += loss.item()
         mse_loss += rec_loss.item()
@@ -187,6 +188,10 @@ def train(train_loader, epoch, model, optimizer, anneal_function, BETA, kl_start
 
         # if idx % 1000 == 0:
         #     print('Epoch: %d.  loss: %.4f' %(epoch, loss.item()))
+
+        wandb.log({'batch_train_loss': loss.item()})
+        wandb.log({'batch_train_mse_loss': rec_loss.item()})
+
    
     scheduler.step(loss) #be sure scheduler is called before optimizer in >1.1 pytorch
 
@@ -245,17 +250,20 @@ def test(test_loader, epoch, model, optimizer, BETA, kl_weight, seq_len, mse_red
                 kmeans_loss = cluster_loss(latent.T, kloss, klmbda, bsize)
                 loss = rec_loss + BETA*kl_weight*kl_loss + kl_weight*kmeans_loss
 
-            # torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm = 5)
+            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm = 5)
 
             test_loss += loss.item()
             mse_loss += rec_loss.item()
             kullback_loss += kl_loss.item()
             kmeans_losses += kmeans_loss
 
+            wandb.log({'batch_test_loss': loss.item()})
+            wandb.log({'batch_test_mse_loss': rec_loss.item()})
+
     print('Test loss: {:.3f}, MSE-Loss: {:.3f}, KL-Loss: {:.3f}, Kmeans-Loss: {:.3f}'.format(test_loss / idx,
           mse_loss /idx, BETA*kl_weight*kullback_loss/idx, kl_weight*kmeans_losses/idx))
 
-    return mse_loss /idx, test_loss/idx, kl_weight*kmeans_losses
+    return mse_loss /idx, test_loss/idx, kl_weight*kmeans_losses/idx
 
 
 def train_model(config):
@@ -345,6 +353,7 @@ def train_model(config):
     mse_losses = []
     fut_losses = []
     learn_rates = []
+    test_mse_losses = []
     conv_counter = []
 
     torch.manual_seed(SEED)
@@ -368,7 +377,14 @@ def train_model(config):
     # Move the model to the appropriate device
     model = model.to(device)
 
-    
+    optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE, amsgrad=True)
+
+    if optimizer_scheduler:
+        print('Scheduler step size: %d, Scheduler gamma: %.2f, Scheduler Threshold: %.5f\n' %(scheduler_step_size, cfg['scheduler_gamma'], scheduler_thresh))
+	# Thanks to @alexcwsmith for the optimized scheduler contribution
+        scheduler = ReduceLROnPlateau(optimizer, 'min', factor=cfg['scheduler_gamma'], patience=cfg['scheduler_step_size'], threshold=scheduler_thresh, threshold_mode='rel', verbose=True)
+    else:
+        scheduler = StepLR(optimizer, step_size=scheduler_step_size, gamma=1, last_epoch=-1)
 
     if pretrained_weights:
         try:
@@ -390,49 +406,42 @@ def train_model(config):
     trainset = SEQUENCE_DATASET(os.path.join(cfg['project_path'],"data", "train",""), data='train_seq.npy', train=True, temporal_window=TEMPORAL_WINDOW)
     testset = SEQUENCE_DATASET(os.path.join(cfg['project_path'],"data", "train",""), data='test_seq.npy', train=False, temporal_window=TEMPORAL_WINDOW)
 
-    #train_loader = Data.DataLoader(trainset, batch_size=TRAIN_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4)
-    #test_loader = Data.DataLoader(testset, batch_size=TEST_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4)
-    
-    trainset = SEQUENCE_DATASET(os.path.join(cfg['project_path'],"data", "train",""), data='train_seq.npy', train=True, temporal_window=TEMPORAL_WINDOW)
-    testset = SEQUENCE_DATASET(os.path.join(cfg['project_path'],"data", "train",""), data='test_seq.npy', train=False, temporal_window=TEMPORAL_WINDOW)
     if device == torch.device("cuda"): 
         cuda_generator = torch.Generator(device='cuda')
         train_loader = Data.DataLoader(trainset, batch_size=TRAIN_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4, generator=cuda_generator)
         test_loader = Data.DataLoader(testset, batch_size=TEST_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4, generator=cuda_generator)
+    elif device == torch.device("mps"):
+        mps_generator = torch.Generator(device='mps')
+        train_loader = Data.DataLoader(trainset, batch_size=TRAIN_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4, generator=mps_generator)
+        test_loader = Data.DataLoader(testset, batch_size=TEST_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4, generator=mps_generator)
     else:
         train_loader = Data.DataLoader(trainset, batch_size=TRAIN_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4)
         test_loader = Data.DataLoader(testset, batch_size=TEST_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4)
-
-
-
-    optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE, amsgrad=True)
-
-    if optimizer_scheduler:
-        print('Scheduler step size: %d, Scheduler gamma: %.2f, Scheduler Threshold: %.5f\n' %(scheduler_step_size, cfg['scheduler_gamma'], scheduler_thresh))
-	# Thanks to @alexcwsmith for the optimized scheduler contribution
-        scheduler = ReduceLROnPlateau(optimizer, 'min', factor=cfg['scheduler_gamma'], patience=cfg['scheduler_step_size'], threshold=scheduler_thresh, threshold_mode='rel', verbose=True)
-    else:
-        scheduler = StepLR(optimizer, step_size=scheduler_step_size, gamma=1, last_epoch=-1)
     
     """ WANDB LOGGING """
-    # Ask the user if the script should be run with wandb logging
-    wandb_logging = input("Do you want to use wandb logging? (y/n) ").lower()
+    # Ask the user if the script should be run with wandb logging or hyperparameter optimization
+    wandb_usage = input("Do you want to use wandb logging (l) or hyperparameter optimization (sweeps) (s)? (l/s/n) ").lower()
 
-    if wandb_logging not in ['y', 'n']:
-        raise ValueError("Please enter 'y' or 'n'.")
+    if wandb_usage not in ['l', 's', 'n']:
+        raise ValueError("Please enter 'l', 's', or 'n'.")
 
-    if wandb_logging == 'y':
-        wandb_username = input("Please enter your wandb username: ")
-        wandb_api_key = getpass.getpass("Please enter your wandb API key: ")
+    if wandb_usage == 'l':
         wandb_project_name = input("Please enter your wandb project name: ")
         wandb_run_name = input("Please enter a name for your wandb run: ")
+        wandb_username = input("Please enter your wandb username: ")
+        wandb_api_key = getpass.getpass("Please enter your wandb API key: ")
         wandb.login(key=wandb_api_key)
+
         # Group all hyperparameters together in a dict
 
         config_dict = {
+            'model_name': model_name,
+            'pretrained_weights': pretrained_weights,
+            'pretrained_model': pretrained_model,
             'SEED': SEED,
             'TRAIN_BATCH_SIZE': TRAIN_BATCH_SIZE,
             'TEST_BATCH_SIZE': TEST_BATCH_SIZE,
+            'batch_size': cfg['batch_size'],
             'EPOCHS': EPOCHS,
             'ZDIMS': ZDIMS,
             'BETA': BETA,
@@ -469,6 +478,7 @@ def train_model(config):
             print(f"{key}: {value}")
         
         confirm = input("\nDo these look correct? (y/n) ").lower()
+        
         if confirm == 'y':
             wandb.init(project=wandb_project_name, entity=wandb_username, name=wandb_run_name)
             
@@ -477,8 +487,7 @@ def train_model(config):
         else:
             print("Please modify your configurations and try again.")
             exit()
-
-
+            
     print("Start training... ")
 
     for epoch in range(1,EPOCHS):
@@ -502,35 +511,31 @@ def train_model(config):
         kl_losses.append(kl_loss)
         weight_values.append(weight)
         mse_losses.append(mse_loss)
+        test_mse_losses.append(test_mse_loss)
         #fut_losses.append(fut_loss)
-        assert isinstance(fut_losses, list), f"fut_losses is of type {type(fut_losses)}"
         fut_losses.append(fut_loss.cpu().item())
-        #fut_losses.append(fut_loss.cpu().detach().numpy().tolist()[0])  # [0] to get the scalar value from the list ### TRY MAYBE?
 
-        
         lr = optimizer.param_groups[0]['lr']
         learn_rates.append(lr)
 
-        if wandb_logging and wandb.run is not None:
+        if wandb_usage is 'l' and wandb.run is not None:
             wandb.log({'learning_rate': lr,
                     'train_loss': train_loss,
+                    'mse_loss_train': mse_loss,
                     'test_loss': test_loss,
+                    'mse_loss_test': test_mse_loss,
                     'kmeans_loss': km_loss,
                     'kl_loss': kl_loss,
                     'weight': weight,
-                    'mse_loss': mse_loss,
                     'fut_loss': fut_loss,
                     'epoch': epoch,
                     'convergence': convergence
                     })
-        
         # save best model
         if weight > 0.99 and test_mse_loss <= BEST_LOSS:
             BEST_LOSS = test_mse_loss
             print("Saving model!")
-
             torch.save(model.state_dict(), os.path.join(cfg['project_path'],"model", "best_model",model_name+'_'+cfg['Project']+'.pkl'))
-
             convergence = 0
         else:
             convergence += 1
@@ -540,7 +545,7 @@ def train_model(config):
         if epoch % SNAPSHOT == 0:
             print("Saving model snapshot!\n")
             torch.save(model.state_dict(), os.path.join(cfg['project_path'],'model','best_model','snapshots',model_name+'_'+cfg['Project']+'_epoch_'+str(epoch)+'.pkl'))
-            if wandb_logging:
+            if wandb_usage:
                 wandb.save(os.path.join(cfg['project_path'],'model','best_model','snapshots',model_name+'_'+cfg['Project']+'_epoch_'+str(epoch)+'.pkl'))
 
         # save logged losses
@@ -550,7 +555,7 @@ def train_model(config):
         np.save(os.path.join(cfg['project_path'],'model','model_losses','kl_losses_'+model_name), kl_losses)
         np.save(os.path.join(cfg['project_path'],'model','model_losses','weight_values_'+model_name), weight_values)
         np.save(os.path.join(cfg['project_path'],'model','model_losses','mse_train_losses_'+model_name), mse_losses)
-        np.save(os.path.join(cfg['project_path'],'model','model_losses','mse_test_losses_'+model_name), test_mse_loss)
+        np.save(os.path.join(cfg['project_path'],'model','model_losses','mse_test_losses_'+model_name), test_mse_losses)
         # np.save(os.path.join(cfg['project_path'], 'model', 'model_losses', 'fut_losses_' + model_name), fut_losses)
 
         # Convert fut_losses to a tensor and save
@@ -582,7 +587,7 @@ def train_model(config):
               'Use vame.behavior_segmentation() to identify behavioral motifs!\n\n'
               'OPTIONAL: You can re-run vame.rnn_model() to improve performance.')
     
-    if wandb_logging:    
+    if wandb_usage:    
         wandb.finish()
     
 
