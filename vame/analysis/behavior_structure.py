@@ -23,7 +23,7 @@ from pathlib import Path
 import warnings
 import matplotlib.cbook
 
-warnings.filterwarnings("ignore",category=matplotlib.cbook.mplDeprecation)
+# warnings.filterwarnings("ignore",category=matplotlib.cbook.mplDeprecation)
 
 from vame.util.auxiliary import read_config
 import glob
