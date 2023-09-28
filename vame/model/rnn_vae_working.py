@@ -420,10 +420,10 @@ def train_model(config):
     
     """ WANDB LOGGING """
     # Ask the user if the script should be run with wandb logging or hyperparameter optimization
-    wandb_usage = input("Do you want to use wandb logging (l) or hyperparameter optimization (sweeps) (s)? (l/s/n) ").lower()
+    wandb_usage = input("Do you want to use wandb logging? (y/n) ").lower()
 
-    if wandb_usage not in ['l', 's', 'n']:
-        raise ValueError("Please enter 'l', 's', or 'n'.")
+    if wandb_usage not in ['y', 'n']:
+        raise ValueError("Please enter 'y', or 'n'.")
 
     if wandb_usage == 'l':
         wandb_project_name = input("Please enter your wandb project name: ")
