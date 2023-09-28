@@ -16,9 +16,8 @@ from pathlib import Path
 # Third-party libraries
 import wandb
 import torch
-import getpass
 import numpy as np
-import lightning as L
+import lightning as lightning
 from lightning.fabric import Fabric
 import pandas as pd
 from torch import nn
@@ -133,12 +132,8 @@ def gaussian(ins, is_training, seq_len, std_n=0.8):
         return ins + (noise*emp_std)
     return ins
 
-def worker_init_fn(worker_id):
-    np.random.seed(np.random.get_state()[1][0] + worker_id)
-
-
 def train(train_loader, epoch, model, optimizer, anneal_function, BETA, kl_start,
-          annealtime, seq_len, future_decoder, future_steps, scheduler, mse_red, 
+          annealtime, seq_len, future_decoder, future_steps, scheduler, mse_red,
           mse_pred, kloss, klmbda, bsize, noise):
     model.train() # toggle model to train mode
     train_loss = 0.0
@@ -158,7 +153,7 @@ def train(train_loader, epoch, model, optimizer, anneal_function, BETA, kl_start
     if use_gpu:
         dtype = torch.cuda.FloatTensor
     elif use_mps:
-        dtype = torch.FloatTensor
+        dtype = torch.FloatTensor        
     else:
         dtype = torch.FloatTensor
 
@@ -204,10 +199,10 @@ def train(train_loader, epoch, model, optimizer, anneal_function, BETA, kl_start
         fabric.backward(loss)
 
         """ Q: Gradient Clipping"""
-        fabric.clip_gradients(model, clip_val=0)
+        #fabric.clip_gradients(model, clip_val=0)
         
         """ Q: OR """
-        fabric.clip_gradients(model, clip_norm=5, norm_type=2 or 'inf')
+        fabric.clip_gradients(model, clip_norm=5, norm_type='inf')
 
         optimizer.step()
         
@@ -229,24 +224,12 @@ def train(train_loader, epoch, model, optimizer, anneal_function, BETA, kl_start
     fabric.log_dict(train_log_dict)
     wandb.log(train_log_dict)
 
-    fabric.log({"train_loss": train_loss/idx})
-    fabric.log({"train_mse_loss": mse_loss/idx})
-    fabric.log({"train_fut_loss": fut_loss/idx})
-    fabric.log({"train_kl_loss": BETA*kl_weight*kullback_loss/idx})
-    fabric.log({"train_kmeans_loss": kl_weight*kmeans_losses/idx})
-
-    wandb.log({"train_loss": train_loss/idx})
-    wandb.log({"train_mse_loss": mse_loss/idx})
-    wandb.log({"train_fut_loss": fut_loss/idx})
-    wandb.log({"train_kl_loss": BETA*kl_weight*kullback_loss/idx})
-    wandb.log({"train_kmeans_loss": kl_weight*kmeans_losses/idx})
-
         # if idx % 1000 == 0:
         #     print('Epoch: %d.  loss: %.4f' %(epoch, loss.item()))
    
     scheduler.step(loss) #be sure scheduler is called before optimizer in >1.1 pytorch
 
-    """ Adjust code to match these - move to above frabric.log()
+    """ Adjust code to match these - move to above frabric.log()??
     weight = kl_weight
     train_loss = train_loss/idx
     mse_loss = mse_loss/idx
@@ -258,14 +241,14 @@ def train(train_loader, epoch, model, optimizer, anneal_function, BETA, kl_start
     """
     Q: Should I be using fabric.all_reduce() here and then return the mean values of the losses so I don't have to do it in the main function?
     """
-    if future_decoder:
-        fabric.print(time.strftime('%H:%M:%S'))
-        fabric.print('Train loss: {:.3f}, MSE-Loss: {:.3f}, MSE-Future-Loss {:.3f}, KL-Loss: {:.3f}, Kmeans-Loss: {:.3f}, weight: {:.2f}'.format(train_loss / idx,
-              mse_loss /idx, fut_loss/idx, BETA*kl_weight*kullback_loss/idx, kl_weight*kmeans_losses/idx, kl_weight))
-    else:
-        fabric.print(time.strftime('%H:%M:%S'))
-        fabric.print('Train loss: {:.3f}, MSE-Loss: {:.3f}, KL-Loss: {:.3f}, Kmeans-Loss: {:.3f}, weight: {:.2f}'.format(train_loss/idx,
-              mse_loss /idx, BETA*kl_weight*kullback_loss/idx, kl_weight*kmeans_losses/idx, kl_weight))
+    #if future_decoder:
+    #    fabric.print(time.strftime('%H:%M:%S'))
+    #    fabric.print('Train loss: {:.3f}, MSE-Loss: {:.3f}, MSE-Future-Loss {:.3f}, KL-Loss: {:.3f}, Kmeans-Loss: {:.3f}, weight: {:.2f}'.format(train_loss / idx,
+    #          mse_loss /idx, fut_loss/idx, BETA*kl_weight*kullback_loss/idx, kl_weight*kmeans_losses/idx, kl_weight))
+    #else:
+    #    fabric.print(time.strftime('%H:%M:%S'))
+    #    fabric.print('Train loss: {:.3f}, MSE-Loss: {:.3f}, KL-Loss: {:.3f}, Kmeans-Loss: {:.3f}, weight: {:.2f}'.format(train_loss/idx,
+    #          mse_loss /idx, BETA*kl_weight*kullback_loss/idx, kl_weight*kmeans_losses/idx, kl_weight))
 
     return kl_weight, train_loss/idx, kl_weight*kmeans_losses/idx, kullback_loss/idx, mse_loss/idx, fut_loss/idx
 
@@ -322,19 +305,18 @@ def test(test_loader, epoch, model, optimizer, BETA, kl_weight, seq_len, mse_red
             kullback_loss += kl_loss.item()
             kmeans_losses += kmeans_loss
         
-        fabric.log({"test_loss": test_loss/idx})
-        fabric.log({"test_mse_loss": mse_loss/idx})
-        fabric.log({"test_kl_loss": BETA*kl_weight*kullback_loss/idx})
-        fabric.log({"test_kmeans_loss": kl_weight*kmeans_losses/idx})
+        test_log_dict = {
+            'test_loss': test_loss/idx,
+            'test_mse_loss': mse_loss/idx,
+            'test_kl_loss': BETA*kl_weight*kullback_loss/idx,
+            'test_kmeans_loss': kl_weight*kmeans_losses/idx
+            }
+        
+        fabric.log_dict(test_log_dict)
+        wandb.log(test_log_dict)
 
-        wandb.log({"test_loss": test_loss/idx})
-        wandb.log({"test_mse_loss": mse_loss/idx})
-        wandb.log({"test_kl_loss": BETA*kl_weight*kullback_loss/idx})
-        wandb.log({"test_kmeans_loss": kl_weight*kmeans_losses/idx})
-
-
-    fabric.print('Test loss: {:.3f}, MSE-Loss: {:.3f}, KL-Loss: {:.3f}, Kmeans-Loss: {:.3f}'.format(test_loss / idx,
-          mse_loss /idx, BETA*kl_weight*kullback_loss/idx, kl_weight*kmeans_losses/idx))
+    #fabric.print('Test loss: {:.3f}, MSE-Loss: {:.3f}, KL-Loss: {:.3f}, Kmeans-Loss: {:.3f}'.format(test_loss / idx,
+    #      mse_loss /idx, BETA*kl_weight*kullback_loss/idx, kl_weight*kmeans_losses/idx))
 
     return mse_loss/idx, test_loss/idx, kl_weight*kmeans_losses/idx
 
@@ -372,6 +354,7 @@ def train_model(config):
         fabric.print("warning, a GPU was not found... proceeding with CPU (slow!) \n")
         #raise NotImplementedError('GPU Computing is required!')
         
+
     """ HYPERPARAMTERS """
     # General
     # CUDA = use_gpu
@@ -537,6 +520,12 @@ def train_model(config):
         avg_test_mse_loss = fabric.all_reduce(test_mse_loss, 'mean')
         avg_test_km_loss = fabric.all_reduce(test_km_loss, 'mean')
 
+        fabric.print('Train loss: {:.3f}, MSE-Loss: {:.3f}, MSE-Future-Loss {:.3f}, KL-Loss: {:.3f}, Kmeans-Loss: {:.3f}, weight: {:.2f}'.format(avg_train_loss,
+              avg_train_mse_loss, avg_train_fut_loss, avg_train_kl_loss, avg_train_km_loss, avg_weight))
+        
+        fabric.print('Test loss: {:.3f}, MSE-Loss: {:.3f}, KL-Loss: {:.3f}, Kmeans-Loss: {:.3f}'.format(avg_test_loss,
+                avg_test_mse_loss, avg_test_km_loss, avg_test_km_loss))
+
         # Log losses to fabric and wandb on the main process
         if fabric.global_rank == 0:
             fabric.log({"epoch": epoch})
@@ -600,8 +589,7 @@ def train_model(config):
             if epoch % SNAPSHOT == 0:
                 fabric.print("Saving model snapshot!\n")
                 fabric.save(model.state_dict(), os.path.join(cfg['project_path'],'model','best_model','snapshots',model_name+'_'+cfg['Project']+'_epoch_'+str(epoch)+'.pkl'))
-
-
+               
             # save logged losses
             np.save(os.path.join(cfg['project_path'],'model','model_losses','avg_train_losses_'+model_name), avg_train_losses)
             np.save(os.path.join(cfg['project_path'],'model','model_losses','avg_test_losses_'+model_name), avg_test_losses)
@@ -650,15 +638,23 @@ def train_model(config):
 
     wandb.finish()
 
+if __name__ == "__main__":
 
+    num_workers = 8
 
-num_workers = 4
+    fabric = Fabric(
+        accelerator="auto", 
+        devices="auto",
+        strategy="ddp",
+        num_nodes=4,
+        precision=32,
+        loggers=["tensorboard", "wandb"],
 
-fabric = L.Fabric(
-    accelerator="gpu", 
-    devices="auto",
-    strategy="ddp",
-    num_nodes=4,
-    precision=32
-    )
-fabric.launch()
+        )
+    
+    fabric.launch()
+
+    # path to config.yaml
+    config = 
+
+    train_model(config)
