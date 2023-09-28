@@ -42,9 +42,6 @@ warnings.filterwarnings("ignore", category=NumbaDeprecationWarning)
 warnings.filterwarnings("ignore", category=NumbaPendingDeprecationWarning)
 
 
-
-
-
 # make sure torch uses cuda for GPU computing
 use_gpu = torch.cuda.is_available()
 use_mps = torch.backends.mps.is_available() and not use_gpu
@@ -182,7 +179,7 @@ def train(train_loader, epoch, model, optimizer, anneal_function, BETA, kl_start
         loss.backward()
         optimizer.step()
         
-        # torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm = 5)
+        torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm = 5)
 
         train_loss += loss.item()
         mse_loss += rec_loss.item()
@@ -192,10 +189,6 @@ def train(train_loader, epoch, model, optimizer, anneal_function, BETA, kl_start
         # if idx % 1000 == 0:
         #     print('Epoch: %d.  loss: %.4f' %(epoch, loss.item()))
 
-        wandb.log({'batch_train_loss': loss.item()})
-        wandb.log({'batch_train_mse_loss': rec_loss.item()})
-
-   
     scheduler.step(loss) #be sure scheduler is called before optimizer in >1.1 pytorch
 
     if future_decoder:
@@ -253,315 +246,501 @@ def test(test_loader, epoch, model, optimizer, BETA, kl_weight, seq_len, mse_red
                 kmeans_loss = cluster_loss(latent.T, kloss, klmbda, bsize)
                 loss = rec_loss + BETA*kl_weight*kl_loss + kl_weight*kmeans_loss
 
-            # torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm = 5)
+            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm = 5)
 
             test_loss += loss.item()
-            mse_loss += rec_loss.item()
-            kullback_loss += kl_loss.item()
-            kmeans_losses += kmeans_loss
-
-            wandb.log({'batch_test_loss': loss.item()})
-            wandb.log({'batch_test_mse_loss': rec_loss.item()})
+            test_mse_loss += rec_loss.item()
+            test_kullback_loss += kl_loss.item()
+            test_kmeans_losses += kmeans_loss
 
     print('Test loss: {:.3f}, MSE-Loss: {:.3f}, KL-Loss: {:.3f}, Kmeans-Loss: {:.3f}'.format(test_loss / idx,
           mse_loss /idx, BETA*kl_weight*kullback_loss/idx, kl_weight*kmeans_losses/idx))
 
-    return mse_loss /idx, test_loss/idx, kl_weight*kmeans_losses
+    return test_mse_loss/idx, test_loss/idx, kl_weight*kmeans_losses/idx
+
+
+sweep_configuration = {
+  "method": "random",
+  "metric": {
+    "name": "train_loss",
+    "goal": "minimize"
+  },
+  "early_terminate": {
+    "type": "hyperband",
+    "min_iter": 3
+  },
+  "parameters": {
+    "Project": {
+      "values": ["ALR_VAME_1"],
+      "distribution": "categorical"
+    },
+    "project_path": {
+      "values": ["/content/VAME_files/ALR_VAME_1-Sep15-2023"],
+      "distribution": "categorical"
+    },
+    "model_name": {
+      "values": ["VAME"],
+      "distribution": "categorical"
+    },
+    "pretrained_model": {
+      "values": [False],
+      "distribution": "categorical"
+    },
+    "pretrained_weights": {
+      "values": [False],
+      "distribution": "categorical"
+    },
+    "num_features": {
+      "value": 28,
+      "distribution": "constant"
+    },
+    "batch_size": {
+      "values": [256, 512, 1024, 2048],
+      "distribution": "categorical"
+    },
+    "max_epochs": {
+      "value": 100,
+      "distribution": "constant"
+    },
+    "model_snapshot": {
+      "value": 15,
+      "distribution": "constant"
+    },
+    "model_convergence": {
+      "value": 25,
+      "distribution": "constant"
+    },
+    "transition_function": {
+      "values": ["GRU"],
+      "distribution": "categorical"
+    },
+    "beta": {
+      "value": 1,
+      "distribution": "constant"
+    },
+    "beta_norm": {
+      "values": [False],
+      "distribution": "categorical"
+    },
+    "zdims": {
+      "values": [10, 15, 20, 25, 30, 35, 40, 45, 50],
+      "distribution": "categorical"
+    },
+    "learning_rate": {
+      "values": [0.0001, 0.0005, 0.001, 0.005, 0.01],
+      "distribution": "categorical"
+    },
+    "time_window": {
+      "values": [30, 45, 60, 75, 90, 105, 120],
+      "distribution": "categorical"
+    },
+    "prediction_decoder": {
+      "value": 1,
+      "distribution": "constant"
+    },
+    "prediction_steps": {
+      "values": [15, 20, 25, 30, 35],
+      "distribution": "categorical"
+    },
+    "noise": {
+      "values": [True, False],
+      "distribution": "categorical"
+    },
+    "scheduler": {
+      "value": 1,
+      "distribution": "constant"
+    },
+    "scheduler_step_size": {
+      "values": [50, 60, 70, 80, 90, 100, 110, 120],
+      "distribution": "categorical"
+    },
+    "scheduler_gamma": {
+      "values": [0.1, 0.2, 0.3, 0.4, 0.5],
+      "distribution": "categorical"
+    },
+    "scheduler_threshold": {
+      "values": [0.0001, 0.001, 0.01, 0.05, 0.1],
+      "distribution": "categorical"
+    },
+    "softplus": {
+      "values": [True, False]
+    },
+    "hidden_layer_size_1": {
+      "value": 256,
+      "distribution": "constant"
+    },
+    "hidden_layer_size_2": {
+      "value": 256,
+      "distribution": "constant"
+    },
+    "dropout_encoder": {
+      "values": [0, 1],
+      "distribution": "categorical"
+    },
+    "hidden_size_rec": {
+      "value": 256,
+      "distribution": "constant"
+    },
+    "dropout_rec": {
+      "values": [0, 1],
+      "distribution": "categorical"
+    },
+    "n_layers": {
+      "min": 2,
+      "max": 4,
+      "distribution": "int_uniform"
+    },
+    "hidden_size_pred": {
+      "value": 256,
+      "distribution": "constant"
+    },
+    "dropout_pred": {
+      "values": [0, 1],
+      "distribution": "categorical"
+    },
+    "mse_reconstruction_reduction": {
+      "values": ["sum"],
+      "distribution": "categorical"
+    },
+    "mse_prediction_reduction": {
+      "values": ["sum"],
+      "distribution": "categorical"
+    },
+    "kmeans_loss": {
+      "values": [30, 35, 40, 45],
+      "distribution": "categorical",
+    },
+    "kmeans_lambda": {
+      "values": [0.1, 0.15, 0.2, 0.25, 0.3],
+      "distribution": "categorical"
+    },
+    "anneal_function": {
+      "values": ["linear", "sigmoid"],
+      "distribution": "categorical"
+    },
+    "kl_start": {
+      "value": 2,
+      "distribution": "constant"
+    },
+    "annealtime": {
+      "value": 4,
+      "distribution": "constant"
+    },
+    "legacy": {
+      "values": [False],
+      "distribution": "categorical"
+    },
+    "egocentric_data": {
+      "values": [True],
+      "distribution": "categorical"
+    }
+  }
+}
+
+wandb.login(key='bcd2a5a57142a0e6bb3d51242f679ab3d00dd8d4')
+
+sweep_id = wandb.sweep(sweep=sweep_configuration, project="VAME", entity="aredwine3")
+
+def train_model():
+    wandb.init()
+
+    legacy = wandb.config.legacy
+    project = wandb.config.Project
+    project_path = wandb.config.project_path
+    model_name = wandb.config.model_name
+    pretrained_weights = wandb.config.pretrained_weights
+    pretrained_model = wandb.config.pretrained_model
+    fixed = wandb.config.egocentric_data
+
+    print("Train Variational Autoencoder - model name: %s \n" %model_name)
+    os.makedirs(os.path.join(project_path,'model','best_model'), exist_ok=True)
+    os.makedirs(os.path.join(project_path,'model','best_model','snapshots'), exist_ok=True)
+    os.makedirs(os.path.join(project_path,'model','model_losses',""), exist_ok=True)
+
+    TRAIN_BATCH_SIZE = wandb.config.batch_size
+    TEST_BATCH_SIZE = int(wandb.config.batch_size/4)
+    EPOCHS = wandb.config.max_epochs
+    ZDIMS = wandb.config.zdims
+    BETA  = wandb.config.beta
+    SNAPSHOT = wandb.config.model_snapshot
+    LEARNING_RATE = wandb.config.learning_rate
+    NUM_FEATURES = wandb.config.num_features
+    if fixed == False:
+        NUM_FEATURES = NUM_FEATURES - 2
+    TEMPORAL_WINDOW = wandb.config.time_window*2
+    FUTURE_DECODER = wandb.config.prediction_decoder
+    FUTURE_STEPS = wandb.config.prediction_steps
+    model_convergence = wandb.config.model_convergence
+
+    # RNN
+    hidden_size_layer_1 = wandb.config.hidden_layer_size_1
+    hidden_size_layer_2 = wandb.config.hidden_layer_size_2
+    hidden_size_rec = wandb.config.hidden_size_rec
+    hidden_size_pred = wandb.config.hidden_size_pred
+    dropout_encoder = wandb.config.dropout_encoder
+    dropout_rec = wandb.config.dropout_rec
+    dropout_pred = wandb.config.dropout_pred
+    noise = wandb.config.noise
+    scheduler_gamma = wandb.config.scheduler_gamma
+    scheduler_step_size = wandb.config.scheduler_step_size
+    scheduler_thresh = wandb.config.scheduler_threshold
+    softplus = wandb.config.softplus
+
+    # Loss
+    MSE_REC_REDUCTION = wandb.config.mse_reconstruction_reduction
+    MSE_PRED_REDUCTION = wandb.config.mse_prediction_reduction
+    KMEANS_LOSS = wandb.config.kmeans_loss
+    KMEANS_LAMBDA = wandb.config.kmeans_lambda
+    KL_START = wandb.config.kl_start
+    ANNEALTIME = wandb.config.annealtime
+    anneal_function = wandb.config.anneal_function
+    optimizer_scheduler = wandb.config.scheduler
 
 
 
+    # make sure torch uses cuda or MPS for GPU computing
+    use_gpu = torch.cuda.is_available()
+    use_mps = torch.backends.mps.is_available() and not use_gpu
 
+    if use_gpu:
+        device = torch.device("cuda")
+        torch.set_default_tensor_type('torch.cuda.FloatTensor')
+        print("Using CUDA")
+        print('GPU active:', torch.cuda.is_available())
+        print('GPU used:', torch.cuda.get_device_name(0))
+    elif use_mps:
+        device = torch.device("mps")
+        torch.set_default_tensor_type('torch.FloatTensor')
+        print("Using MPS")
+    else:
+        device = torch.device("cpu")
+        print("warning, a GPU was not found... proceeding with CPU (slow!) \n")
+        #raise NotImplementedError('GPU Computing is required!')
+        
+    SEED = 19
+    # CUDA = use_gpu    
 
+    BEST_LOSS = 999999
+    convergence = 0
+    print('Latent Dimensions: %d, Time window: %d, Batch Size: %d, Beta: %d, lr: %.4f\n' %(ZDIMS, int(TEMPORAL_WINDOW/2), TRAIN_BATCH_SIZE, BETA, LEARNING_RATE))
 
-legacy = wandb.config['legacy']
-project = wandb.config['Project']
-project_path = wandb.config['project_path']
-model_name = wandb.config['model_name']
-pretrained_weights = wandb.config['pretrained_weights']
-pretrained_model = wandb.config['pretrained_model']
-fixed = wandb.config['egocentric_data']
+    # simple logging of diverse losses
+    train_losses = []
+    train_kmeans_losses = []
+    train_kl_losses = []
+    weight_values = []
+    train_mse_losses = []
+    fut_losses = []
+    learn_rates = []
+    conv_counter = []
 
-print("Train Variational Autoencoder - model name: %s \n" %model_name)
-os.makedirs(os.path.join(project_path,'model','best_model'), exist_ok=True)
-os.makedirs(os.path.join(project_path,'model','best_model','snapshots'), exist_ok=True)
-os.makedirs(os.path.join(project_path,'model','model_losses',""), exist_ok=True)
+    test_losses = []
+    test_mse_losses = []
+    test_kmeans_losses = []
 
-TRAIN_BATCH_SIZE = wandb.config['batch_size']
-TEST_BATCH_SIZE = int(wandb.config['batch_size']/4)
-EPOCHS = wandb.config['max_epochs']
-ZDIMS = wandb.config['zdims']
-BETA  = wandb.config['beta']
-SNAPSHOT = wandb.config['model_snapshot']
-LEARNING_RATE = wandb.config['learning_rate']
-NUM_FEATURES = wandb.config['num_features']
-if fixed == False:
-    NUM_FEATURES = NUM_FEATURES - 2
-TEMPORAL_WINDOW = wandb.config['time_window']*2
-FUTURE_DECODER = wandb.config['prediction_decoder']
-FUTURE_STEPS = wandb.config['prediction_steps']
-model_convergence = wandb.config['model_convergence']
-
-# RNN
-hidden_size_layer_1 = wandb.config['hidden_size_layer_1']
-hidden_size_layer_2 = wandb.config['hidden_size_layer_2']
-hidden_size_rec = wandb.config['hidden_size_rec']
-hidden_size_pred = wandb.config['hidden_size_pred']
-dropout_encoder = wandb.config['dropout_encoder']
-dropout_rec = wandb.config['dropout_rec']
-dropout_pred = wandb.config['dropout_pred']
-noise = wandb.config['noise']
-scheduler_gamma = wandb.config['scheduler_gamma']
-scheduler_step_size = wandb.config['scheduler_step_size']
-scheduler_thresh = wandb.config['scheduler_threshold']
-softplus = wandb.config['softplus']
-
-# Loss
-MSE_REC_REDUCTION = wandb.config['mse_reconstruction_reduction']
-MSE_PRED_REDUCTION = wandb.config['mse_prediction_reduction']
-KMEANS_LOSS = wandb.config['kmeans_loss']
-KMEANS_LAMBDA = wandb.config['kmeans_lambda']
-KL_START = wandb.config['kl_start']
-ANNEALTIME = wandb.config['annealtime']
-anneal_function = wandb.config['anneal_function']
-optimizer_scheduler = wandb.config['scheduler']
-
-
-
-# make sure torch uses cuda or MPS for GPU computing
-use_gpu = torch.cuda.is_available()
-use_mps = torch.backends.mps.is_available() and not use_gpu
-
-if use_gpu:
-    device = torch.device("cuda")
-    torch.set_default_tensor_type('torch.cuda.FloatTensor')
-    print("Using CUDA")
-    print('GPU active:', torch.cuda.is_available())
-    print('GPU used:', torch.cuda.get_device_name(0))
-elif use_mps:
-    device = torch.device("mps")
-    torch.set_default_tensor_type('torch.FloatTensor')
-    print("Using MPS")
-else:
-    device = torch.device("cpu")
-    print("warning, a GPU was not found... proceeding with CPU (slow!) \n")
-    #raise NotImplementedError('GPU Computing is required!')
-    
-SEED = 19
-# CUDA = use_gpu    
-
-BEST_LOSS = 999999
-convergence = 0
-print('Latent Dimensions: %d, Time window: %d, Batch Size: %d, Beta: %d, lr: %.4f\n' %(ZDIMS, int(TEMPORAL_WINDOW/2), TRAIN_BATCH_SIZE, BETA, LEARNING_RATE))
-
-# simple logging of diverse losses
-train_losses = []
-test_losses = []
-kmeans_losses = []
-kl_losses = []
-weight_values = []
-mse_losses = []
-fut_losses = []
-learn_rates = []
-conv_counter = []
-test_mse_losses = []
-
-torch.manual_seed(SEED)
-np.random.seed(SEED)
-
-if legacy == False:
-    RNN = RNN_VAE
-else:
-    RNN = RNN_VAE_LEGACY
-    
-if device == torch.device("cuda"):
-    torch.cuda.manual_seed(SEED)
-else:
     torch.manual_seed(SEED)
+    np.random.seed(SEED)
 
-# Initialize the model
-model = RNN(TEMPORAL_WINDOW, ZDIMS, NUM_FEATURES, FUTURE_DECODER, FUTURE_STEPS, hidden_size_layer_1,
-            hidden_size_layer_2, hidden_size_rec, hidden_size_pred, dropout_encoder,
-            dropout_rec, dropout_pred, softplus)
+    if legacy == False:
+        RNN = RNN_VAE
+    else:
+        RNN = RNN_VAE_LEGACY
+        
+    if device == torch.device("cuda"):
+        torch.cuda.manual_seed(SEED)
+    else:
+        torch.manual_seed(SEED)
 
-# Move the model to the appropriate device
-model = model.to(device)
+    # Initialize the model
+    model = RNN(TEMPORAL_WINDOW, ZDIMS, NUM_FEATURES, FUTURE_DECODER, FUTURE_STEPS, hidden_size_layer_1,
+                hidden_size_layer_2, hidden_size_rec, hidden_size_pred, dropout_encoder,
+                dropout_rec, dropout_pred, softplus)
 
-optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE, amsgrad=True)
+    # Move the model to the appropriate device
+    model = model.to(device)
 
-if optimizer_scheduler:
-    print('Scheduler step size: %d, Scheduler gamma: %.2f, Scheduler Threshold: %.5f\n' %(scheduler_step_size, scheduler_gamma, scheduler_thresh))
-# Thanks to @alexcwsmith for the optimized scheduler contribution
-    scheduler = ReduceLROnPlateau(optimizer, 'min', factor=scheduler_gamma, patience=scheduler_step_size, threshold=scheduler_thresh, threshold_mode='rel', verbose=True)
-else:
-    scheduler = StepLR(optimizer, step_size=scheduler_step_size, gamma=1, last_epoch=-1)
+    optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE, amsgrad=True)
 
-if pretrained_weights:
-    try:
-        print("Loading pretrained weights from model: %s\n" %os.path.join(project_path,'model','best_model',pretrained_model+'_'+project+'.pkl'))
-        model.load_state_dict(torch.load(os.path.join(project_path,'model','best_model',pretrained_model+'_'+project+'.pkl')))
-        KL_START = 0
-        ANNEALTIME = 1
-    except:
-        print("No file found at %s\n" %os.path.join(project_path,'model','best_model',pretrained_model+'_'+project+'.pkl'))
+    if optimizer_scheduler:
+        print('Scheduler step size: %d, Scheduler gamma: %.2f, Scheduler Threshold: %.5f\n' %(scheduler_step_size, scheduler_gamma, scheduler_thresh))
+    # Thanks to @alexcwsmith for the optimized scheduler contribution
+        scheduler = ReduceLROnPlateau(optimizer, 'min', factor=scheduler_gamma, patience=scheduler_step_size, threshold=scheduler_thresh, threshold_mode='rel', verbose=True)
+    else:
+        scheduler = StepLR(optimizer, step_size=scheduler_step_size, gamma=1, last_epoch=-1)
+
+    if pretrained_weights:
         try:
-            print("Loading pretrained weights from %s\n" %pretrained_model)
-            model.load_state_dict(torch.load(pretrained_model))
+            print("Loading pretrained weights from model: %s\n" %os.path.join(project_path,'model','best_model',pretrained_model+'_'+project+'.pkl'))
+            model.load_state_dict(torch.load(os.path.join(project_path,'model','best_model',pretrained_model+'_'+project+'.pkl')))
             KL_START = 0
             ANNEALTIME = 1
         except:
-            print("Could not load pretrained model. Check file path in config.yaml.")
-        
-""" DATASET """
-trainset = SEQUENCE_DATASET(os.path.join(project_path,"data", "train",""), data='train_seq.npy', train=True, temporal_window=TEMPORAL_WINDOW)
-testset = SEQUENCE_DATASET(os.path.join(project_path,"data", "train",""), data='test_seq.npy', train=False, temporal_window=TEMPORAL_WINDOW)
+            print("No file found at %s\n" %os.path.join(project_path,'model','best_model',pretrained_model+'_'+project+'.pkl'))
+            try:
+                print("Loading pretrained weights from %s\n" %pretrained_model)
+                model.load_state_dict(torch.load(pretrained_model))
+                KL_START = 0
+                ANNEALTIME = 1
+            except:
+                print("Could not load pretrained model. Check file path in config.yaml.")
+            
+    """ DATASET """
+    trainset = SEQUENCE_DATASET(os.path.join(project_path,"data", "train",""), data='train_seq.npy', train=True, temporal_window=TEMPORAL_WINDOW)
+    testset = SEQUENCE_DATASET(os.path.join(project_path,"data", "train",""), data='test_seq.npy', train=False, temporal_window=TEMPORAL_WINDOW)
 
-if device == torch.device("cuda"): 
-    cuda_generator = torch.Generator(device='cuda')
-    train_loader = Data.DataLoader(trainset, batch_size=TRAIN_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4, generator=cuda_generator)
-    test_loader = Data.DataLoader(testset, batch_size=TEST_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4, generator=cuda_generator)
-elif device == torch.device("mps"):
-    mps_generator = torch.Generator(device='mps')
-    train_loader = Data.DataLoader(trainset, batch_size=TRAIN_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4, generator=mps_generator)
-    test_loader = Data.DataLoader(testset, batch_size=TEST_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4, generator=mps_generator)
-else:
-    train_loader = Data.DataLoader(trainset, batch_size=TRAIN_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4)
-    test_loader = Data.DataLoader(testset, batch_size=TEST_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4)
-
-
-print("Start training... ")
-
-for epoch in range(1,EPOCHS):
-    print('Epoch: %d' %epoch + ', Epochs on convergence counter: %d' %convergence)
-    print('Train: ')
-
-    weight, train_loss, km_loss, kl_loss, mse_loss, fut_loss = train(train_loader, epoch, model, optimizer, 
-                                                                        anneal_function, BETA, KL_START, 
-                                                                        ANNEALTIME, TEMPORAL_WINDOW, FUTURE_DECODER,
-                                                                        FUTURE_STEPS, scheduler, MSE_REC_REDUCTION,
-                                                                        MSE_PRED_REDUCTION, KMEANS_LOSS, KMEANS_LAMBDA,
-                                                                        TRAIN_BATCH_SIZE, noise)
-
-    test_mse_loss, test_loss, test_list = test(test_loader, epoch, model, optimizer,
-                                                BETA, weight, TEMPORAL_WINDOW, MSE_REC_REDUCTION,
-                                                KMEANS_LOSS, KMEANS_LAMBDA, FUTURE_DECODER, TEST_BATCH_SIZE)
-
-    # logging losses
-    train_losses.append(train_loss)
-    test_losses.append(test_loss)
-    kmeans_losses.append(km_loss)
-    kl_losses.append(kl_loss)
-    weight_values.append(weight)
-    mse_losses.append(mse_loss)
-    test_mse_losses.append(test_mse_loss)
-    #fut_losses.append(fut_loss)
-    fut_losses.append(fut_loss.cpu().item())
-
-    lr = optimizer.param_groups[0]['lr']
-    learn_rates.append(lr)
-
-
-    wandb.log({
-        'learning_rate': lr,
-        'train_loss': train_loss,
-        'mse_loss_train': mse_loss,
-        'test_loss': test_loss,
-        'mse_loss_test': test_mse_loss,
-        'kmeans_loss': km_loss,
-        'kl_loss': kl_loss,
-        'weight': weight,
-        'fut_loss': fut_loss,
-        'epoch': epoch,
-        'convergence': convergence,
-        'max_epochs': EPOCHS,
-        'zdims': ZDIMS,
-        'beta': BETA,
-        'model_snapshot': SNAPSHOT,
-        'learning_rate': LEARNING_RATE,
-        'num_features': NUM_FEATURES,
-        'time_window': TEMPORAL_WINDOW,
-        'prediction_decoder': FUTURE_DECODER,
-        'prediction_steps': FUTURE_STEPS,
-        'hidden_size_layer_1': hidden_size_layer_1,
-        'hidden_size_layer_2': hidden_size_layer_2,
-        'hidden_size_rec': hidden_size_rec,
-        'hidden_size_pred': hidden_size_pred,
-        'dropout_encoder': dropout_encoder,
-        'dropout_rec': dropout_rec,
-        'dropout_pred': dropout_pred,
-        'noise': noise,
-        'scheduler': optimizer_scheduler,
-        'scheduler_step_size': scheduler_step_size,
-        'scheduler_threshold': scheduler_thresh,
-        'scheduler_gamma': scheduler_gamma,
-        'softplus': softplus,
-        'mse_reconstruction_reduction': MSE_REC_REDUCTION,
-        'mse_prediction_reduction': MSE_PRED_REDUCTION,
-        'kmeans_loss': KMEANS_LOSS,
-        'kmeans_lambda': KMEANS_LAMBDA,
-        'kl_start': KL_START,
-        'annealtime': ANNEALTIME,
-        'anneal_function': anneal_function,
-        'batch_size': TRAIN_BATCH_SIZE
-        })
-    
-    # save best model
-    if weight > 0.99 and test_mse_loss <= BEST_LOSS:
-        BEST_LOSS = test_mse_loss
-        print("Saving model!")
-        torch.save(model.state_dict(), os.path.join(project_path,"model", "best_model",model_name+'_'+project+'.pkl'))
-        convergence = 0
+    if device == torch.device("cuda"): 
+        cuda_generator = torch.Generator(device='cuda')
+        train_loader = Data.DataLoader(trainset, batch_size=TRAIN_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4, generator=cuda_generator)
+        test_loader = Data.DataLoader(testset, batch_size=TEST_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4, generator=cuda_generator)
+    elif device == torch.device("mps"):
+        mps_generator = torch.Generator(device='mps')
+        train_loader = Data.DataLoader(trainset, batch_size=TRAIN_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4, generator=mps_generator)
+        test_loader = Data.DataLoader(testset, batch_size=TEST_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4, generator=mps_generator)
     else:
-        convergence += 1
-    conv_counter.append(convergence)
-
-    # save model snapshot
-    if epoch % SNAPSHOT == 0:
-        print("Saving model snapshot!\n")
-        torch.save(model.state_dict(), os.path.join(project_path,'model','best_model','snapshots',model_name+'_'+project+'_epoch_'+str(epoch)+'.pkl'))
-
-        wandb.save(os.path.join(project_path,'model','best_model','snapshots',model_name+'_'+project+'_epoch_'+str(epoch)+'.pkl'))
-
-    # save logged losses
-    np.save(os.path.join(project_path,'model','model_losses','train_losses_'+model_name), train_losses)
-    np.save(os.path.join(project_path,'model','model_losses','test_losses_'+model_name), test_losses)
-    np.save(os.path.join(project_path,'model','model_losses','kmeans_losses_'+model_name), kmeans_losses)
-    np.save(os.path.join(project_path,'model','model_losses','kl_losses_'+model_name), kl_losses)
-    np.save(os.path.join(project_path,'model','model_losses','weight_values_'+model_name), weight_values)
-    np.save(os.path.join(project_path,'model','model_losses','mse_train_losses_'+model_name), mse_losses)
-    np.save(os.path.join(project_path,'model','model_losses','mse_test_losses_'+model_name), test_mse_loss)
-    # np.save(os.path.join(cfg['project_path'], 'model', 'model_losses', 'fut_losses_' + model_name), fut_losses)
-
-    # Convert fut_losses to a tensor and save
-    fut_losses_tensor = torch.tensor(fut_losses)
-    fut_losses_array = fut_losses_tensor.cpu().detach().numpy()
-    np.save(os.path.join(project_path, 'model', 'model_losses', 'fut_losses_' + model_name), fut_losses_array)
-
-    df = pd.DataFrame([train_losses, test_losses, kmeans_losses, kl_losses, weight_values, mse_losses, fut_losses, learn_rates, conv_counter]).T
-    df.columns=['Train_losses', 'Test_losses', 'Kmeans_losses', 'KL_losses', 'Weight_values', 'MSE_losses', 'Future_losses', 'Learning_Rate', 'Convergence_counter']
-    df.to_csv(project_path+'/model/model_losses/'+model_name+'_LossesSummary.csv')     
-    print("\n")
-
-    if convergence > model_convergence:
-        print('Finished training...')
-        print('Model converged. Please check your model with vame.evaluate_model(). \n'
-                'You can also re-run vame.trainmodel() to further improve your model. \n'
-                'Make sure to set _pretrained_weights_ in your config.yaml to "true" \n'
-                'and plug your current model name into _pretrained_model_. \n'
-                'Hint: Set "model_convergence" in your config.yaml to a higher value. \n'
-                '\n'
-                'Next: \n'
-                'Use vame.pose_segmentation() to identify behavioral motifs in your dataset!')
-        #return
-        break
-
-if convergence < model_convergence:
-    print('Model seemed to have not reached convergence. You may want to check your model \n'
-            'with vame.evaluate_model(). If your satisfied you can continue with \n'
-            'Use vame.behavior_segmentation() to identify behavioral motifs!\n\n'
-            'OPTIONAL: You can re-run vame.rnn_model() to improve performance.')
+        train_loader = Data.DataLoader(trainset, batch_size=TRAIN_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4)
+        test_loader = Data.DataLoader(testset, batch_size=TEST_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4)
 
 
-wandb.finish()
+    print("Start training... ")
+
+    for epoch in range(1,EPOCHS):
+        print('Epoch: %d' %epoch + ', Epochs on convergence counter: %d' %convergence)
+        print('Train: ')
+
+        weight, train_loss, train_km_loss, train_kl_loss, train_mse_loss, fut_loss = train(train_loader, epoch, model, optimizer, 
+                                                                            anneal_function, BETA, KL_START, 
+                                                                            ANNEALTIME, TEMPORAL_WINDOW, FUTURE_DECODER,
+                                                                            FUTURE_STEPS, scheduler, MSE_REC_REDUCTION,
+                                                                            MSE_PRED_REDUCTION, KMEANS_LOSS, KMEANS_LAMBDA,
+                                                                            TRAIN_BATCH_SIZE, noise)
+
+        test_mse_loss, test_loss, test_kmeans_loss = test(test_loader, epoch, model, optimizer,
+                                                    BETA, weight, TEMPORAL_WINDOW, MSE_REC_REDUCTION,
+                                                    KMEANS_LOSS, KMEANS_LAMBDA, FUTURE_DECODER, TEST_BATCH_SIZE)
+
+        # logging losses
+        train_losses.append(train_loss)
+        train_kmeans_losses.append(train_km_loss)
+        train_kl_losses.append(train_kl_loss)
+        weight_values.append(weight)
+        train_mse_losses.append(train_mse_loss)
+        
+        #fut_losses.append(fut_loss)
+        fut_losses.append(fut_loss.cpu().item())
+
+        test_losses.append(test_loss)
+        test_mse_losses.append(test_mse_loss)
+        test_kmeans_losses.append(test_kmeans_loss)
+
+        lr = optimizer.param_groups[0]['lr']
+        learn_rates.append(lr)
+
+        lr_optimizer = optimizer.param_groups[0]['lr']
+
+        wandb.log({
+            'learning_rate': lr_optimizer,
+            'train_loss': train_loss,
+            'mse_loss_train': train_mse_loss,
+            'test_loss': test_loss,
+            'mse_loss_test': test_mse_loss,
+            'kmeans_loss': train_km_loss,
+            'kl_loss': train_kl_loss,
+            'test_kmeans_loss': test_kmeans_loss,
+            'weight': weight,
+            'fut_loss': fut_loss,
+            'epoch': epoch,
+            'convergence': convergence,
+            'max_epochs': EPOCHS,
+            'zdims': ZDIMS,
+            'beta': BETA,
+            'model_snapshot': SNAPSHOT,
+            'learning_rate': LEARNING_RATE,
+            'num_features': NUM_FEATURES,
+            'time_window': TEMPORAL_WINDOW,
+            'prediction_decoder': FUTURE_DECODER,
+            'prediction_steps': FUTURE_STEPS,
+            'hidden_size_layer_1': hidden_size_layer_1,
+            'hidden_size_layer_2': hidden_size_layer_2,
+            'hidden_size_rec': hidden_size_rec,
+            'hidden_size_pred': hidden_size_pred,
+            'dropout_encoder': dropout_encoder,
+            'dropout_rec': dropout_rec,
+            'dropout_pred': dropout_pred,
+            'noise': noise,
+            'scheduler': optimizer_scheduler,
+            'scheduler_step_size': scheduler_step_size,
+            'scheduler_threshold': scheduler_thresh,
+            'scheduler_gamma': scheduler_gamma,
+            'softplus': softplus,
+            'mse_reconstruction_reduction': MSE_REC_REDUCTION,
+            'mse_prediction_reduction': MSE_PRED_REDUCTION,
+            'kmeans_loss': KMEANS_LOSS,
+            'kmeans_lambda': KMEANS_LAMBDA,
+            'kl_start': KL_START,
+            'annealtime': ANNEALTIME,
+            'anneal_function': anneal_function,
+            'batch_size': TRAIN_BATCH_SIZE
+            })
+        
+        # save best model
+        if weight > 0.99 and test_mse_loss <= BEST_LOSS:
+            BEST_LOSS = test_mse_loss
+            print("Saving model!")
+            torch.save(model.state_dict(), os.path.join(project_path,"model", "best_model",model_name+'_'+project+'.pkl'))
+            convergence = 0
+        else:
+            convergence += 1
+        conv_counter.append(convergence)
+
+        # save model snapshot
+        if epoch % SNAPSHOT == 0:
+            print("Saving model snapshot!\n")
+            torch.save(model.state_dict(), os.path.join(project_path,'model','best_model','snapshots',model_name+'_'+project+'_epoch_'+str(epoch)+'.pkl'))
+            wandb.save(os.path.join(project_path,'model','best_model','snapshots',model_name+'_'+project+'_epoch_'+str(epoch)+'.pkl'))
+
+        # save logged losses
+        np.save(os.path.join(project_path,'model','model_losses','train_losses_'+model_name), train_losses)
+        np.save(os.path.join(project_path,'model','model_losses','test_losses_'+model_name), test_losses)
+        np.save(os.path.join(project_path,'model','model_losses','kmeans_losses_'+model_name), train_kmeans_losses)
+        np.save(os.path.join(project_path,'model','model_losses','kl_losses_'+model_name), train_kl_losses)
+        np.save(os.path.join(project_path,'model','model_losses','weight_values_'+model_name), weight_values)
+        np.save(os.path.join(project_path,'model','model_losses','mse_train_losses_'+model_name), train_mse_losses)
+        np.save(os.path.join(project_path,'model','model_losses','mse_test_losses_'+model_name), test_mse_losses)
+        # np.save(os.path.join(cfg['project_path'], 'model', 'model_losses', 'fut_losses_' + model_name), fut_losses)
+
+        # Convert fut_losses to a tensor and save
+        fut_losses_tensor = torch.tensor(fut_losses)
+        fut_losses_array = fut_losses_tensor.cpu().detach().numpy()
+        np.save(os.path.join(project_path, 'model', 'model_losses', 'fut_losses_' + model_name), fut_losses_array)
+
+        #df_data = np.column_stack((train_losses, test_losses, train_kmeans_losses, train_kl_losses, weight_values, train_mse_losses, fut_losses, learn_rates, conv_counter))
+        #df = pd.DataFrame(df_data.T, columns=['Train_losses', 'Test_losses', 'Kmeans_losses', 'KL_losses', 'Weight_values', 'MSE_losses', 'Future_losses', 'Learning_Rate', 'Convergence_counter'])
+        df = pd.DataFrame([train_losses, test_losses, train_kmeans_losses, train_kl_losses, weight_values, train_mse_losses, fut_losses, learn_rates, conv_counter]).T
+        df.columns=['Train_losses', 'Test_losses', 'Kmeans_losses', 'KL_losses', 'Weight_values', 'MSE_losses', 'Future_losses', 'Learning_Rate', 'Convergence_counter']
+        df.to_csv(project_path+'/model/model_losses/'+model_name+'_LossesSummary.csv')     
+        print("\n")
+
+        if convergence > model_convergence:
+            print('Finished training...')
+            print('Model converged. Please check your model with vame.evaluate_model(). \n'
+                    'You can also re-run vame.trainmodel() to further improve your model. \n'
+                    'Make sure to set _pretrained_weights_ in your config.yaml to "true" \n'
+                    'and plug your current model name into _pretrained_model_. \n'
+                    'Hint: Set "model_convergence" in your config.yaml to a higher value. \n'
+                    '\n'
+                    'Next: \n'
+                    'Use vame.pose_segmentation() to identify behavioral motifs in your dataset!')
+            #return
+            break
+
+    if convergence < model_convergence:
+        print('Model seemed to have not reached convergence. You may want to check your model \n'
+                'with vame.evaluate_model(). If your satisfied you can continue with \n'
+                'Use vame.behavior_segmentation() to identify behavioral motifs!\n\n'
+                'OPTIONAL: You can re-run vame.rnn_model() to improve performance.')
+
+    # Only stop wandb if the model converged or the max number of epochs was reached
+    if convergence > model_convergence or epoch == EPOCHS:
+        wandb.finish()
     
-
-
+wandb.agent(sweep_id, function=train_model, count=5)
