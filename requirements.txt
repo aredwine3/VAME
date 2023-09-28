@@ -16,3 +16,6 @@ torch
 torch_optimizer
 tqdm
 umap_learn
+lightning
+wandb
+fabric
