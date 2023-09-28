@@ -60,15 +60,18 @@ else:
     device = torch.device("cpu")
     print("Using CPU")
 
+
 def reconstruction_loss(x, x_tilde, reduction):
     mse_loss = nn.MSELoss(reduction=reduction)
     rec_loss = mse_loss(x_tilde,x)
     return rec_loss
 
+
 def future_reconstruction_loss(x, x_tilde, reduction):
     mse_loss = nn.MSELoss(reduction=reduction)
     rec_loss = mse_loss(x_tilde,x)
     return rec_loss
+
 
 def cluster_loss(H, kloss, lmbda, batch_size):
     gram_matrix = (H.T @ H) / batch_size
@@ -112,9 +115,6 @@ def gaussian(ins, is_training, seq_len, std_n=0.8):
         noise = Variable(ins.data.new(ins.size()).normal_(0, 1))
         return ins + (noise*emp_std)
     return ins
-
-def worker_init_fn(worker_id):
-    np.random.seed(np.random.get_state()[1][0] + worker_id)
 
 
 def train(train_loader, epoch, model, optimizer, anneal_function, BETA, kl_start,
@@ -206,9 +206,9 @@ def train(train_loader, epoch, model, optimizer, anneal_function, BETA, kl_start
 def test(test_loader, epoch, model, optimizer, BETA, kl_weight, seq_len, mse_red, kloss, klmbda, future_decoder, bsize):
     model.eval() # toggle model to inference mode
     test_loss = 0.0
-    mse_loss = 0.0
-    kullback_loss = 0.0
-    kmeans_losses = 0.0
+    test_mse_loss = 0.0
+    test_kullback_loss = 0.0
+    test_kmeans_losses = 0.0
     loss = 0.0
     seq_len_half = int(seq_len / 2)
 
@@ -254,9 +254,9 @@ def test(test_loader, epoch, model, optimizer, BETA, kl_weight, seq_len, mse_red
             test_kmeans_losses += kmeans_loss
 
     print('Test loss: {:.3f}, MSE-Loss: {:.3f}, KL-Loss: {:.3f}, Kmeans-Loss: {:.3f}'.format(test_loss / idx,
-          mse_loss /idx, BETA*kl_weight*kullback_loss/idx, kl_weight*kmeans_losses/idx))
+          test_mse_loss /idx, BETA*kl_weight*test_kullback_loss/idx, kl_weight*test_kmeans_losses/idx))
 
-    return test_mse_loss/idx, test_loss/idx, kl_weight*kmeans_losses/idx
+    return test_mse_loss/idx, test_loss/idx, kl_weight*test_kmeans_losses/idx
 
 
 sweep_configuration = {
