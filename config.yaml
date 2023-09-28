@@ -4,6 +4,22 @@ model_name: VAME
 n_cluster: 30
 pose_confidence: 0.99
 
+# wandb configurations
+wandb_entity: aredwine3
+wandb_project: VAME
+wandb_api_key: # your wandb api key
+name: VAME_1
+
+
+# Fabric configurations
+accelerator: cuda
+devices: 1 # Number of devices to run on (``int``), which devices to run on (``list`` or ``str``), or ``'auto'``. The value applies per node.
+strategy: ddp # [ddp|dp|deepspeed|deepspeed_stage_1|deepspeed_stage_2|deepspeed_stage_3|fsdp] Strategy for how to run across multiple devices.
+num_nodes: 1 # Number of machines (nodes) for distributed execution.
+precision: 16 # 16-mixed|bf16-mixed|32-true|64-true|64|32|16|bf16] Double precision (``64-true`` or ``64``), 
+              # full precision (``32-true`` or ``64``), half precision (``16-mixed`` or ``16``) or bfloat16 precision (``bf16-mixed`` or ``bf16``)
+config_file: null # Path to YAML config file
+
 # Project path and videos
 project_path: /Volumes/G-DRIVE_SSD/VAME_working/ALR_VAME_1-Sep15-2023
 video_sets:
@@ -475,10 +491,16 @@ video_sets:
 - 22-05-05_Drug_Trt_DJL_TXBY_cropped_CRF0_0min_to_15min_Rat2
 - 22-05-05_Drug_Trt_DJL_TXBY_cropped_CRF0_0min_to_15min_Rat3
 - 22-05-05_Drug_Trt_DJL_TXBY_cropped_CRF0_0min_to_15min_Rat4
+
+# Data
+
+# Data
+
+# Data
 all_data: No
 
 # Creation of train set:
-egocentric_data:
+egocentric_data: true
 robust: true
 iqr_factor: 4
 axis:
@@ -499,13 +521,12 @@ transition_function: GRU
 beta: 1
 beta_norm: false
 zdims: 30
-learning_rate: 0.001  # 0.001
+learning_rate: 0.001
 time_window: 30
 prediction_decoder: 1
 prediction_steps: 15
 noise: false
 scheduler: 1
-self_scheduler: 1 # KEEP THIS A THE SAME VALUE AS SCHEDULER
 scheduler_step_size: 100
 scheduler_gamma: 0.2
 #Note the optimal scheduler threshold below can vary greatly (from .1-.0001) between experiments. 
