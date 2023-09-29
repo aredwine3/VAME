@@ -193,7 +193,7 @@ def train(train_loader, epoch, model, optimizer, anneal_function, BETA, kl_start
         wandb.log({'batch_train_mse_loss': rec_loss.item()})
 
    
-    scheduler.step(loss) #be sure scheduler is called before optimizer in >1.1 pytorch
+    #scheduler.step(loss) #be sure scheduler is called before optimizer in >1.1 pytorch
 
     if future_decoder:
         print(time.strftime('%H:%M:%S'))
@@ -504,6 +504,14 @@ def train_model(config):
                                                   BETA, weight, TEMPORAL_WINDOW, MSE_REC_REDUCTION,
                                                   KMEANS_LOSS, KMEANS_LAMBDA, FUTURE_DECODER, TEST_BATCH_SIZE)
 
+        scheduler.step(test_loss) #be sure scheduler is called before optimizer in >1.1 pytorch
+        
+        # The scheduler.step() should be called after validating the model because 
+        # we're using the ReduceLROnPlateau scheduler. This particular scheduler 
+        # adjusts the learning rate based on a monitored metric (in this case, 
+        # the validation (test) loss). Therefore, it's crucial to place scheduler.step(test_loss) 
+        # after the validation loop has calculated the validation loss for the current epoch.
+        
         # logging losses
         train_losses.append(train_loss)
         test_losses.append(test_loss)
