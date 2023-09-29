@@ -73,6 +73,20 @@ def plot_reconstruction(filepath, test_loader, seq_len_half, model, model_name,
     # Ensure the model is on the correct device
     model = model.to(device)
 
+    """
+    This function plots the reconstruction of the input sequence and future prediction if the FUTURE_DECODER flag is True.
+
+    Args:
+        filepath (str): The path where the plot will be saved.
+        test_loader (DataLoader): The DataLoader object containing the test data.
+        seq_len_half (int): Half of the sequence length.
+        model (nn.Module): The trained model.
+        model_name (str): The name of the model.
+        FUTURE_DECODER (bool): A flag indicating whether to use the future decoder or not.
+        FUTURE_STEPS (int): The number of future steps to predict.
+        suffix (str, optional): An optional suffix to append to the filename of the saved plot.
+    """
+    # Get the next batch of data from the test loader
     x_iter = iter(test_loader)
     x = next(x_iter)
     x = x.to('cuda')
@@ -93,6 +107,8 @@ def plot_reconstruction(filepath, test_loader, seq_len_half, model, model_name,
     data_orig = to_cpu_numpy(data)
     data_tilde = to_cpu_numpy(x_tilde)
 
+    # If the future decoder is used, plot the reconstruction and future prediction
+    # Otherwise, plot only the reconstruction
     if FUTURE_DECODER:
         fig, axs = plt.subplots(2, 5)
         fig.suptitle('Reconstruction [top] and future prediction [bottom] of input sequence')
@@ -161,7 +177,20 @@ def plot_loss(cfg, filepath, model_name, suffix=None):
 
 
 def eval_temporal(cfg, use_gpu, use_mps, model_name, fixed, snapshot=None, suffix=None):
+    """
+    This function evaluates the model on the temporal data.
 
+    Args:
+        cfg (dict): The configuration dictionary containing all the model and training parameters.
+        use_gpu (bool): A flag indicating whether to use GPU for computation.
+        use_mps (bool): A flag indicating whether to use MPS for computation.
+        model_name (str): The name of the model.
+        fixed (bool): A flag indicating whether the data is fixed or not.
+        snapshot (str, optional): The path to the snapshot of the model to load.
+        suffix (str, optional): An optional suffix to append to the filename of the saved plot.
+    """
+
+    # Define the seed, dimensions, and other parameters for the model
     SEED = 19
     ZDIMS = cfg['zdims']
     FUTURE_DECODER = cfg['prediction_decoder']
@@ -181,11 +210,14 @@ def eval_temporal(cfg, use_gpu, use_mps, model_name, fixed, snapshot=None, suffi
     dropout_pred = cfg['dropout_pred']
     softplus = cfg['softplus']
 
+    # Define the path to save the model
     filepath = os.path.join(cfg['project_path'],"model")
 
     device, use_gpu, use_mps = set_device()
 
     seq_len_half = int(TEMPORAL_WINDOW/2)
+
+    # Depending on the available device, initialize the model and load its state
     if use_gpu:
         torch.cuda.manual_seed(SEED)
         model = RNN_VAE(TEMPORAL_WINDOW,ZDIMS,NUM_FEATURES,FUTURE_DECODER,FUTURE_STEPS, hidden_size_layer_1,
@@ -212,18 +244,20 @@ def eval_temporal(cfg, use_gpu, use_mps, model_name, fixed, snapshot=None, suffi
             model.load_state_dict(torch.load(os.path.join(cfg['project_path'],"model","best_model",model_name+'_'+cfg['Project']+'.pkl'), map_location=torch.device('cpu')))
         elif snapshot:
             model.load_state_dict(torch.load(snapshot), map_location=torch.device('cpu'))
-    
-    model.eval() #toggle evaluation mode
 
+    # Switch the model to evaluation mode
+    model.eval()
+
+    # Load the test data
     testset = SEQUENCE_DATASET(os.path.join(cfg['project_path'],"data", "train",""), data='test_seq.npy', train=False, temporal_window=TEMPORAL_WINDOW)
     # Create a generator and place it on the right device
     generator = torch.Generator(device='cuda' if use_gpu else 'cpu')
     test_loader = Data.DataLoader(testset, batch_size=TEST_BATCH_SIZE, shuffle=True, drop_last=True, pin_memory=True, generator=generator) # added pin_memory=True
     
     if not snapshot:
-        plot_reconstruction(filepath, test_loader, seq_len_half, model, model_name, FUTURE_DECODER, FUTURE_STEPS)#, suffix=suffix
+        plot_reconstruction(filepath, test_loader, seq_len_half, model, model_name, FUTURE_DECODER, FUTURE_STEPS)
     elif snapshot:
-        plot_reconstruction(filepath, test_loader, seq_len_half, model, model_name, FUTURE_DECODER, FUTURE_STEPS, suffix=suffix)#, 
+        plot_reconstruction(filepath, test_loader, seq_len_half, model, model_name, FUTURE_DECODER, FUTURE_STEPS, suffix=suffix)
     if use_gpu:
         if not suffix:
             plot_loss(cfg, filepath, model_name)

@@ -964,3 +964,5 @@ def drawHierarchyTrees(config, imagetype='.png'):
         adj_mat, trans_mat = get_adjacency_matrix(labels, n_cluster)
         T = graph_to_tree(motif_usage, trans_mat, n_cluster, merge_sel=1)
         draw_tree(T, file, imagetype=imagetype)
+
+
