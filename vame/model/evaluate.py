@@ -63,16 +63,6 @@ def to_cpu_numpy(tensor):
 
 def plot_reconstruction(filepath, test_loader, seq_len_half, model, model_name,
                         FUTURE_DECODER, FUTURE_STEPS, suffix=None):
-    if torch.cuda.is_available():
-        device = torch.device("cuda")
-    elif hasattr(torch.backends, 'mps') and torch.backends.mps.is_available():
-        device = torch.device("mps")
-    else:
-        device = torch.device("cpu")
-
-    # Ensure the model is on the correct device
-    model = model.to(device)
-
     """
     This function plots the reconstruction of the input sequence and future prediction if the FUTURE_DECODER flag is True.
 
@@ -86,6 +76,16 @@ def plot_reconstruction(filepath, test_loader, seq_len_half, model, model_name,
         FUTURE_STEPS (int): The number of future steps to predict.
         suffix (str, optional): An optional suffix to append to the filename of the saved plot.
     """
+    
+    if torch.cuda.is_available():
+        device = torch.device("cuda")
+    elif hasattr(torch.backends, 'mps') and torch.backends.mps.is_available():
+        device = torch.device("mps")
+    else:
+        device = torch.device("cpu")
+
+    # Ensure the model is on the correct device
+    model = model.to(device)
     # Get the next batch of data from the test loader
     x_iter = iter(test_loader)
     x = next(x_iter)
