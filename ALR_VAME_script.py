@@ -104,8 +104,7 @@ src_dir = '/Volumes/G-DRIVE_SSD/VAME_working/ALR_VAME_1-Sep15-2023/videos/pose_e
 dest_dir = '/Volumes/G-DRIVE_SSD/VAME_backups/pose_estimation'
 vame.hf.multithreaded_copy(src_dir, dest_dir)
 
-# Alight data egocentric
-# pose_ref_index = ['Nose', 'Caudal_Skull_Point', 'ShoulderCenter', 'Thoracic_Spine_Center', 'Center_of_Body', 'Lumbar_Spine_Center', 'Center_of_Hips', 'Tailbase']
+# Align data egocentric
 vame.egocentric_alignment(config, pose_ref_index=[0,13], crop_size=(180,180), use_video=False, save=False, video_format='.mp4', check_video=False)
 
 # Rename the files and directories to match the naming convention
@@ -128,46 +127,45 @@ selected_videos = vame.hf.select_videos(csv_file, percentage)
 videos = list(selected_videos)
 
 """
-videos = 
-['22-01-10_Baseline_1_DJL_TGBH_cropped_CRF0_0min_to_15min_Rat2.mp4', 
-'22-01-10_Baseline_1_DJL_TCBD_cropped_CRF0_0min_to_15min_Rat3.mp4', 
-'22-01-12_Baseline_2_DJL_TABB_cropped_CRF0_0min_to_15min_Rat3.mp4', 
-'22-01-12_Baseline_2_DJL_TCBD_cropped_CRF0_0min_to_15min_Rat3.mp4', 
-'22-01-31_Week_02_DJL_TGBH_cropped_CRF0_0min_to_15min_Rat1.mp4', 
-'22-02-16_Week_04_DJL_TQBR_cropped_CRF0_0min_to_15min_Rat4.mp4', 
-'22-03-02_Week_06_DJL_TQBR_cropped_CRF0_0min_to_15min_Rat3.mp4', 
-'22-03-16_Week_08_DJL_TUBW_cropped_CRF0_0min_to_15min_Rat1.mp4', 
-'22-04-06_Week_11_DJL_TQBR_cropped_CRF0_0min_to_15min_Rat4.mp4', 
-'22-04-19_Week_13_DJL_TQBR_cropped_CRF0_0min_to_15min_Rat1.mp4', 
-'22-05-02_Week_15_DJL_TQBR_cropped_CRF0_0min_to_15min_Rat4.mp4',
-'22-05-05_Drug_Trt_DJL_TABD_cropped_CRF0_0min_to_15min_Rat3.mp4', 
-'22-01-31_Week_02_DJL_TEBF_cropped_CRF0_0min_to_15min_Rat1.mp4', 
-'22-02-14_Week_04_DJL_TKBL_cropped_CRF0_0min_to_15min_Rat2.mp4', 
-'22-02-28_Week_06_DJL_TGBH_cropped_CRF0_0min_to_15min_Rat4.mp4', 
-'22-03-14_Week_08_DJL_TEBF_cropped_CRF0_0min_to_15min_Rat2.mp4', 
-'22-04-04_Week_11_DJL_TCBD_cropped_CRF0_0min_to_15min_Rat4.mp4', 
-'22-04-19_Week_13_DJL_TOBP_cropped_CRF0_0min_to_15min_Rat1.mp4', 
-'22-05-02_Week_15_DJL_TEBF_cropped_CRF0_0min_to_15min_Rat2.mp4', 
-'22-01-10_Baseline_1_DJL_TIBJ_cropped_CRF0_0min_to_15min_Rat2.mp4', 
-'22-01-13_Baseline_2_DJL_TSBT_cropped_CRF0_0min_to_15min_Rat4.mp4', 
-'22-05-05_Drug_Trt_DJL_THBI_cropped_CRF0_0min_to_15min_Rat3.mp4', 
-'22-02-02_Week_02_DJL_TUBW_cropped_CRF0_0min_to_15min_Rat3.mp4', 
-'22-02-14_Week_04_DJL_TKBL_cropped_CRF0_0min_to_15min_Rat4.mp4', 
-'22-02-28_Week_06_DJL_TIBJ_cropped_CRF0_0min_to_15min_Rat2.mp4', 
-'22-03-14_Week_08_KEN_TKBL_cropped_CRF0_0min_to_15min_Rat3.mp4', 
-'22-04-04_Week_11_DJL_TABB_cropped_CRF0_0min_to_15min_Rat1.mp4', 
-'22-04-19_Week_13_DJL_TSBT_cropped_CRF0_0min_to_15min_Rat3.mp4', 
-'22-05-03_Week_15_DJL_TXBY_cropped_CRF0_0min_to_15min_Rat1.mp4', 
-'22-01-11_Baseline_1_DJL_TOBP_cropped_CRF0_0min_to_15min_Rat3.mp4', 
-'22-01-13_Baseline_2_DJL_TOBP_cropped_CRF0_0min_to_15min_Rat3.mp4', 
-'22-05-05_Drug_Trt_DJL_TJBK_cropped_CRF0_0min_to_15min_Rat2.mp4', 
-'22-02-02_Week_02_DJL_TMBN_cropped_CRF0_0min_to_15min_Rat2.mp4', 
-'22-02-16_Week_04_DJL_TXBY_cropped_CRF0_0min_to_15min_Rat3.mp4', 
-'22-03-02_Week_06_DJL_TOBP_cropped_CRF0_0min_to_15min_Rat4.mp4', 
-'22-03-16_Week_08_DJL_TMBN_cropped_CRF0_0min_to_15min_Rat4.mp4', 
-'22-04-04_Week_11_DJL_TIBJ_cropped_CRF0_0min_to_15min_Rat4.mp4', 
-'22-04-19_Week_13_DJL_TMBN_cropped_CRF0_0min_to_15min_Rat4.mp4', 
-'22-05-03_Week_15_DJL_TSBT_cropped_CRF0_0min_to_15min_Rat1.mp4']
+videos = ['22-01-10_Baseline_1_DJL_TGBH_cropped_CRF0_0min_to_15min_Rat2.mp4', 
+ '22-01-10_Baseline_1_DJL_TCBD_cropped_CRF0_0min_to_15min_Rat3.mp4', 
+ '22-01-12_Baseline_2_DJL_TABB_cropped_CRF0_0min_to_15min_Rat3.mp4', 
+ '22-01-12_Baseline_2_DJL_TCBD_cropped_CRF0_0min_to_15min_Rat3.mp4', 
+ '22-01-31_Week_02_DJL_TGBH_cropped_CRF0_0min_to_15min_Rat1.mp4', 
+ '22-02-16_Week_04_DJL_TQBR_cropped_CRF0_0min_to_15min_Rat4.mp4', 
+ '22-03-02_Week_06_DJL_TQBR_cropped_CRF0_0min_to_15min_Rat3.mp4', 
+ '22-03-16_Week_08_DJL_TUBW_cropped_CRF0_0min_to_15min_Rat1.mp4', 
+ '22-04-06_Week_11_DJL_TQBR_cropped_CRF0_0min_to_15min_Rat4.mp4', 
+ '22-04-19_Week_13_DJL_TQBR_cropped_CRF0_0min_to_15min_Rat1.mp4', 
+ '22-05-02_Week_15_DJL_TQBR_cropped_CRF0_0min_to_15min_Rat4.mp4',
+ '22-05-05_Drug_Trt_DJL_TABD_cropped_CRF0_0min_to_15min_Rat3.mp4', 
+ '22-01-31_Week_02_DJL_TEBF_cropped_CRF0_0min_to_15min_Rat1.mp4', 
+ '22-02-14_Week_04_DJL_TKBL_cropped_CRF0_0min_to_15min_Rat2.mp4', 
+ '22-02-28_Week_06_DJL_TGBH_cropped_CRF0_0min_to_15min_Rat4.mp4', 
+ '22-03-14_Week_08_DJL_TEBF_cropped_CRF0_0min_to_15min_Rat2.mp4', 
+ '22-04-04_Week_11_DJL_TCBD_cropped_CRF0_0min_to_15min_Rat4.mp4', 
+ '22-04-19_Week_13_DJL_TOBP_cropped_CRF0_0min_to_15min_Rat1.mp4', 
+ '22-05-02_Week_15_DJL_TEBF_cropped_CRF0_0min_to_15min_Rat2.mp4', 
+ '22-01-10_Baseline_1_DJL_TIBJ_cropped_CRF0_0min_to_15min_Rat2.mp4', 
+ '22-01-13_Baseline_2_DJL_TSBT_cropped_CRF0_0min_to_15min_Rat4.mp4', 
+ '22-05-05_Drug_Trt_DJL_THBI_cropped_CRF0_0min_to_15min_Rat3.mp4', 
+ '22-02-02_Week_02_DJL_TUBW_cropped_CRF0_0min_to_15min_Rat3.mp4', 
+ '22-02-14_Week_04_DJL_TKBL_cropped_CRF0_0min_to_15min_Rat4.mp4', 
+ '22-02-28_Week_06_DJL_TIBJ_cropped_CRF0_0min_to_15min_Rat2.mp4', 
+ '22-03-14_Week_08_KEN_TKBL_cropped_CRF0_0min_to_15min_Rat3.mp4', 
+ '22-04-04_Week_11_DJL_TABB_cropped_CRF0_0min_to_15min_Rat1.mp4', 
+ '22-04-19_Week_13_DJL_TSBT_cropped_CRF0_0min_to_15min_Rat3.mp4', 
+ '22-05-03_Week_15_DJL_TXBY_cropped_CRF0_0min_to_15min_Rat1.mp4', 
+ '22-01-11_Baseline_1_DJL_TOBP_cropped_CRF0_0min_to_15min_Rat3.mp4', 
+ '22-01-13_Baseline_2_DJL_TOBP_cropped_CRF0_0min_to_15min_Rat3.mp4', 
+ '22-05-05_Drug_Trt_DJL_TJBK_cropped_CRF0_0min_to_15min_Rat2.mp4', 
+ '22-02-02_Week_02_DJL_TMBN_cropped_CRF0_0min_to_15min_Rat2.mp4', 
+ '22-02-16_Week_04_DJL_TXBY_cropped_CRF0_0min_to_15min_Rat3.mp4', 
+ '22-03-02_Week_06_DJL_TOBP_cropped_CRF0_0min_to_15min_Rat4.mp4', 
+ '22-03-16_Week_08_DJL_TMBN_cropped_CRF0_0min_to_15min_Rat4.mp4', 
+ '22-04-04_Week_11_DJL_TIBJ_cropped_CRF0_0min_to_15min_Rat4.mp4', 
+ '22-04-19_Week_13_DJL_TMBN_cropped_CRF0_0min_to_15min_Rat4.mp4', 
+ '22-05-03_Week_15_DJL_TSBT_cropped_CRF0_0min_to_15min_Rat1.mp4']
 """
 
 
