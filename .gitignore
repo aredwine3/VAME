@@ -123,3 +123,4 @@ config.yaml
 config.yaml
 wandb/
 rnn_vae_fabric.log
+Lightning_Config.yml
