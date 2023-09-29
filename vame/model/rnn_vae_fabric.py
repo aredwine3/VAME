@@ -80,10 +80,31 @@ logging.basicConfig(filename='rnn_vae_fabric.log', level=logging.DEBUG)
                                   ``bf16``)
 """
 
+def set_device():
+  # make sure torch uses cuda for GPU computing
+  use_gpu = torch.cuda.is_available()
+  use_mps = torch.backends.mps.is_available() and not use_gpu
+
+  if use_gpu:
+      device = torch.device("cuda")
+      torch.set_default_tensor_type('torch.cuda.FloatTensor')
+      print("Using CUDA")
+      print('GPU active:', torch.cuda.is_available())
+      print('GPU used:', torch.cuda.get_device_name(0))
+  elif use_mps:
+      device = torch.device("mps")
+      torch.set_default_tensor_type('torch.FloatTensor')
+      print("Using MPS")
+  else:
+      device = torch.device("cpu")
+      print("Using CPU")
+      
+  return device, use_gpu, use_mps
+
+
 def print_memory_usage():
     fabric.print("Memory Usage:")
     fabric.print("RAM: {:.2f} GB".format(psutil.Process(os.getpid()).memory_info().rss / 1024 ** 3))
-
 
 
 def reconstruction_loss(x, x_tilde, reduction):
@@ -154,8 +175,10 @@ def train(train_loader, epoch, model, optimizer, anneal_function, BETA, kl_start
     seq_len_half = int(seq_len / 2)
 
     # make sure torch uses cuda or MPS for GPU computing
-    use_gpu = torch.cuda.is_available()
-    use_mps = torch.backends.mps.is_available() and not use_gpu
+    #use_gpu = torch.cuda.is_available()
+    #use_mps = torch.backends.mps.is_available() and not use_gpu
+
+    device, use_gpu, use_mps = set_device()
 
     dtype = None
     if use_gpu:
@@ -279,6 +302,8 @@ def test(test_loader, epoch, model, optimizer, BETA, kl_weight, seq_len, mse_red
         use_gpu = torch.cuda.is_available()
         use_mps = torch.backends.mps.is_available() and not use_gpu
 
+        device, use_gpu, use_mps = set_device()
+
         dtype = None
         if use_gpu:
             dtype = torch.cuda.FloatTensor
@@ -344,7 +369,9 @@ def train_model(config):
     os.makedirs(os.path.join(cfg['project_path'],'model','best_model','snapshots'), exist_ok=True)
     os.makedirs(os.path.join(cfg['project_path'],'model','model_losses',""), exist_ok=True)
 
+    device, use_gpu, use_mps = set_device()
     
+    """
     # make sure torch uses cuda or MPS for GPU computing
     use_gpu = torch.cuda.is_available()
     use_mps = torch.backends.mps.is_available() and not use_gpu
@@ -363,7 +390,7 @@ def train_model(config):
         device = torch.device("cpu")
         fabric.print("warning, a GPU was not found... proceeding with CPU (slow!) \n")
         #raise NotImplementedError('GPU Computing is required!')
-    
+    """
 
     """ HYPERPARAMTERS """
     # General
@@ -498,7 +525,6 @@ def train_model(config):
     print_memory_usage()
     # Return any issues from wandb init failing
     
-
 
     try:
         wandb.init(

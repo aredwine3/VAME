@@ -25,24 +25,28 @@ from vame.util.auxiliary import read_config
 from vame.model.dataloader import SEQUENCE_DATASET
 from vame.model.rnn_model import RNN_VAE, RNN_VAE_LEGACY
 
-# make sure torch uses cuda for GPU computing
-use_gpu = torch.cuda.is_available()
-use_mps = torch.backends.mps.is_available() and not use_gpu
+def set_device():
+  # make sure torch uses cuda for GPU computing
+  use_gpu = torch.cuda.is_available()
+  use_mps = torch.backends.mps.is_available() and not use_gpu
 
-if use_gpu:
-    device = torch.device("cuda")
-    torch.set_default_tensor_type('torch.cuda.FloatTensor')
-    print("Using CUDA")
-    print('GPU active:', torch.cuda.is_available())
-    print('GPU used:', torch.cuda.get_device_name(0))
-elif use_mps:
-    device = torch.device("mps")
-    torch.tensor([1,2,3], device="mps")
-    torch.set_default_tensor_type('torch.FloatTensor')
-    print("Using MPS")
-else:
-    device = torch.device("cpu")
-    print("Using CPU")
+  if use_gpu:
+      device = torch.device("cuda")
+      torch.set_default_tensor_type('torch.cuda.FloatTensor')
+      print("Using CUDA")
+      print('GPU active:', torch.cuda.is_available())
+      print('GPU used:', torch.cuda.get_device_name(0))
+  elif use_mps:
+      device = torch.device("mps")
+      torch.set_default_tensor_type('torch.FloatTensor')
+      print("Using MPS")
+  else:
+      device = torch.device("cpu")
+      print("Using CPU")
+      
+  return device, use_gpu, use_mps
+
+
 
 def reconstruction_loss(x, x_tilde, reduction):
     mse_loss = nn.MSELoss(reduction=reduction)
@@ -114,6 +118,8 @@ def train(train_loader, epoch, model, optimizer, anneal_function, BETA, kl_start
     fut_loss = 0.0
     loss = 0.0
     seq_len_half = int(seq_len / 2)
+
+    device, use_gpu, use_mps = set_device()
 
     for idx, data_item in enumerate(train_loader):
         data_item = Variable(data_item)
@@ -189,6 +195,8 @@ def test(test_loader, epoch, model, optimizer, BETA, kl_weight, seq_len, mse_red
     kmeans_losses = 0.0
     loss = 0.0
     seq_len_half = int(seq_len / 2)
+
+    device, use_gpu, use_mps = set_device()
 
     with torch.no_grad():
         for idx, data_item in enumerate(test_loader):

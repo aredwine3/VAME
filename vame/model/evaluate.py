@@ -30,25 +30,29 @@ from vame.util.auxiliary import read_config
 from vame.model.rnn_vae import RNN_VAE
 from vame.model.dataloader import SEQUENCE_DATASET
 
-# make sure torch uses cuda for GPU computing
-use_gpu = torch.cuda.is_available()
-use_mps = torch.backends.mps.is_available() and not use_gpu
+def set_device():
+  # make sure torch uses cuda for GPU computing
+  use_gpu = torch.cuda.is_available()
+  use_mps = torch.backends.mps.is_available() and not use_gpu
 
-if use_gpu:
-    device = torch.device("cuda")
-    torch.set_default_tensor_type('torch.cuda.FloatTensor')
-    print("Using CUDA")
-    print('GPU active:', torch.cuda.is_available())
-    print('GPU used:', torch.cuda.get_device_name(0))
-elif use_mps:
-    device = torch.device("mps")
-    torch.tensor([1,2,3], device="mps")
-    torch.set_default_tensor_type('torch.FloatTensor')
-    print("Using MPS")
-else:
-    device = torch.device("cpu")
-    print("Using CPU")
-    
+  if use_gpu:
+      device = torch.device("cuda")
+      torch.set_default_tensor_type('torch.cuda.FloatTensor')
+      print("Using CUDA")
+      print('GPU active:', torch.cuda.is_available())
+      print('GPU used:', torch.cuda.get_device_name(0))
+  elif use_mps:
+      device = torch.device("mps")
+      torch.set_default_tensor_type('torch.FloatTensor')
+      print("Using MPS")
+  else:
+      device = torch.device("cpu")
+      print("Using CPU")
+      
+  return device, use_gpu, use_mps
+
+def to_cpu_numpy(tensor):
+    return tensor.cpu().detach().numpy()
 
 def plot_reconstruction(filepath, test_loader, seq_len_half, model, model_name,
                         FUTURE_DECODER, FUTURE_STEPS, suffix=None):
@@ -172,6 +176,7 @@ def eval_temporal(cfg, use_gpu, use_mps, model_name, fixed, snapshot=None, suffi
 
     filepath = os.path.join(cfg['project_path'],"model")
 
+    device, use_gpu, use_mps = set_device()
 
     seq_len_half = int(TEMPORAL_WINDOW/2)
     if use_gpu:
@@ -249,6 +254,9 @@ def evaluate_model(config, model_name, use_snapshots=False):#, suffix=None
     if not os.path.exists(os.path.join(cfg['project_path'],"model","evaluate")):
         os.mkdir(os.path.join(cfg['project_path'],"model","evaluate"))
 
+    device, use_gpu, use_mps = set_device()
+    
+    """
     use_gpu = torch.cuda.is_available()
     use_mps = torch.backends.mps.is_available() and not use_gpu
 
@@ -265,6 +273,7 @@ def evaluate_model(config, model_name, use_snapshots=False):#, suffix=None
     else:
         device = torch.device("cpu")
         print("Using CPU")
+    """
 
     print("\n\nEvaluation of %s model. \n" %model_name)   
 
