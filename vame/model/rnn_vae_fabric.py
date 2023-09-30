@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+# Description: This file contains the training loop for the RNN-VAE model using the Fabric library.
 # -*- coding: utf-8 -*-
 """
 Variational Animal Motion Embedding 0.1 Toolbox
@@ -26,7 +26,8 @@ import lightning as L
 import pandas as pd
 from torch import nn
 import torch.utils.data as Data
-from torch import Generator
+import torch.distributed as dist
+import datetime
 from torch.autograd import Variable
 from torch.optim.lr_scheduler import StepLR, ReduceLROnPlateau
 from numba import NumbaDeprecationWarning, NumbaPendingDeprecationWarning
@@ -39,11 +40,29 @@ from vame.model.rnn_model import RNN_VAE, RNN_VAE_LEGACY
 # Warnings
 import warnings
 
+
+fabric = L.Fabric(
+    accelerator="auto", 
+    devices=2, # number of GPUs
+    strategy='ddp',
+    num_nodes=1,
+    precision='32',
+    )
+
+device = fabric.device
+
+world_size = fabric.world_size
+local_rank = fabric.local_rank
+global_rank = fabric.global_rank
+
 # Ignore these specific types of warnings
 warnings.filterwarnings("ignore", category=NumbaDeprecationWarning)
 warnings.filterwarnings("ignore", category=NumbaPendingDeprecationWarning)
 
 logging.basicConfig(filename='rnn_vae_fabric.log', level=logging.DEBUG)
+
+# Get the current date and time
+now = datetime.datetime.now()
 
 def set_device(counters={"gpu_count": 0, "cpu_count": 0}):
   
@@ -73,20 +92,29 @@ def set_device(counters={"gpu_count": 0, "cpu_count": 0}):
         
     return device, use_gpu, use_mps
 
+def to_tensor_if_not(tensor, device):
+    if not isinstance(tensor, torch.Tensor):
+        tensor = torch.tensor([tensor], device=device)
+    return tensor
 
+def all_elements_are_tensors(tensor_list):
+    return all(torch.is_tensor(x) for x in tensor_list)
+
+""""
 def save_losses_to_disk(loss_lists, model_name, cfg):
     """
-    Convert loss lists to tensors, move them to CPU, convert to NumPy arrays and save to disk.
+    #Convert loss lists to tensors, move them to CPU, convert to NumPy arrays and save to disk.
     
-    Parameters:
-        loss_lists (dict): Dictionary containing loss lists to be saved
-        model_name (str): Name of the model
-        cfg (dict): Configuration dictionary containing the project path
+    #Parameters:
+    #    loss_lists (dict): Dictionary containing loss lists to be saved
+    #    model_name (str): Name of the model
+    #    cfg (dict): Configuration dictionary containing the project path
     
-    Returns:
-        None
-    """
+    #Returns:
+    #   None
+"""
     for loss_name, loss_list in loss_lists.items():
+
         # Convert list to tensor
         loss_tensor = torch.tensor(loss_list)
         
@@ -96,8 +124,31 @@ def save_losses_to_disk(loss_lists, model_name, cfg):
         # Save the numpy array to disk
         save_path = os.path.join(cfg['project_path'], 'model', 'model_losses', f"{loss_name}_{model_name}.npy")
         np.save(save_path, loss_array)
+    
+"""
+def save_losses_to_disk(loss_lists, model_name, cfg, device):
+    for loss_name, loss_list in loss_lists.items():
+       
+        if not all_elements_are_tensors(loss_list):
+            fabric.print(f"Loss list '{loss_name}' contains non-tensor elements")
+            for i, loss in enumerate(loss_list):
+                loss_list[i] = to_tensor_if_not(loss, device)
+        
+        # Convert list to tensor by stacking if they are not already a single tensor
+        if len(loss_list) > 0:
+            if isinstance(loss_list[0], torch.Tensor):
+                loss_tensor = torch.stack(loss_list)
+            else:
+                loss_tensor = torch.tensor(loss_list)
+        
+            # Convert tensor to numpy array and move to CPU
+            loss_array = loss_tensor.cpu().numpy()
+            
+            # Save the numpy array to disk
+            save_path = os.path.join(cfg['project_path'], 'model', 'model_losses', f"{loss_name}_{model_name}.npy")
+            np.save(save_path, loss_array)
 
-def manage_and_save_model(epoch, avg_weight, avg_test_mse_loss, model, cfg, convergence, conv_counter, model_name, BEST_LOSS, SNAPSHOT):
+def manage_and_save_model(fabric, train_start, epoch, avg_weight, avg_test_mse_loss, model, cfg, convergence, conv_counter, model_name, BEST_LOSS, SNAPSHOT):
                 """
                 Manages model saving based on conditions and handles convergence counter.
 
@@ -117,10 +168,10 @@ def manage_and_save_model(epoch, avg_weight, avg_test_mse_loss, model, cfg, conv
                     float: Updated BEST_LOSS value.
                 """
                 # Check conditions for best loss
-                if avg_weight > 0.99 and avg_test_mse_loss <= BEST_LOSS:
+                if avg_weight.item() > 0.99 and avg_test_mse_loss.item() <= BEST_LOSS:
                     BEST_LOSS = avg_test_mse_loss
                     fabric.print("Saving model!")
-                    save_path = os.path.join(cfg['project_path'], "model", "best_model", f"{model_name}_{cfg['Project']}.pkl")
+                    save_path = os.path.join(cfg['project_path'], "model", "best_model", f"{model_name}_{cfg['Project']}_epoch_{epoch}_time_{train_start}.pkl")
                     fabric.save(path=save_path, state=model.state_dict())
                     convergence = 0
                 else:
@@ -134,12 +185,12 @@ def manage_and_save_model(epoch, avg_weight, avg_test_mse_loss, model, cfg, conv
                 # Save model snapshot
                 if epoch % SNAPSHOT == 0:
                     fabric.print("Saving model snapshot!")
-                    snapshot_path = os.path.join(cfg['project_path'], 'model', 'best_model', 'snapshots', f"{model_name}_{cfg['Project']}_epoch_{epoch}.pkl")
+                    snapshot_path = os.path.join(cfg['project_path'], 'model', 'best_model', 'snapshots', f"{model_name}_{cfg['Project']}_epoch_{epoch}_time_{train_start}.pkl")
                     fabric.save(path=snapshot_path, state=model.state_dict())
 
                 return convergence, BEST_LOSS, conv_counter
 
-def check_convergence(convergence, cfg):
+def check_convergence(fabric, convergence, cfg):
     """
     Checks if the model has converged.
     
@@ -168,9 +219,7 @@ def check_convergence(convergence, cfg):
 
     return False
 
-def print_memory_usage():
-    fabric.print("Memory Usage:")
-    fabric.print("RAM: {:.2f} GB".format(psutil.Process(os.getpid()).memory_info().rss / 1024 ** 3))
+
 
 
 def reconstruction_loss(x, x_tilde, reduction):
@@ -227,7 +276,7 @@ def gaussian(ins, is_training, seq_len, std_n=0.8):
     return ins
 
 
-def train(train_loader, epoch, model, optimizer, anneal_function, BETA, kl_start,
+def train(fabric, train_loader, epoch, model, optimizer, anneal_function, BETA, kl_start,
           annealtime, seq_len, future_decoder, future_steps, scheduler, mse_red,
           mse_pred, kloss, klmbda, bsize, noise):
     """
@@ -319,6 +368,7 @@ def train(train_loader, epoch, model, optimizer, anneal_function, BETA, kl_start
         optimizer.zero_grad()
         fabric.backward(loss)
         
+    
         # Gradient clipping
         fabric.clip_gradients(model, optimizer, max_norm=5.0, norm_type='inf')
 
@@ -359,7 +409,7 @@ def train(train_loader, epoch, model, optimizer, anneal_function, BETA, kl_start
 
 
 
-def test(test_loader, epoch, model, optimizer, BETA, kl_weight, seq_len, mse_red, kloss, klmbda, future_decoder, bsize):
+def test(fabric, test_loader, epoch, model, optimizer, BETA, kl_weight, seq_len, mse_red, kloss, klmbda, future_decoder, bsize):
     model.eval() # toggle model to inference mode
     test_loss = 0.0
     mse_loss = 0.0
@@ -416,10 +466,12 @@ def test(test_loader, epoch, model, optimizer, BETA, kl_weight, seq_len, mse_red
 
 
 def train_model(config):
+    num_workers = 8
+    train_start = time.time()
+    fabric.print("Fabric initialized with %d processes" % world_size)
+    fabric.print("Train model called...")
     config_file = Path(config).resolve()
     cfg = read_config(config_file)
-
-
 
     legacy = cfg['legacy']
     model_name = cfg['model_name']
@@ -433,12 +485,11 @@ def train_model(config):
     wandb.login(key=cfg['wandb_api_key'])
 
     fabric.print("Initializing wandb run...")
-    print_memory_usage()
 
     try:
         wandb.init(
             project=cfg['wandb_project'],
-            name=model_name + '__local_rank__' + str(fabric.local_rank),
+            name=model_name + '__local_rank__' + str(fabric.local_rank) + '__global_rank__' + str(fabric.global_rank) + '_date_' + time.strftime('%Y-%m-%d_%H-%M-%S'),
             entity=cfg['wandb_entity'],
             group='DDP_1',
             config=cfg,
@@ -449,14 +500,12 @@ def train_model(config):
         logging.error(f"Wandb init failed. Error: {e}")
         return
 
-    
-    
     fabric.print("Train Variational Autoencoder - model name: %s \n" %model_name)
     os.makedirs(os.path.join(cfg['project_path'],'model','best_model'), exist_ok=True)
     os.makedirs(os.path.join(cfg['project_path'],'model','best_model','snapshots'), exist_ok=True)
     os.makedirs(os.path.join(cfg['project_path'],'model','model_losses',""), exist_ok=True)
 
-    device, use_gpu, use_mps = set_device()
+    #device, use_gpu, use_mps = set_device()
 
     """ HYPERPARAMTERS """
     # General
@@ -505,23 +554,22 @@ def train_model(config):
     
     # simple logging of diverse losses. Will only be done on the main process
     if fabric.global_rank == 0:
-        avg_train_losses = []
-        avg_train_kmeans_losses = []
-        avg_train_kl_losses = []
-        avg_train_mse_losses = []
-        avg_train_fut_losses = []
-        avg_weight_values = []
+        if local_rank == 0:
+            avg_train_losses = []
+            avg_train_kmeans_losses = []
+            avg_train_kl_losses = []
+            avg_train_mse_losses = []
+            avg_train_fut_losses = []
+            avg_weight_values = []
 
-        avg_test_losses = []
-        avg_test_mse_losses = []
-        avg_test_km_losses = []
+            avg_test_losses = []
+            avg_test_mse_losses = []
+            avg_test_km_losses = []
 
-        learn_rates = []
-        conv_counter = []
+            learn_rates = []
+            conv_counter = []
 
     """ SEED """
-    torch.manual_seed(SEED)
-    np.random.seed(SEED)
     fabric.seed_everything(SEED)
 
     """ Model and Optimizer """
@@ -531,19 +579,13 @@ def train_model(config):
                 hidden_size_layer_2, hidden_size_rec, hidden_size_pred, dropout_encoder,
                 dropout_rec, dropout_pred, softplus)
 
-    wandb.watch(model, log='all')
 
     optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE, amsgrad=True)
 
-    
-    try:
-        model, optimizer = fabric.setup(model, optimizer, move_to_device=True)
-    except Exception as e:
-        fabric.print("Moving model and optimizer to device failed. Error: {e}")
-        logging.error(f"Moving model and optimizer to device failed. Error: {e}")
-        wandb.alert(title="Moving model and optimizer to device failed", text=f"Error: {e}", level=AlertLevel.ERROR)
-        return
-    
+    fabric.print("Moving model and optimizer to device...")  
+
+    model, optimizer = fabric.setup(model, optimizer, move_to_device=True)
+
     """ LOAD PRETRAINED WEIGHTS """
     if pretrained_weights:
         try:
@@ -565,23 +607,18 @@ def train_model(config):
     trainset = SEQUENCE_DATASET(os.path.join(cfg['project_path'],"data", "train",""), data='train_seq.npy', train=True, temporal_window=TEMPORAL_WINDOW)
     testset = SEQUENCE_DATASET(os.path.join(cfg['project_path'],"data", "train",""), data='test_seq.npy', train=False, temporal_window=TEMPORAL_WINDOW)
 
-    if device == torch.device("cuda"):
-        cuda_generator = torch.Generator(device='cuda')
-        train_loader = Data.DataLoader(trainset, batch_size=TRAIN_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=num_workers, generator=cuda_generator)
-        test_loader = Data.DataLoader(testset, batch_size=TEST_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=num_workers, generator=cuda_generator)
-    else:
-        cpu_generator = Generator(device='cpu')
-        train_loader = Data.DataLoader(trainset, batch_size=TRAIN_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=num_workers, generator=cpu_generator)
-        test_loader = Data.DataLoader(testset, batch_size=TEST_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=num_workers, generator=cpu_generator)
+    #if device == torch.device("cuda"):
+    cuda_generator = torch.Generator(device='cuda')
+    train_loader = Data.DataLoader(trainset, batch_size=TRAIN_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=num_workers, generator=cuda_generator)
+    test_loader = Data.DataLoader(testset, batch_size=TEST_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=num_workers, generator=cuda_generator)
+    #else:
+        #cpu_generator = Generator(device='cpu')
+        #train_loader = Data.DataLoader(trainset, batch_size=TRAIN_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=num_workers, generator=cpu_generator)
+        #test_loader = Data.DataLoader(testset, batch_size=TEST_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=num_workers, generator=cpu_generator)
     
-    if fabric:
-        try:
-            train_loader, test_loader = fabric.setup_dataloaders(train_loader, test_loader, move_to_device=True, use_distributed_sampler=False)
-        except Exception as e:
-            fabric.print("Moving dataloaders to device failed. Error: {e}")
-            logging.error(f"Moving dataloaders to device failed. Error: {e}")
-            wandb.alert(title="Moving dataloaders to device failed", text=f"Error: {e}", level=AlertLevel.ERROR)
-            return
+    # Move dataloaders to device
+    train_loader, test_loader = fabric.setup_dataloaders(train_loader, test_loader, move_to_device=True, use_distributed_sampler=False)
+
 
     """ SCHEDULER """
     if optimizer_scheduler:
@@ -592,53 +629,94 @@ def train_model(config):
         scheduler = StepLR(optimizer, step_size=scheduler_step_size, gamma=1, last_epoch=-1)
 
     """ TRAINING """    
+
+    wandb.watch(model, log='all')
+
     fabric.print("Start training... ")
 
     for epoch in range(1, EPOCHS):
-
         fabric.print(f'Epoch: {epoch}, Epochs on convergence counter: {convergence}')
         fabric.print('Train: ')
-    
-        weight, train_loss, train_km_loss, kl_loss, mse_loss, fut_loss = train(train_loader, epoch, model, optimizer, 
+        
+        fabric.barrier()
+        training_loop_start = time.time()
+        weight, train_loss, train_km_loss, kl_loss, mse_loss, fut_loss = train(fabric, train_loader, epoch, model, optimizer, 
                                                                             anneal_function, BETA, KL_START, 
                                                                             ANNEALTIME, TEMPORAL_WINDOW, FUTURE_DECODER,
                                                                             FUTURE_STEPS, scheduler, MSE_REC_REDUCTION,
                                                                             MSE_PRED_REDUCTION, KMEANS_LOSS, KMEANS_LAMBDA,
                                                                             TRAIN_BATCH_SIZE, noise)
 
-        test_mse_loss, test_loss, test_km_loss = test(test_loader, epoch, model, optimizer,
+
+        test_mse_loss, test_loss, test_km_loss = test(fabric, test_loader, epoch, model, optimizer,
                                                     BETA, weight, TEMPORAL_WINDOW, MSE_REC_REDUCTION,
                                                     KMEANS_LOSS, KMEANS_LAMBDA, FUTURE_DECODER, TEST_BATCH_SIZE)
+        
+        epoch_time = time.time() - training_loop_start
 
+        fabric.print("\n")
+        fabric.print(f'Epoch: {epoch}, Time: {epoch_time/60} min')
+        fabric.print("\n")
+
+        # Convert to tensor if not already
+        train_loss = to_tensor_if_not(train_loss, device)
+        train_km_loss = to_tensor_if_not(train_km_loss, device)
+        kl_loss = to_tensor_if_not(kl_loss, device)
+        mse_loss = to_tensor_if_not(mse_loss, device)
+        fut_loss = to_tensor_if_not(fut_loss, device)
+        test_loss = to_tensor_if_not(test_loss, device)
+        test_mse_loss = to_tensor_if_not(test_mse_loss, device)
+        test_km_loss = to_tensor_if_not(test_km_loss, device)
+        weight = to_tensor_if_not(weight, device)
+           
         # Pause the processeses at this point so synchronization of the losses can be done
-        fabric.barrier()
-
         # Average the losses across all processes
-        avg_train_loss = fabric.all_reduce(train_loss, 'mean')
-        avg_train_km_loss = fabric.all_reduce(train_km_loss, 'mean')
-        avg_train_kl_loss = fabric.all_reduce(kl_loss, 'mean')
-        avg_train_mse_loss = fabric.all_reduce(mse_loss, 'mean')
-        avg_train_fut_loss = fabric.all_reduce(fut_loss, 'mean')
-        avg_weight = fabric.all_reduce(weight, 'mean')
-        avg_test_loss = fabric.all_reduce(test_loss, 'mean')
-        avg_test_mse_loss = fabric.all_reduce(test_mse_loss, 'mean')
-        avg_test_km_loss = fabric.all_reduce(test_km_loss, 'mean')
-
-        scheduler.step(avg_test_loss)
-
+        fabric.barrier()
+        avg_train_loss = fabric.all_reduce(train_loss, reduce_op='mean')
+        fabric.barrier()  
+        avg_train_km_loss = fabric.all_reduce(train_km_loss, reduce_op='mean')
+        fabric.barrier()
+        avg_train_kl_loss = fabric.all_reduce(kl_loss, reduce_op='mean')
+        fabric.barrier()
+        avg_train_mse_loss = fabric.all_reduce(mse_loss, reduce_op='mean')
+        fabric.barrier()
+        avg_train_fut_loss = fabric.all_reduce(fut_loss, reduce_op='mean')
+        fabric.barrier()
+        avg_weight = fabric.all_reduce(weight, reduce_op='mean')
+        fabric.barrier()
+        avg_test_loss = fabric.all_reduce(test_loss, reduce_op='mean')
+        fabric.barrier()
+        avg_test_mse_loss = fabric.all_reduce(test_mse_loss, reduce_op='mean')
+        fabric.barrier()
+        avg_test_km_loss = fabric.all_reduce(test_km_loss, reduce_op='mean')
+        fabric.barrier()
+        
+        scheduler.step(avg_test_loss.item())
+    
         # The scheduler.step() should be called after validating the model because 
         # we're using the ReduceLROnPlateau scheduler. This particular scheduler 
         # adjusts the learning rate based on a monitored metric (in this case, 
         # the validation (test) loss). Therefore, it's crucial to place scheduler.step(test_loss) 
         # after the validation loop has calculated the validation loss for the current epoch.
 
-        fabric.print('Train loss: {:.3f}, MSE-Loss: {:.3f}, MSE-Future-Loss {:.3f}, KL-Loss: {:.3f}, Kmeans-Loss: {:.3f}, weight: {:.2f}'.format(avg_train_loss,
-            avg_train_mse_loss, avg_train_fut_loss, avg_train_kl_loss, avg_train_km_loss, avg_weight))
+        #fabric.print('Train loss: {:.3f}, MSE-Loss: {:.3f}, MSE-Future-Loss {:.3f}, KL-Loss: {:.3f}, Kmeans-Loss: {:.3f}, weight: {:.2f}'.format(avg_train_loss,
+        #    avg_train_mse_loss, avg_train_fut_loss, avg_train_kl_loss, avg_train_km_loss, avg_weight))
         
-        fabric.print('Test loss: {:.3f}, MSE-Loss: {:.3f}, KL-Loss: {:.3f}, Kmeans-Loss: {:.3f}'.format(avg_test_loss,
-                avg_test_mse_loss, avg_test_km_loss, avg_test_km_loss))
+        #fabric.print('Test loss: {:.3f}, MSE-Loss: {:.3f}, KL-Loss: {:.3f}, Kmeans-Loss: {:.3f}'.format(avg_test_loss,
+        #        avg_test_mse_loss, avg_test_km_loss, avg_test_km_loss))
+             
 
-        epoch_metrics = {
+        fabric.print('Train loss: {:.3f}, MSE-Loss: {:.3f}, MSE-Future-Loss {:.3f}, KL-Loss: {:.3f}, Kmeans-Loss: {:.3f}, weight: {:.2f}'.format(avg_train_loss.item(),
+            avg_train_mse_loss.item(), avg_train_fut_loss.item(), avg_train_kl_loss.item(), avg_train_km_loss.item(), avg_weight.item()))
+        
+        fabric.print('Test loss: {:.3f}, MSE-Loss: {:.3f}, KL-Loss: {:.3f}, Kmeans-Loss: {:.3f}'.format(avg_test_loss.item(),
+                    avg_test_mse_loss.item(), avg_test_km_loss.item(), avg_test_km_loss.item()))
+
+       
+        # Log losses to fabric and wandb on the main process
+        if global_rank == 0:
+            
+            epoch_metrics = {
                         "epoch": epoch,
                         "avg_train_loss": avg_train_loss,
                         "avg_train_mse_loss": avg_train_mse_loss,
@@ -650,10 +728,8 @@ def train_model(config):
                         "avg_test_mse_loss": avg_test_mse_loss,
                         "avg_test_kl_loss": avg_test_km_loss,
                         "avg_test_kmeans_loss": avg_test_km_loss,
-        }
+                        }
 
-        # Log losses to fabric and wandb on the main process
-        if fabric.global_rank == 0:
             #fabric.log_dict(epoch_metrics)
             wandb.log(epoch_metrics)
 
@@ -671,7 +747,12 @@ def train_model(config):
             lr = optimizer.param_groups[0]['lr']
             learn_rates.append(lr)
 
-            convergence, BEST_LOSS, conv_counter = manage_and_save_model(epoch, avg_weight, avg_test_mse_loss, model, cfg, convergence, conv_counter, model_name, BEST_LOSS, SNAPSHOT)
+            try:
+                convergence, BEST_LOSS, conv_counter = manage_and_save_model(fabric, train_start, epoch, avg_weight, avg_test_mse_loss, model, cfg, convergence, conv_counter, model_name, BEST_LOSS, SNAPSHOT)
+            except Exception as e:
+                fabric.print("Error in manage_and_save_model(). Error: %s" %e)
+                logging.error(f"Error in manage_and_save_model(). Error: {e}")
+
 
             loss_lists = {
                 'avg_train_losses': avg_train_losses,
@@ -685,18 +766,37 @@ def train_model(config):
                 'avg_test_km_losses': avg_test_km_losses,
             }
 
-            save_losses_to_disk(loss_lists, model_name, cfg)
+            fabric.print("Saving losses to disk...")
+            
+            #save_losses_to_disk(loss_lists, model_name, cfg)
+            try:
+                save_losses_to_disk(loss_lists, model_name, cfg, device)
+            except Exception as e:
+                fabric.print("Error in save_losses_to_disk(). Error: %s" %e)
+                logging.error(f"Error in save_losses_to_disk(). Error: {e}")
 
+
+
+            fabric.print("Saving dataframe to disk...")
             df = pd.DataFrame([avg_train_losses, avg_test_losses, avg_train_kmeans_losses, avg_train_kl_losses, avg_weight_values, avg_train_mse_losses, avg_train_fut_losses, learn_rates, conv_counter]).T
             df.columns=['Train_losses', 'Test_losses', 'Kmeans_losses', 'KL_losses', 'Weight_values', 'MSE_losses', 'Future_losses', 'Learning_Rate', 'Convergence_counter']
             df.to_csv(cfg['project_path']+'/model/model_losses/'+model_name+'_LossesSummary.csv')     
             fabric.print("\n")
 
-            # Check for convergence
-            if check_convergence(convergence, cfg):
-                break
+            fabric.print("Checking for convergence...")
+            
+            fabric.print(f"Process {fabric.global_rank} before convergence check")
+            try:
+                # Check for convergence
+                if check_convergence(fabric, convergence, cfg):
+                    break
+            except Exception as e:
+                fabric.print("Error in check_convergence(). Error: %s" %e)
+                logging.error(f"Error in check_convergence(). Error: {e}")
+            fabric.print(f"Process {fabric.global_rank} after convergence check") 
 
-        fabric.barrier() # wait for the main process to finish logging and saving before continuing
+            fabric.print("Convengence check complete.")
+            fabric.print("\n")
 
     if convergence < cfg['model_convergence']:
         fabric.print('Model seemed to have not reached convergence. You may want to check your model \n'
@@ -704,29 +804,11 @@ def train_model(config):
             'Use vame.behavior_segmentation() to identify behavioral motifs!\n\n'
             'OPTIONAL: You can re-run vame.rnn_model() to improve performance.')
 
-    
-
     wandb.finish()
 
-wandb.alert(title="Training Complete", text="Training has completed!", level=wandb.AlertLevel.INFO)
-
-
 if __name__ == "__main__":
-
-    config = "/Volumes/G-DRIVE_SSD/VAME_working/ALR_VAME_1-Sep15-2023/config_fabric.yaml"
-    num_workers = 8
-    fabric = L.Fabric(
-        accelerator="mps", 
-        devices=1,
-        #strategy='dp',
-        num_nodes=1,
-        precision='16-mixed',
-        #loggers=["tensorboard", "wandb"],
-        )
-    
-    fabric.launch()
-    
-    fabric.print("Fabric initialized with %d processes" %fabric.world_size)
+    #config = "/Volumes/G-DRIVE_SSD/VAME_working/ALR_VAME_1-Sep15-2023/config_fabric.yaml"
+    config= "/work/wachslab/aredwine3/VAME_working/config_fabric.yaml"
 
     train_model(config)
 
