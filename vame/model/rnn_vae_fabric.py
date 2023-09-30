@@ -131,8 +131,12 @@ def save_losses_to_disk(loss_lists, model_name, cfg, device):
        
         if not all_elements_are_tensors(loss_list):
             fabric.print(f"Loss list '{loss_name}' contains non-tensor elements")
-            for i, loss in enumerate(loss_list):
-                loss_list[i] = to_tensor_if_not(loss, device)
+            try:
+                for i, loss in enumerate(loss_list):
+                    loss_list[i] = to_tensor_if_not(loss, device)
+            except Exception as e:
+                fabric.print(f"Converting loss list '{loss_name}' to tensor failed. Error: {e}")
+                continue
         
         # Convert list to tensor by stacking if they are not already a single tensor
         if len(loss_list) > 0:
@@ -143,10 +147,14 @@ def save_losses_to_disk(loss_lists, model_name, cfg, device):
         
             # Convert tensor to numpy array and move to CPU
             loss_array = loss_tensor.cpu().numpy()
-            
-            # Save the numpy array to disk
-            save_path = os.path.join(cfg['project_path'], 'model', 'model_losses', f"{loss_name}_{model_name}.npy")
-            np.save(save_path, loss_array)
+           
+            try:
+                # Save the numpy array to disk
+                save_path = os.path.join(cfg['project_path'], 'model', 'model_losses', f"{loss_name}_{model_name}.npy")
+                np.save(save_path, loss_array)
+            except Exception as e:
+                fabric.print(f"Saving loss array '{loss_name}' failed. Error: {e}")
+
 
 def manage_and_save_model(fabric, train_start, epoch, avg_weight, avg_test_mse_loss, model, cfg, convergence, conv_counter, model_name, BEST_LOSS, SNAPSHOT):
                 """
@@ -167,26 +175,32 @@ def manage_and_save_model(fabric, train_start, epoch, avg_weight, avg_test_mse_l
                     int: Updated convergence counter.
                     float: Updated BEST_LOSS value.
                 """
-                # Check conditions for best loss
-                if avg_weight.item() > 0.99 and avg_test_mse_loss.item() <= BEST_LOSS:
-                    BEST_LOSS = avg_test_mse_loss
-                    fabric.print("Saving model!")
-                    save_path = os.path.join(cfg['project_path'], "model", "best_model", f"{model_name}_{cfg['Project']}_epoch_{epoch}_time_{train_start}.pkl")
-                    fabric.save(path=save_path, state=model.state_dict())
-                    convergence = 0
-                else:
-                    convergence += 1
+                try:
+                    # Check conditions for best loss
+                    if avg_weight.item() > 0.99 and avg_test_mse_loss.item() <= BEST_LOSS:
+                        BEST_LOSS = avg_test_mse_loss
+                        fabric.print("Saving model!")
+                        save_path = os.path.join(cfg['project_path'], "model", "best_model", f"{model_name}_{cfg['Project']}_epoch_{epoch}_time_{train_start}.pkl")
+                        fabric.save(path=save_path, state=model.state_dict())
+                        convergence = 0
+                    else:
+                        convergence += 1
 
-                conv_counter.append(convergence)
+                    conv_counter.append(convergence)
+                except Exception as e:
+                    fabric.print(f"Saving model failed. Error: {e}")
 
                 # Distribute the convergence across all processes
                 convergence = fabric.broadcast(convergence, src=0)
 
-                # Save model snapshot
-                if epoch % SNAPSHOT == 0:
-                    fabric.print("Saving model snapshot!")
-                    snapshot_path = os.path.join(cfg['project_path'], 'model', 'best_model', 'snapshots', f"{model_name}_{cfg['Project']}_epoch_{epoch}_time_{train_start}.pkl")
-                    fabric.save(path=snapshot_path, state=model.state_dict())
+                try: 
+                    # Save model snapshot
+                    if epoch % SNAPSHOT == 0:
+                        fabric.print("Saving model snapshot!")
+                        snapshot_path = os.path.join(cfg['project_path'], 'model', 'best_model', 'snapshots', f"{model_name}_{cfg['Project']}_epoch_{epoch}_time_{train_start}.pkl")
+                        fabric.save(path=snapshot_path, state=model.state_dict())
+                except Exception as e:
+                    fabric.print(f"Saving model snapshot failed. Error: {e}")
 
                 return convergence, BEST_LOSS, conv_counter
 
