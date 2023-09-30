@@ -152,15 +152,12 @@ def train(train_loader, epoch, model, optimizer, anneal_function, BETA, kl_start
     else:
         dtype = torch.FloatTensor
     
-    
-
     for idx, data_item in enumerate(train_loader):
         data_item = data_item.to(device)
         data_item = Variable(data_item)
         data_item = data_item.permute(0,2,1)
         data = data_item[:,:seq_len_half,:].type(dtype)
         fut = data_item[:,seq_len_half:seq_len_half+future_steps,:].type(dtype)
-
 
         if noise:
             data_gaussian = gaussian(data,True,seq_len_half)
