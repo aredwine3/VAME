@@ -41,6 +41,7 @@ from vame.model.rnn_model import RNN_VAE, RNN_VAE_LEGACY
 import warnings
 
 
+
 fabric = L.Fabric(
     accelerator="auto", 
     devices=2, # number of GPUs
@@ -50,10 +51,6 @@ fabric = L.Fabric(
     )
 
 device = fabric.device
-
-world_size = fabric.world_size
-local_rank = fabric.local_rank
-global_rank = fabric.global_rank
 
 # Ignore these specific types of warnings
 warnings.filterwarnings("ignore", category=NumbaDeprecationWarning)
@@ -74,21 +71,21 @@ def set_device(counters={"gpu_count": 0, "cpu_count": 0}):
         device = torch.device("cuda")
         torch.set_default_tensor_type('torch.cuda.FloatTensor')
         counters["gpu_count"] += 1
-        if counters["gpu_count"] == 1:
-            print("Using CUDA")
-            print('GPU active:', torch.cuda.is_available())
-            print('GPU used:', torch.cuda.get_device_name(0))
+        #if counters["gpu_count"] == 1:
+            #print("Using CUDA")
+            #print('GPU active:', torch.cuda.is_available())
+            #print('GPU used:', torch.cuda.get_device_name(0))
     elif use_mps:
         device = torch.device("mps")
         torch.set_default_tensor_type('torch.FloatTensor')
         counters["gpu_count"] += 1
-        if counters["gpu_count"] == 1:
-            print("Using MPS")
+        #if counters["gpu_count"] == 1:
+            #print("Using MPS")
     else:
         device = torch.device("cpu")
         counters["cpu_count"] += 1
-        if counters["cpu_count"] == 1:
-            print("Using CPU")
+        #if counters["cpu_count"] == 1:
+        #    print("Using CPU")
         
     return device, use_gpu, use_mps
 
@@ -175,20 +172,20 @@ def manage_and_save_model(fabric, train_start, epoch, avg_weight, avg_test_mse_l
                     int: Updated convergence counter.
                     float: Updated BEST_LOSS value.
                 """
-                try:
-                    # Check conditions for best loss
-                    if avg_weight.item() > 0.99 and avg_test_mse_loss.item() <= BEST_LOSS:
-                        BEST_LOSS = avg_test_mse_loss
-                        fabric.print("Saving model!")
-                        save_path = os.path.join(cfg['project_path'], "model", "best_model", f"{model_name}_{cfg['Project']}_epoch_{epoch}_time_{train_start}.pkl")
+                 # Check conditions for best loss
+                if avg_weight.item() > 0.99 and avg_test_mse_loss.item() <= BEST_LOSS:
+                    BEST_LOSS = avg_test_mse_loss
+                    fabric.print("Saving model!")
+                    save_path = os.path.join(cfg['project_path'], "model", "best_model", model_name + '_' + cfg['Project'] + '_epoch_' + str(epoch) + '_time_' + str(train_start) + '.pkl')
+                    try:
                         fabric.save(path=save_path, state=model.state_dict())
-                        convergence = 0
-                    else:
-                        convergence += 1
+                    except Exception as e:
+                        fabric.print(f"Saving model failed. Error: {e}")
+                    convergence = 0
+                else:
+                    convergence += 1
 
-                    conv_counter.append(convergence)
-                except Exception as e:
-                    fabric.print(f"Saving model failed. Error: {e}")
+                conv_counter.append(convergence)
 
                 # Distribute the convergence across all processes
                 convergence = fabric.broadcast(convergence, src=0)
@@ -197,8 +194,11 @@ def manage_and_save_model(fabric, train_start, epoch, avg_weight, avg_test_mse_l
                     # Save model snapshot
                     if epoch % SNAPSHOT == 0:
                         fabric.print("Saving model snapshot!")
-                        snapshot_path = os.path.join(cfg['project_path'], 'model', 'best_model', 'snapshots', f"{model_name}_{cfg['Project']}_epoch_{epoch}_time_{train_start}.pkl")
-                        fabric.save(path=snapshot_path, state=model.state_dict())
+                        snapshot_path = os.path.join(cfg['project_path'], 'model', 'best_model', 'snapshots', model_name + '_' + cfg['Project'] + '_epoch_' + str(epoch) + '_time_' + str(train_start) + '.pkl')
+                        try:
+                            fabric.save(path=snapshot_path, state=model.state_dict())
+                        except Exception as e:
+                            fabric.print(f"Saving model snapshot failed. Error: {e}")
                 except Exception as e:
                     fabric.print(f"Saving model snapshot failed. Error: {e}")
 
@@ -216,24 +216,24 @@ def check_convergence(fabric, convergence, cfg):
         bool: True if the model has converged, False otherwise.
     """
     model_convergence_threshold = cfg['model_convergence']
-    
-    if convergence > model_convergence_threshold:
-        fabric.print('Finished training...')
-        fabric.print('Model converged. Please check your model with vame.evaluate_model(). \n'
-            'You can also re-run vame.trainmodel() to further improve your model. \n'
-            'Make sure to set _pretrained_weights_ in your config.yaml to "true" \n'
-            'and plug your current model name into _pretrained_model_. \n'
-            'Hint: Set "model_convergence" in your config.yaml to a higher value. \n'
-            '\n'
-            'Next: \n'
-            'Use vame.pose_segmentation() to identify behavioral motifs in your dataset!')
+    try:
+        if convergence > model_convergence_threshold:
+            fabric.print('Finished training...')
+            fabric.print('Model converged. Please check your model with vame.evaluate_model(). \n'
+                'You can also re-run vame.trainmodel() to further improve your model. \n'
+                'Make sure to set _pretrained_weights_ in your config.yaml to "true" \n'
+                'and plug your current model name into _pretrained_model_. \n'
+                'Hint: Set "model_convergence" in your config.yaml to a higher value. \n'
+                '\n'
+                'Next: \n'
+                'Use vame.pose_segmentation() to identify behavioral motifs in your dataset!')
+            
+            return True
+    except Exception as e:
+        fabric.print(f"Checking convergence failed. Error: {e}")
+        return False
         
-        return True
-    
-
     return False
-
-
 
 
 def reconstruction_loss(x, x_tilde, reduction):
@@ -326,6 +326,11 @@ def train(fabric, train_loader, epoch, model, optimizer, anneal_function, BETA, 
     - mse_loss / idx: The average reconstruction loss.
     - fut_loss / idx: The average future reconstruction loss.
     """
+    
+    fabric.barrier()
+    
+    print(f'In the training loop.. Epoch: {epoch}, global rank: {fabric.global_rank}')
+    
     # toggle model to train mode
     model.train() 
     
@@ -410,15 +415,8 @@ def train(fabric, train_loader, epoch, model, optimizer, anneal_function, BETA, 
     #scheduler.step(loss) #be sure scheduler is called before optimizer in >1.1 pytorch
     # scheduler.step moved to end of epoch loop because the ReduceLROnPlateau scheduler needs to be called after the test loss is calculated
 
-    if future_decoder:
-        fabric.print(time.strftime('%H:%M:%S'))
-        fabric.print('Train loss: {:.3f}, MSE-Loss: {:.3f}, MSE-Future-Loss {:.3f}, KL-Loss: {:.3f}, Kmeans-Loss: {:.3f}, weight: {:.2f}'.format(
-            train_loss / idx, mse_loss / idx, fut_loss / idx, BETA * kl_weight * kullback_loss / idx, kl_weight * kmeans_losses / idx, kl_weight))
-    else:
-        fabric.print(time.strftime('%H:%M:%S'))
-        fabric.print('Train loss: {:.3f}, MSE-Loss: {:.3f}, KL-Loss: {:.3f}, Kmeans-Loss: {:.3f}, weight: {:.2f}'.format(
-            train_loss / idx, mse_loss / idx, BETA * kl_weight * kullback_loss / idx, kl_weight * kmeans_losses / idx, kl_weight))
-
+    
+    
     return kl_weight, train_loss / idx, kl_weight * kmeans_losses / idx, kullback_loss / idx, mse_loss / idx, fut_loss / idx
 
 
@@ -431,7 +429,8 @@ def test(fabric, test_loader, epoch, model, optimizer, BETA, kl_weight, seq_len,
     kmeans_losses = 0.0
     loss = 0.0
     seq_len_half = int(seq_len / 2)
-
+    
+    print(f'In the testing loop.. Epoch: {epoch}, global rank: {fabric.global_rank}')
     with torch.no_grad():
         # we're only going to infer, so no autograd at all required
         # make sure torch uses cuda or MPS for GPU computing
@@ -473,16 +472,17 @@ def test(fabric, test_loader, epoch, model, optimizer, BETA, kl_weight, seq_len,
         #fabric.log_dict(test_log_dict)
         wandb.log(test_log_dict)
 
-    fabric.print('Test loss: {:.3f}, MSE-Loss: {:.3f}, KL-Loss: {:.3f}, Kmeans-Loss: {:.3f}'.format(test_loss / idx,
-          mse_loss / idx, BETA * kl_weight * kullback_loss / idx, kl_weight * kmeans_losses / idx))
-
+    
+    
     return mse_loss / idx, test_loss / idx, kl_weight * kmeans_losses / idx
 
 
 def train_model(config):
-    num_workers = 8
+    
+    num_workers = 4
     train_start = time.time()
-    fabric.print("Fabric initialized with %d processes" % world_size)
+    
+    fabric.print("Fabric initialized with %d processes" % fabric.world_size)
     fabric.print("Train model called...")
     config_file = Path(config).resolve()
     cfg = read_config(config_file)
@@ -511,7 +511,7 @@ def train_model(config):
         )
     except Exception as e:
         fabric.print("Wandb init failed. Check your API key and project name.")
-        logging.error(f"Wandb init failed. Error: {e}")
+        logging.debug(f"Wandb init failed. Error: {e}")
         return
 
     fabric.print("Train Variational Autoencoder - model name: %s \n" %model_name)
@@ -566,22 +566,20 @@ def train_model(config):
     convergence = 0
     fabric.print('Latent Dimensions: %d, Time window: %d, Batch Size: %d, Beta: %d, lr: %.4f\n' %(ZDIMS, cfg['time_window'], TRAIN_BATCH_SIZE, BETA, LEARNING_RATE))
     
-    # simple logging of diverse losses. Will only be done on the main process
-    if fabric.global_rank == 0:
-        if local_rank == 0:
-            avg_train_losses = []
-            avg_train_kmeans_losses = []
-            avg_train_kl_losses = []
-            avg_train_mse_losses = []
-            avg_train_fut_losses = []
-            avg_weight_values = []
+    # simple logging of diverse losses.
+    avg_train_losses = []
+    avg_train_kmeans_losses = []
+    avg_train_kl_losses = []
+    avg_train_mse_losses = []
+    avg_train_fut_losses = []
+    avg_weight_values = []
 
-            avg_test_losses = []
-            avg_test_mse_losses = []
-            avg_test_km_losses = []
+    avg_test_losses = []
+    avg_test_mse_losses = []
+    avg_test_km_losses = []
 
-            learn_rates = []
-            conv_counter = []
+    learn_rates = []
+    conv_counter = []
 
     """ SEED """
     fabric.seed_everything(SEED)
@@ -646,31 +644,35 @@ def train_model(config):
 
     wandb.watch(model, log='all')
 
+    device = fabric.device
+    
     fabric.print("Start training... ")
 
+    fabric.barrier()
+    
     for epoch in range(1, EPOCHS):
-        fabric.print(f'Epoch: {epoch}, Epochs on convergence counter: {convergence}')
-        fabric.print('Train: ')
         
-        fabric.barrier()
-        training_loop_start = time.time()
+        fabric.print(f'Epoch: {epoch}, Epochs on convergence counter: {convergence}')
+        
+        
+        print(f'Training: {fabric.global_rank}')
         weight, train_loss, train_km_loss, kl_loss, mse_loss, fut_loss = train(fabric, train_loader, epoch, model, optimizer, 
                                                                             anneal_function, BETA, KL_START, 
                                                                             ANNEALTIME, TEMPORAL_WINDOW, FUTURE_DECODER,
                                                                             FUTURE_STEPS, scheduler, MSE_REC_REDUCTION,
                                                                             MSE_PRED_REDUCTION, KMEANS_LOSS, KMEANS_LAMBDA,
                                                                             TRAIN_BATCH_SIZE, noise)
-
-
+        
+        print(f'End of training loop.. Epoch: {epoch}, global rank: {fabric.global_rank}')
+        
+    
+        
+        print(f'Testing: {fabric.global_rank}')
         test_mse_loss, test_loss, test_km_loss = test(fabric, test_loader, epoch, model, optimizer,
                                                     BETA, weight, TEMPORAL_WINDOW, MSE_REC_REDUCTION,
                                                     KMEANS_LOSS, KMEANS_LAMBDA, FUTURE_DECODER, TEST_BATCH_SIZE)
         
-        epoch_time = time.time() - training_loop_start
-
-        fabric.print("\n")
-        fabric.print(f'Epoch: {epoch}, Time: {epoch_time/60} min')
-        fabric.print("\n")
+        print(f'End of testing loop.. Epoch: {epoch}, global rank: {fabric.global_rank}')
 
         # Convert to tensor if not already
         train_loss = to_tensor_if_not(train_loss, device)
@@ -683,11 +685,11 @@ def train_model(config):
         test_km_loss = to_tensor_if_not(test_km_loss, device)
         weight = to_tensor_if_not(weight, device)
            
-        # Pause the processeses at this point so synchronization of the losses can be done
+        # Pause the processeses at this point so synchronization of the losses can be done across all processes
         # Average the losses across all processes
         fabric.barrier()
         avg_train_loss = fabric.all_reduce(train_loss, reduce_op='mean')
-        fabric.barrier()  
+        fabric.barrier()
         avg_train_km_loss = fabric.all_reduce(train_km_loss, reduce_op='mean')
         fabric.barrier()
         avg_train_kl_loss = fabric.all_reduce(kl_loss, reduce_op='mean')
@@ -713,105 +715,177 @@ def train_model(config):
         # the validation (test) loss). Therefore, it's crucial to place scheduler.step(test_loss) 
         # after the validation loop has calculated the validation loss for the current epoch.
 
-        #fabric.print('Train loss: {:.3f}, MSE-Loss: {:.3f}, MSE-Future-Loss {:.3f}, KL-Loss: {:.3f}, Kmeans-Loss: {:.3f}, weight: {:.2f}'.format(avg_train_loss,
-        #    avg_train_mse_loss, avg_train_fut_loss, avg_train_kl_loss, avg_train_km_loss, avg_weight))
-        
-        #fabric.print('Test loss: {:.3f}, MSE-Loss: {:.3f}, KL-Loss: {:.3f}, Kmeans-Loss: {:.3f}'.format(avg_test_loss,
-        #        avg_test_mse_loss, avg_test_km_loss, avg_test_km_loss))
-             
-
         fabric.print('Train loss: {:.3f}, MSE-Loss: {:.3f}, MSE-Future-Loss {:.3f}, KL-Loss: {:.3f}, Kmeans-Loss: {:.3f}, weight: {:.2f}'.format(avg_train_loss.item(),
             avg_train_mse_loss.item(), avg_train_fut_loss.item(), avg_train_kl_loss.item(), avg_train_km_loss.item(), avg_weight.item()))
         
         fabric.print('Test loss: {:.3f}, MSE-Loss: {:.3f}, KL-Loss: {:.3f}, Kmeans-Loss: {:.3f}'.format(avg_test_loss.item(),
                     avg_test_mse_loss.item(), avg_test_km_loss.item(), avg_test_km_loss.item()))
 
-       
-        # Log losses to fabric and wandb on the main process
-        if global_rank == 0:
+        
+        #if fabric.global_rank == 0:
+        #with fabric.rank_zero_first():
+        print(f"Before barrier for epoch metrics, rank: {fabric.global_rank}")
+        fabric.barrier()
+        print(f"After barrier for epoch metrics, rank: {fabric.global_rank}")
+        epoch_metrics = {
+                    "epoch": epoch,
+                    "avg_train_loss": avg_train_loss,
+                    "avg_train_mse_loss": avg_train_mse_loss,
+                    "avg_train_fut_loss": avg_train_fut_loss,
+                    "avg_train_kl_loss": avg_train_kl_loss,
+                    "avg_train_kmeans_loss": avg_train_km_loss,
+                    "avg_weight": avg_weight,
+                    "avg_test_loss": avg_test_loss,
+                    "avg_test_mse_loss": avg_test_mse_loss,
+                    "avg_test_kl_loss": avg_test_km_loss,
+                    "avg_test_kmeans_loss": avg_test_km_loss,
+                    }
+        
+
+        wandb.log(epoch_metrics)
+
+        avg_train_losses.append(avg_train_loss.item())
+        avg_train_kmeans_losses.append(avg_train_km_loss.item())
+        avg_train_kl_losses.append(avg_train_kl_loss.item())
+        avg_weight_values.append(avg_weight.item())
+        avg_train_mse_losses.append(avg_train_mse_loss.item())
+        avg_train_fut_losses.append(avg_train_fut_loss.item())
+
+        avg_test_losses.append(avg_test_loss.item())
+        avg_test_mse_losses.append(avg_test_mse_loss.item())
+        avg_test_km_losses.append(avg_test_km_loss.item())
+        
+        lr = optimizer.param_groups[0]['lr']
+        learn_rates.append(lr)
+
+        """ Saving the best model yet """
+            # Check conditions for best loss
+        if avg_weight.item() > 0.99 and avg_test_mse_loss.item() <= BEST_LOSS:
+            BEST_LOSS = avg_test_mse_loss
+            fabric.print("Saving model!")
+            save_path = os.path.join(cfg['project_path'], "model", "best_model", model_name + '_' + cfg['Project'] + '_epoch_' + str(epoch) + '_time_' + str(train_start) + '.pkl')
+            fabric.save(path=save_path, state=model.state_dict())
+            fabric.print("Model saved!")    #fabric.log_dict(epoch_metrics)
+
+            convergence = 0
+        else:
+            convergence += 1
+        
+        print(f"Before barrier for convergence, rank: {fabric.global_rank}")
+        fabric.barrier()
+        print(f"After barrier for convergence, rank: {fabric.global_rank}")
+        conv_counter.append(convergence)
+
+        """ Saving the model at the checkpoint """
+        # Save model snapshot
+        if epoch % SNAPSHOT == 0:
+            fabric.print("Saving model snapshot!")
+            snapshot_path = os.path.join(cfg['project_path'], 'model', 'best_model', 'snapshots', model_name + '_' + cfg['Project'] + '_epoch_' + str(epoch) + '_time_' + str(train_start) + '.pkl')
+            fabric.save(path=snapshot_path, state=model.state_dict())
             
-            epoch_metrics = {
-                        "epoch": epoch,
-                        "avg_train_loss": avg_train_loss,
-                        "avg_train_mse_loss": avg_train_mse_loss,
-                        "avg_train_fut_loss": avg_train_fut_loss,
-                        "avg_train_kl_loss": avg_train_kl_loss,
-                        "avg_train_kmeans_loss": avg_train_km_loss,
-                        "avg_weight": avg_weight,
-                        "avg_test_loss": avg_test_loss,
-                        "avg_test_mse_loss": avg_test_mse_loss,
-                        "avg_test_kl_loss": avg_test_km_loss,
-                        "avg_test_kmeans_loss": avg_test_km_loss,
-                        }
+        
+        print(f"Before barrier for snapshot saving, rank: {fabric.global_rank}")
+        fabric.barrier()
+        print(f"After barrier for snapshot saving, rank: {fabric.global_rank}")
 
-            #fabric.log_dict(epoch_metrics)
-            wandb.log(epoch_metrics)
+        loss_lists = {
+            'avg_train_losses': avg_train_losses,
+            'avg_test_losses': avg_test_losses,
+            'avg_train_kmeans_losses': avg_train_kmeans_losses,
+            'avg_train_kl_losses': avg_train_kl_losses,
+            'avg_weight_values': avg_weight_values,
+            'avg_train_mse_losses': avg_train_mse_losses,
+            'avg_test_mse_losses': avg_test_mse_losses,
+            'avg_train_fut_losses': avg_train_fut_losses,
+            'avg_test_km_losses': avg_test_km_losses,
+        }
 
-            avg_train_losses.append(avg_train_loss)
-            avg_train_kmeans_losses.append(avg_train_km_loss)
-            avg_train_kl_losses.append(avg_train_kl_loss)
-            avg_weight_values.append(avg_weight)
-            avg_train_mse_losses.append(avg_train_mse_loss)
-            avg_train_fut_losses.append(avg_train_fut_loss.cpu().item())
 
-            avg_test_losses.append(avg_test_loss)
-            avg_test_mse_losses.append(avg_test_mse_loss)
-            avg_test_km_losses.append(avg_test_km_loss)
+
+        for loss_name, loss_list in loss_lists.items():
+
+            if not all_elements_are_tensors(loss_list):
+                fabric.print(f"Loss list '{loss_name}' contains non-tensor elements")
+                for i, loss in enumerate(loss_list):
+                    loss_list[i] = to_tensor_if_not(loss, device)
             
-            lr = optimizer.param_groups[0]['lr']
-            learn_rates.append(lr)
-
-            try:
-                convergence, BEST_LOSS, conv_counter = manage_and_save_model(fabric, train_start, epoch, avg_weight, avg_test_mse_loss, model, cfg, convergence, conv_counter, model_name, BEST_LOSS, SNAPSHOT)
-            except Exception as e:
-                fabric.print("Error in manage_and_save_model(). Error: %s" %e)
-                logging.error(f"Error in manage_and_save_model(). Error: {e}")
-
-
-            loss_lists = {
-                'avg_train_losses': avg_train_losses,
-                'avg_test_losses': avg_test_losses,
-                'avg_train_kmeans_losses': avg_train_kmeans_losses,
-                'avg_train_kl_losses': avg_train_kl_losses,
-                'avg_weight_values': avg_weight_values,
-                'avg_train_mse_losses': avg_train_mse_losses,
-                'avg_test_mse_losses': avg_test_mse_losses,
-                'avg_train_fut_losses': avg_train_fut_losses,
-                'avg_test_km_losses': avg_test_km_losses,
-            }
-
-            fabric.print("Saving losses to disk...")
+            # Convert list to tensor by stacking if they are not already a single tensor
+            if len(loss_list) > 0:
+                if isinstance(loss_list[0], torch.Tensor):
+                    loss_tensor = torch.stack(loss_list)
+                else:
+                    loss_tensor = torch.tensor(loss_list)
             
-            #save_losses_to_disk(loss_lists, model_name, cfg)
-            try:
-                save_losses_to_disk(loss_lists, model_name, cfg, device)
-            except Exception as e:
-                fabric.print("Error in save_losses_to_disk(). Error: %s" %e)
-                logging.error(f"Error in save_losses_to_disk(). Error: {e}")
+                # Convert tensor to numpy array and move to CPU
+                loss_array = loss_tensor.cpu().numpy()
+            
+                # Save the numpy array to disk
+                save_path = os.path.join(cfg['project_path'], 'model', 'model_losses', f"{loss_name}_{model_name}.npy")
+                if fabric.global_rank == 0:
+                    print("Saving losses to disk...")
+                    np.save(save_path, loss_array)
+                    print("Losses saved!")
+        
+        
+        
+        print(f"Before barrier for losses list, rank: {fabric.global_rank}")
+        fabric.barrier()
+        print(f"After barrier for losses list, rank: {fabric.global_rank}")
+                
 
-
-
-            fabric.print("Saving dataframe to disk...")
+        
+        
+        
+        if fabric.global_rank == 0:
             df = pd.DataFrame([avg_train_losses, avg_test_losses, avg_train_kmeans_losses, avg_train_kl_losses, avg_weight_values, avg_train_mse_losses, avg_train_fut_losses, learn_rates, conv_counter]).T
             df.columns=['Train_losses', 'Test_losses', 'Kmeans_losses', 'KL_losses', 'Weight_values', 'MSE_losses', 'Future_losses', 'Learning_Rate', 'Convergence_counter']
-            df.to_csv(cfg['project_path']+'/model/model_losses/'+model_name+'_LossesSummary.csv')     
-            fabric.print("\n")
-
-            fabric.print("Checking for convergence...")
-            
-            fabric.print(f"Process {fabric.global_rank} before convergence check")
+            print("Saving dataframe to disk...")
             try:
-                # Check for convergence
-                if check_convergence(fabric, convergence, cfg):
-                    break
+                df.to_csv(cfg['project_path']+'/model/model_losses/'+model_name+'_LossesSummary.csv')     
             except Exception as e:
-                fabric.print("Error in check_convergence(). Error: %s" %e)
-                logging.error(f"Error in check_convergence(). Error: {e}")
-            fabric.print(f"Process {fabric.global_rank} after convergence check") 
+                fabric.print("Could not save dataframe to disk. Error: %s" %e)
+                logging.debug(f"Could not save dataframe to disk. Error: {e}")
+                print("Data frame saved!")
+        
+        print(f"Before barrier for dataframe saving, rank: {fabric.global_rank}")
+        fabric.barrier()
+        print(f"After barrier for dataframe saving, rank: {fabric.global_rank}")
+        
+        print(f"Process {fabric.global_rank} before convergence check")
 
-            fabric.print("Convengence check complete.")
-            fabric.print("\n")
+        if convergence > cfg['model_convergence']:
+            fabric.print('Finished training...')
+            fabric.print('Model converged. Please check your model with vame.evaluate_model(). \n'
+                'You can also re-run vame.trainmodel() to further improve your model. \n'
+                'Make sure to set _pretrained_weights_ in your config.yaml to "true" \n'
+                'and plug your current model name into _pretrained_model_. \n'
+                'Hint: Set "model_convergence" in your config.yaml to a higher value. \n'
+                '\n'
+                'Next: \n'
+                'Use vame.pose_segmentation() to identify behavioral motifs in your dataset!')
+            break
+                
+        print(f"Process {fabric.global_rank} after convergence check") 
 
+        fabric.print("Convengence check complete.")
+            
+            # Distribute the convergence across all processes
+        convergence = fabric.broadcast(convergence, src=0)
+        fabric.print("\n")
+        
+        print(f"Before barrier for convergence check, rank: {fabric.global_rank}")
+        fabric.barrier()
+        print(f"After barrier for convergence check, rank: {fabric.global_rank}")
+        
+        # Pause all processes that are not the main process until the main process reaches this point
+        # This is done to ensure that the main process has finished logging the losses to wandb and fabric
+        # before the other processes continue with the next epoch
+        
+
+        print(f"Continuing to next epoch... {epoch+1}, global rank: {fabric.global_rank}")
+        
+    fabric.barrier()
+        
     if convergence < cfg['model_convergence']:
         fabric.print('Model seemed to have not reached convergence. You may want to check your model \n'
             'with vame.evaluate_model(). If your satisfied you can continue with \n'
