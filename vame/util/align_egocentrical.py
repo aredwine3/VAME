@@ -365,7 +365,13 @@ def alignment(config, filename, pose_ref_index, video_format, crop_size, use_vid
         raise KeyError("Multiple csv files match video filename")
     else:
         dataFile=dataFile[0]
-    data = pd.read_csv(dataFile, skiprows=0, index_col=0, header=[1,2])
+    
+    dlc_data_type = input("Were your DLC .csv files orginially multi-animal? (y/n): ")
+    
+    if dlc_data_type == 'n':
+        data = pd.read_csv(dataFile, skiprows=0, index_col=0, header=[1,2])
+    if dlc_data_type == 'y':
+        data = pd.read_csv(dataFile, index_col=0, header=[0, 1])
     #data = pd.read_csv(os.path.join(path_to_file,'videos','pose_estimation',filename+'.csv'), skiprows = 0, header=[1,2], index_col=0)
     data_mat = pd.DataFrame.to_numpy(data)
     

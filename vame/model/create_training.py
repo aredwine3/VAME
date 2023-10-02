@@ -41,7 +41,7 @@ def interpol(arr):
     arr = np.transpose(y)
     return arr
 
-def plot_check_parameter(cfg, iqr_val, num_frames, X_true, X_med, anchor_1, anchor_2):
+def plot_check_parameter(cfg, iqr_val, num_frames, X_true, X_med) #, anchor_1, anchor_2):
     plot_X_orig = np.concatenate(X_true, axis=0).T
     plot_X_med = X_med.copy()
     iqr_cutoff = cfg['iqr_factor']*iqr_val
@@ -184,7 +184,7 @@ def traindata_aligned(cfg, files, testfraction, num_features, savgol_filter, che
     z_train = X_med[:,test:]
       
     if check_parameter == True:
-        plot_check_parameter(cfg, iqr_val, num_frames, X_true, X_med, anchor_1, anchor_2)
+        plot_check_parameter(cfg, iqr_val, num_frames, X_true, X_med) #, anchor_1, anchor_2)
         
     else:        
         #save numpy arrays the the test/train info:
@@ -295,11 +295,20 @@ def create_trainset(config, check_parameter=False):
             use_list = input("Do you have a list of videos you want to use for training? yes/no: ")
             if use_list == 'yes':
                 files_input = input("Please enter the list of videos you want to use for training: ")
+                # Remove return characters if they were included
+                files_input = files_input.replace("\n", "")
+                # Split the input into a list of filenames
                 files = [f.strip() for f in files_input.split(',')]
                 # Drop file extensions if they were included
                 files = [os.path.splitext(f)[0] for f in files]
                 # Remove single quotes between filenames if they were included
                 files = [f.replace("'", "") for f in files] 
+                # Remove double quotes between filenames if they were included
+                files = [f.replace('"', '') for f in files]
+                # Remove spaces between filenames if they were included
+                files = [f.replace(' ', '') for f in files]
+                # Remove brackets at the beginning and end of the list if they were included
+                files = [f.replace('[', '') for f in files]
                 break
             elif use_list == 'no':
                 use_file = input("Do you want to train on " + file + "? yes/no: ")

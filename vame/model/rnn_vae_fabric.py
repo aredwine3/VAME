@@ -44,8 +44,6 @@ from vame.model.rnn_model import RNN_VAE, RNN_VAE_LEGACY
 # Warnings
 import warnings
 
-
-
 fabric = L.Fabric(
     accelerator="auto", 
     devices=2, # number of GPUs
@@ -718,14 +716,6 @@ def train_model(config):
         fabric.barrier()
         avg_test_km_loss = fabric.all_reduce(test_km_loss, reduce_op='mean')
         fabric.barrier()
-        
-        #scheduler.step(avg_test_loss.item())
-    
-        # The scheduler.step() should be called after validating the model because 
-        # we're using the ReduceLROnPlateau scheduler. This particular scheduler 
-        # adjusts the learning rate based on a monitored metric (in this case, 
-        # the validation (test) loss). Therefore, it's crucial to place scheduler.step(test_loss) 
-        # after the validation loop has calculated the validation loss for the current epoch.
 
         fabric.print('Train loss: {:.3f}, MSE-Loss: {:.3f}, MSE-Future-Loss {:.3f}, KL-Loss: {:.3f}, Kmeans-Loss: {:.3f}, weight: {:.2f}'.format(avg_train_loss.item(),
             avg_train_mse_loss.item(), avg_train_fut_loss.item(), avg_train_kl_loss.item(), avg_train_km_loss.item(), avg_weight.item()))
@@ -733,9 +723,6 @@ def train_model(config):
         fabric.print('Test loss: {:.3f}, MSE-Loss: {:.3f}, KL-Loss: {:.3f}, Kmeans-Loss: {:.3f}'.format(avg_test_loss.item(),
                     avg_test_mse_loss.item(), avg_test_km_loss.item(), avg_test_km_loss.item()))
 
-        
-        #if fabric.global_rank == 0:
-        #with fabric.rank_zero_first():
         print(f"Before barrier for epoch metrics, rank: {fabric.global_rank}")
         fabric.barrier()
         print(f"After barrier for epoch metrics, rank: {fabric.global_rank}")
