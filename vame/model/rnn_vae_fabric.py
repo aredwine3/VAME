@@ -32,6 +32,10 @@ from torch.autograd import Variable
 from torch.optim.lr_scheduler import StepLR, ReduceLROnPlateau
 from numba import NumbaDeprecationWarning, NumbaPendingDeprecationWarning
 
+from lightning.fabric.plugins.environments.cluster_environment import ClusterEnvironment
+from lightning.fabric.plugins.environments.slurm.SLURMEnvironment import SLURMEnvironment
+from lightning.fabric.plugins.environments.mpi.MPIEnvironment import MPIEnvironment
+
 # Local application/library specific imports
 from vame.util.auxiliary import read_config
 from vame.model.dataloader import SEQUENCE_DATASET
@@ -46,8 +50,9 @@ fabric = L.Fabric(
     accelerator="auto", 
     devices=2, # number of GPUs
     strategy='ddp',
-    num_nodes=1,
+    num_nodes=2,
     precision='32',
+    plugins=[MPIEnvironment()]
     )
 
 device = fabric.device
@@ -418,9 +423,7 @@ def train(fabric, train_loader, epoch, model, optimizer, anneal_function, BETA, 
         # if idx % 1000 == 0:
         #     print('Epoch: %d.  loss: %.4f' %(epoch, loss.item()))
    
-    #scheduler.step(loss) #be sure scheduler is called before optimizer in >1.1 pytorch
-    # scheduler.step moved to end of epoch loop because the ReduceLROnPlateau scheduler needs to be called after the test loss is calculated
-
+    scheduler.step(loss) #be sure scheduler is called before optimizer in >1.1 pytorch
     
     
     return kl_weight, train_loss / idx, kl_weight * kmeans_losses / idx, kullback_loss / idx, mse_loss / idx, fut_loss / idx
@@ -713,7 +716,7 @@ def train_model(config):
         avg_test_km_loss = fabric.all_reduce(test_km_loss, reduce_op='mean')
         fabric.barrier()
         
-        scheduler.step(avg_test_loss.item())
+        #scheduler.step(avg_test_loss.item())
     
         # The scheduler.step() should be called after validating the model because 
         # we're using the ReduceLROnPlateau scheduler. This particular scheduler 
@@ -904,7 +907,7 @@ if __name__ == "__main__":
     #config = "/Volumes/G-DRIVE_SSD/VAME_working/ALR_VAME_1-Sep15-2023/config_fabric.yaml"
     config= "/work/wachslab/aredwine3/VAME_working/config_fabric.yaml"
 
-    train_model(config)
+    SLURMEnvironment(train_model(config))
 
 """ Lighting Fabric Options
   --accelerator [cpu|gpu|cuda|mps|tpu]
