@@ -362,38 +362,44 @@ def train(fabric, train_loader, epoch, model, optimizer, anneal_function, BETA, 
         else:
             data_gaussian = data
 
-        if future_decoder:
-            data_tilde, future, latent, mu, logvar = model(data_gaussian)
-            rec_loss = reconstruction_loss(data, data_tilde, mse_red)
-            fut_rec_loss = future_reconstruction_loss(fut, future, mse_pred)
-            kmeans_loss = cluster_loss(latent.T, kloss, klmbda, bsize)
-            kl_loss = kullback_leibler_loss(mu, logvar)
-            kl_weight = kl_annealing(epoch, kl_start, annealtime, anneal_function)
-            loss = rec_loss + fut_rec_loss + BETA*kl_weight*kl_loss + kl_weight*kmeans_loss
-            fut_loss += fut_rec_loss.detach()
-        else:
-            data_tilde, latent, mu, logvar = model(data_gaussian)
-            rec_loss = reconstruction_loss(data, data_tilde, mse_red) 
-            kl_loss = kullback_leibler_loss(mu, logvar)
-            kmeans_loss = cluster_loss(latent.T, kloss, klmbda, bsize)
-            kl_weight = kl_annealing(epoch, kl_start, annealtime, anneal_function)
-            loss = rec_loss + BETA*kl_weight*kl_loss + kl_weight*kmeans_loss
-
-
-        """
-        Q: Where does 'no_backward_sync' go for Fabric when using DDP strategy?
-        """
-
-        optimizer.zero_grad()
-        fabric.backward(loss)
+        # Determine whether to accumulate gradients
+        is_accumulating = idx % 8 != 0  # Change '8' to whatever number of batches you want to accumulate
         
-    
-        # Gradient clipping
-        fabric.clip_gradients(model, optimizer, max_norm=5.0, norm_type='inf')
-
-        # Update model parameters
-        optimizer.step()
+        # is_accumulating is used to determine if you're in the middle of a gradient accumulation process. 
+        # If True, no_backward_sync will be enabled, reducing inter-process communication.
         
+        # Wrap the forward and backward passes
+        with fabric.no_backward_sync(model, enabled=is_accumulating):
+            
+            if future_decoder:
+                data_tilde, future, latent, mu, logvar = model(data_gaussian)
+                rec_loss = reconstruction_loss(data, data_tilde, mse_red)
+                fut_rec_loss = future_reconstruction_loss(fut, future, mse_pred)
+                kmeans_loss = cluster_loss(latent.T, kloss, klmbda, bsize)
+                kl_loss = kullback_leibler_loss(mu, logvar)
+                kl_weight = kl_annealing(epoch, kl_start, annealtime, anneal_function)
+                loss = rec_loss + fut_rec_loss + BETA*kl_weight*kl_loss + kl_weight*kmeans_loss
+                fut_loss += fut_rec_loss.detach()
+            else:
+                data_tilde, latent, mu, logvar = model(data_gaussian)
+                rec_loss = reconstruction_loss(data, data_tilde, mse_red) 
+                kl_loss = kullback_leibler_loss(mu, logvar)
+                kmeans_loss = cluster_loss(latent.T, kloss, klmbda, bsize)
+                kl_weight = kl_annealing(epoch, kl_start, annealtime, anneal_function)
+                loss = rec_loss + BETA*kl_weight*kl_loss + kl_weight*kmeans_loss
+
+            optimizer.zero_grad()
+            fabric.backward(loss)
+            
+        # Step the optimizer every 8 batches (or whatever your condition is)
+        if not is_accumulating:
+            # Gradient clipping
+            fabric.clip_gradients(model, optimizer, max_norm=5.0, norm_type='inf')
+
+            # Update model parameters
+            optimizer.step()
+        
+       
         train_loss += loss.item()
         mse_loss += rec_loss.item()
         kullback_loss += kl_loss.item()
