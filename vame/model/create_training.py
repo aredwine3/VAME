@@ -184,7 +184,7 @@ def traindata_aligned(cfg, files, testfraction, num_features, savgol_filter, che
     z_train = X_med[:,test:]
       
     if check_parameter == True:
-        plot_check_parameter(cfg, iqr_val, num_frames, X_true, X_med) #, anchor_1, anchor_2)
+        plot_check_parameter(cfg, iqr_val, num_frames, X_true, X_med) # , anchor_1, anchor_2)
         
     else:        
         #save numpy arrays the the test/train info:
