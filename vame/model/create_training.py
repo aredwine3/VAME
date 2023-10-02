@@ -52,7 +52,6 @@ def plot_check_parameter(cfg, iqr_val, num_frames, X_true, X_med): #, anchor_1, 
     plt.axhline(y=-iqr_cutoff, color='r', linestyle='--')
     plt.title("Full Signal z-scored")
     plt.legend()
-    
     if num_frames > 1000:
         rnd = np.random.choice(num_frames)
         
@@ -295,20 +294,16 @@ def create_trainset(config, check_parameter=False):
             use_list = input("Do you have a list of videos you want to use for training? yes/no: ")
             if use_list == 'yes':
                 files_input = input("Please enter the list of videos you want to use for training: ")
-                # Remove return characters if they were included
-                files_input = files_input.replace("\n", "")
                 # Split the input into a list of filenames
                 files = [f.strip() for f in files_input.split(',')]
                 # Drop file extensions if they were included
                 files = [os.path.splitext(f)[0] for f in files]
                 # Remove single quotes between filenames if they were included
                 files = [f.replace("'", "") for f in files] 
-                # Remove double quotes between filenames if they were included
-                files = [f.replace('"', '') for f in files]
                 # Remove spaces between filenames if they were included
                 files = [f.replace(' ', '') for f in files]
-                # Remove brackets at the beginning and end of the list if they were included
-                files = [f.replace('[', '') for f in files]
+                # Remove any returns between filenames if they were included
+                files = [f.replace('\n', '') for f in files]
                 break
             elif use_list == 'no':
                 use_file = input("Do you want to train on " + file + "? yes/no: ")
