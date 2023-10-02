@@ -41,7 +41,7 @@ def interpol(arr):
     arr = np.transpose(y)
     return arr
 
-def plot_check_parameter(cfg, iqr_val, num_frames, X_true, X_med) #, anchor_1, anchor_2):
+def plot_check_parameter(cfg, iqr_val, num_frames, X_true, X_med): #, anchor_1, anchor_2):
     plot_X_orig = np.concatenate(X_true, axis=0).T
     plot_X_med = X_med.copy()
     iqr_cutoff = cfg['iqr_factor']*iqr_val
