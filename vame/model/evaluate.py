@@ -140,6 +140,54 @@ def plot_reconstruction(filepath, test_loader, seq_len_half, model, model_name,
             fig.savefig(os.path.join(filepath,'evaluate','Reconstruction_'+model_name+'_'+suffix+'.png'), bbox_inches='tight')
         plt.close('all')
 
+def calculate_mse(filepath, test_loader, seq_len_half, model, model_name,
+                  FUTURE_DECODER, FUTURE_STEPS):
+    """
+    Calculate the Mean Squared Error (MSE) between the true and reconstructed sequences.
+    
+    Args:
+        Same as `plot_reconstruction`.
+    
+    Returns:
+        mse_reconstruction: The MSE for the reconstructed sequence.
+        mse_prediction: The MSE for the future prediction (only if FUTURE_DECODER is True).
+    """
+
+    if torch.cuda.is_available():
+        device = torch.device("cuda")
+    elif hasattr(torch.backends, 'mps') and torch.backends.mps.is_available():
+        device = torch.device("mps")
+    else:
+        device = torch.device("cpu")
+
+    model = model.to(device)
+    x_iter = iter(test_loader)
+    x = next(x_iter)
+    x = x.to('cuda')
+    x = x.permute(0, 2, 1)
+
+    data = x[:, :seq_len_half, :].float().to(device)
+    data_fut = x[:, seq_len_half:seq_len_half + FUTURE_STEPS, :].float().to(device)
+
+    if FUTURE_DECODER:
+        x_tilde, future, latent, mu, logvar = model(data)
+        fut_orig = to_cpu_numpy(data_fut)
+        fut = to_cpu_numpy(future)
+        mse_prediction = np.mean((fut - fut_orig) ** 2)
+    else:
+        x_tilde, latent, mu, logvar = model(data)
+        mse_prediction = None  # No future prediction in this case
+
+    data_orig = to_cpu_numpy(data)
+    data_tilde = to_cpu_numpy(x_tilde)
+    mse_reconstruction = np.mean((data_tilde - data_orig) ** 2)
+    
+    print("MSE reconstruction: ", mse_reconstruction)
+    if FUTURE_DECODER:
+        print("MSE prediction: ", mse_prediction)
+
+    return mse_reconstruction, mse_prediction
+
 def plot_loss(cfg, filepath, model_name, suffix=None):
     basepath = os.path.join(cfg['project_path'],"model","model_losses")
     train_loss = np.load(os.path.join(basepath,'train_losses_'+model_name+'.npy'))
@@ -256,6 +304,7 @@ def eval_temporal(cfg, use_gpu, use_mps, model_name, fixed, snapshot=None, suffi
     
     if not snapshot:
         plot_reconstruction(filepath, test_loader, seq_len_half, model, model_name, FUTURE_DECODER, FUTURE_STEPS)
+        calculate_mse(filepath, test_loader, seq_len_half, model, model_name, FUTURE_DECODER, FUTURE_STEPS)
     elif snapshot:
         plot_reconstruction(filepath, test_loader, seq_len_half, model, model_name, FUTURE_DECODER, FUTURE_STEPS, suffix=suffix)
     if use_gpu:
