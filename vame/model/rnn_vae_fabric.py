@@ -15,9 +15,8 @@ from pathlib import Path
 
 # Third-party libraries
 import wandb
-from datetime import timedelta
-from wandb import AlertLevel
 import torch
+import scalene
 import numpy as np
 import logging
 import psutil
@@ -28,6 +27,7 @@ from torch import nn
 import torch.utils.data as Data
 import torch.distributed as dist
 import datetime
+from scalene import scalene_profiler
 from torch.autograd import Variable
 from torch.optim.lr_scheduler import StepLR, ReduceLROnPlateau
 from numba import NumbaDeprecationWarning, NumbaPendingDeprecationWarning
@@ -56,6 +56,9 @@ fabric = L.Fabric(
     )
 
 device = fabric.device
+
+# Turn profiling on
+scalene_profiler.start()
 
 # Ignore these specific types of warnings
 warnings.filterwarnings("ignore", category=NumbaDeprecationWarning)
