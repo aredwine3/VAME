@@ -111,38 +111,43 @@ def traindata_aligned(cfg, files, testfraction, num_features, savgol_filter, che
         files = [files[0]]
         
     for file in files:
-        print("z-scoring of file %s" %file)
-        path_to_file = os.path.join(cfg['project_path'],"data", file, file+'-PE-seq.npy')
-        data = np.load(path_to_file)
-        
-        X_mean = np.mean(data,axis=None)
-        X_std = np.std(data, axis=None)
-        X_z = (data.T - X_mean) / X_std
-        
-        # Introducing artificial error spikes
-        # rang = [1.5, 2, 2.5, 3, 3.5, 3, 3, 2.5, 2, 1.5]
-        # for i in range(num_frames):
-        #     if i % 300 == 0:
-        #         rnd = np.random.choice(12,2)
-        #         for j in range(10):
-        #             X_z[i+j, rnd[0]] = X_z[i+j, rnd[0]] * rang[j]
-        #             X_z[i+j, rnd[1]] = X_z[i+j, rnd[1]] * rang[j]
-                
-        if check_parameter == True:
-            X_z_copy = X_z.copy()
-            X_true.append(X_z_copy)
+        try: 
+            print("z-scoring of file %s" %file)
+            path_to_file = os.path.join(cfg['project_path'],"data", file, file+'-PE-seq.npy')
+            data = np.load(path_to_file)
             
-        if cfg['robust'] == True:
-            iqr_val = iqr(X_z)
-            print("IQR value: %.2f, IQR cutoff: %.2f" %(iqr_val, cfg['iqr_factor']*iqr_val))
-            X_z[(X_z > cfg['iqr_factor']*iqr_val) |  (X_z < -cfg['iqr_factor']*iqr_val)] = np.nan
+            X_mean = np.mean(data,axis=None)
+            X_std = np.std(data, axis=None)
+            X_z = (data.T - X_mean) / X_std
+            
+            # Introducing artificial error spikes
+            # rang = [1.5, 2, 2.5, 3, 3.5, 3, 3, 2.5, 2, 1.5]
+            # for i in range(num_frames):
+            #     if i % 300 == 0:
+            #         rnd = np.random.choice(12,2)
+            #         for j in range(10):
+            #             X_z[i+j, rnd[0]] = X_z[i+j, rnd[0]] * rang[j]
+            #             X_z[i+j, rnd[1]] = X_z[i+j, rnd[1]] * rang[j]
+                    
+            if check_parameter == True:
+                X_z_copy = X_z.copy()
+                X_true.append(X_z_copy)
+                
+            if cfg['robust'] == True:
+                iqr_val = iqr(X_z)
+                print("IQR value: %.2f, IQR cutoff: %.2f" %(iqr_val, cfg['iqr_factor']*iqr_val))
+                X_z[(X_z > cfg['iqr_factor']*iqr_val) |  (X_z < -cfg['iqr_factor']*iqr_val)] = np.nan
 
-            X_z = interpol(X_z)
-             
-        X_len = len(data.T)
-        pos_temp += X_len
-        pos.append(pos_temp)
-        X_train.append(X_z)
+                X_z = interpol(X_z)
+                
+            X_len = len(data.T)
+            pos_temp += X_len
+            pos.append(pos_temp)
+            X_train.append(X_z)
+        except Exception as e:
+            print(f"Error occurred while processing {file}. Skipping this file.")
+            print(e)
+            continue
     
     X = np.concatenate(X_train, axis=0)
     # X_std = np.std(X)
@@ -278,6 +283,16 @@ def traindata_fixed(cfg, files, testfraction, num_features, savgol_filter, check
         print('Lenght of train data: %d' %len(z_train.T))
         print('Lenght of test data: %d' %len(z_test.T))
 
+def clean_input(input_str):
+    # Perform all cleaning operations in a single function
+    input_str = input_str.strip()
+    input_str = os.path.splitext(input_str)[0]
+    input_str = input_str.replace("'", "")
+    input_str = input_str.replace(" ", "")
+    input_str = input_str.replace("\n", "")
+    input_str = input_str.replace("[", "")
+    input_str = input_str.replace("]", "")
+    return input_str
 
 def create_trainset(config, check_parameter=False):
     config_file = Path(config).resolve()
@@ -294,19 +309,7 @@ def create_trainset(config, check_parameter=False):
             use_list = input("Do you have a list of videos you want to use for training? yes/no: ")
             if use_list == 'yes':
                 files_input = input("Please enter the list of videos you want to use for training: ")
-                # Split the input into a list of filenames
-                files = [f.strip() for f in files_input.split(',')]
-                # Drop file extensions if they were included
-                files = [os.path.splitext(f)[0] for f in files]
-                # Remove single quotes between filenames if they were included
-                files = [f.replace("'", "") for f in files] 
-                # Remove spaces between filenames if they were included
-                files = [f.replace(' ', '') for f in files]
-                # Remove any returns between filenames if they were included
-                files = [f.replace('\n', '') for f in files]
-                # Remove any brackets between filenames if they were included
-                files = [f.replace('[', '') for f in files]
-                files = [f.replace(']', '') for f in files]
+                files = [clean_input(f) for f in files_input.split(',')]
                 break
             elif use_list == 'no':
                 use_file = input("Do you want to train on " + file + "? yes/no: ")
