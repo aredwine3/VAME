@@ -304,6 +304,9 @@ def create_trainset(config, check_parameter=False):
                 files = [f.replace(' ', '') for f in files]
                 # Remove any returns between filenames if they were included
                 files = [f.replace('\n', '') for f in files]
+                # Remove any brackets between filenames if they were included
+                files = [f.replace('[', '') for f in files]
+                files = [f.replace(']', '') for f in files]
                 break
             elif use_list == 'no':
                 use_file = input("Do you want to train on " + file + "? yes/no: ")
