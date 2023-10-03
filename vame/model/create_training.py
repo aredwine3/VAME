@@ -222,6 +222,166 @@ def traindata_aligned(cfg, files, testfraction, num_features, savgol_filter, che
         print('Lenght of train data: %d' %len(z_train.T))
         print('Lenght of test data: %d' %len(z_test.T))
     
+def traindata_aligned_fractional(cfg, files, testfraction, num_features, savgol_filter, check_parameter, data_fraction):
+    rnd_frames = []
+    last_frames = []
+    file_names = []
+    X_train = []
+    pos = []
+    pos_temp = 0
+    pos.append(0)
+    
+    if check_parameter == True:
+        X_true = []
+        files = [files[0]]
+        
+    for file in files:
+        try: 
+            print("z-scoring of file %s" %file)
+            path_to_file = os.path.join(cfg['project_path'],"data", file, file+'-PE-seq.npy')
+            
+            # 1. File Loading
+            try:
+                file_names.append(file)
+                data = np.load(path_to_file)
+            except Exception as e:
+                print(f"Error occurred while loading {file}. Skipping this file.")
+                print(e)
+                continue
+           
+            # 1.5 Get the fractional data
+            try:
+                # Get the number of frames in the data
+                frames = len(data.T)
+                # Get the number of frames to keep
+                kept_frames = int(frames * data_fraction)
+                
+                # Set the min and max frames to keep
+                min_frame = 0
+                max_frame = int(frames - (frames * data_fraction))
+                
+                # Get a random frame to start at (ensures that the data is not biased in the time domain)
+                rnd_frame = np.random.randint(min_frame, max_frame)
+                
+                rnd_frames.append(rnd_frame)
+                
+                # Get the last frame to keep
+                last_frame = rnd_frame + kept_frames
+                
+                last_frames.append(last_frame)
+                
+                # Reduce the data to the fractional data
+                data = data[:, rnd_frame:last_frame]
+                
+            except Exception as e:
+                print(f"Error occurred while getting fractional data for {file}. Skipping this file.")
+                print(e)
+                continue
+                
+            # 2. Z-Scoring
+            try:
+                X_mean = np.mean(data,axis=None)
+                X_std = np.std(data, axis=None)
+                X_z = (data.T - X_mean) / X_std
+            except Exception as e:
+                print(f"Error occurred while z-scoring {file}. Skipping this file.")
+                print(e)
+            
+            # Introducing artificial error spikes
+            # rang = [1.5, 2, 2.5, 3, 3.5, 3, 3, 2.5, 2, 1.5]
+            # for i in range(num_frames):
+            #     if i % 300 == 0:
+            #         rnd = np.random.choice(12,2)
+            #         for j in range(10):
+            #             X_z[i+j, rnd[0]] = X_z[i+j, rnd[0]] * rang[j]
+            #             X_z[i+j, rnd[1]] = X_z[i+j, rnd[1]] * rang[j]
+                    
+            if check_parameter == True:
+                X_z_copy = X_z.copy()
+                X_true.append(X_z_copy)
+                
+            if cfg['robust'] == True:
+                iqr_val = iqr(X_z)
+                print("IQR value: %.2f, IQR cutoff: %.2f" %(iqr_val, cfg['iqr_factor']*iqr_val))
+                X_z[(X_z > cfg['iqr_factor']*iqr_val) |  (X_z < -cfg['iqr_factor']*iqr_val)] = np.nan
+
+                X_z = interpol(X_z)
+            try:
+                X_len = len(data.T)
+                pos_temp += X_len
+                pos.append(pos_temp)
+                X_train.append(X_z)
+            except Exception as e:
+                print(f"Error occurred while processing {file}. Skipping this file.")
+                print(e)
+                continue
+        except Exception as e:
+            print(f"Error occurred while processing {file}. Skipping this file.")
+            print(e)
+            continue
+    
+    # Save last_frame and rnd_frame to a dataframe
+    df = pd.DataFrame({'file_name': file_names, 'rnd_frame': rnd_frames, 'last_frame': last_frames})
+    df.to_csv(os.path.join(cfg['project_path'],"data", 'PE-seq-fractional-information.csv'))
+    
+    X = np.concatenate(X_train, axis=0)
+    # X_std = np.std(X)
+    
+    detect_anchors = np.std(X.T, axis=1)
+    sort_anchors = np.sort(detect_anchors)
+    if sort_anchors[0] == sort_anchors[1]:
+        anchors = np.where(detect_anchors == sort_anchors[0])[0]
+        anchor_1_temp = anchors[0]
+        anchor_2_temp = anchors[1]
+        
+    else:
+        anchor_1_temp = int(np.where(detect_anchors == sort_anchors[0])[0])
+        anchor_2_temp = int(np.where(detect_anchors == sort_anchors[1])[0])
+    
+    if anchor_1_temp > anchor_2_temp:
+        anchor_1 = anchor_1_temp
+        anchor_2 = anchor_2_temp
+        
+    else:
+        anchor_1 = anchor_2_temp
+        anchor_2 = anchor_1_temp
+    
+    X = np.delete(X, anchor_1, 1)
+    X = np.delete(X, anchor_2, 1)
+    
+    X = X.T
+    
+    if savgol_filter:
+        X_med = scipy.signal.savgol_filter(X, cfg['savgol_length'], cfg['savgol_order'])
+    else:
+        X_med = X
+        
+    num_frames = len(X_med.T)
+    test = int(num_frames*testfraction)
+    
+    z_test = X_med[:,:test]
+    z_train = X_med[:,test:]
+      
+    if check_parameter == True:
+        plot_check_parameter(cfg, iqr_val, num_frames, X_true, X_med) # , anchor_1, anchor_2)
+        
+    else:        
+        #save numpy arrays the the test/train info:
+        np.save(os.path.join(cfg['project_path'],"data", "train",'train_seq.npy'), z_train)
+        np.save(os.path.join(cfg['project_path'],"data", "train", 'test_seq.npy'), z_test)
+        
+        for i, file in enumerate(files):
+            try:
+                np.save(os.path.join(cfg['project_path'],"data", file, file+'-PE-seq-clean.npy'), X_med[:,pos[i]:pos[i+1]])
+            except Exception as e:
+                print(f"Error occurred while saving {file}. Skipping this file.")
+                print(e)
+                continue
+        
+        print('Lenght of train data: %d' %len(z_train.T))
+        print('Lenght of test data: %d' %len(z_test.T))
+    
+    
 
 def traindata_fixed(cfg, files, testfraction, num_features, savgol_filter, check_parameter):
     X_train = []
@@ -314,7 +474,7 @@ def clean_input(input_str):
     input_str = input_str.replace("]", "")
     return input_str
 
-def create_trainset(config, check_parameter=False):
+def create_trainset(config, check_parameter=False, data_fraction=None):
     config_file = Path(config).resolve()
     cfg = read_config(config_file)
     legacy = cfg['legacy']
@@ -348,8 +508,12 @@ def create_trainset(config, check_parameter=False):
         print("Using robust setting to eliminate outliers! IQR factor: %d" %cfg['iqr_factor'])
         
     if fixed == False:
-        print("Creating trainset from the vame.egocentrical_alignment() output ")
-        traindata_aligned(cfg, files, cfg['test_fraction'], cfg['num_features'], cfg['savgol_filter'], check_parameter)
+        if data_fraction == None:
+            print("Creating trainset from the vame.egocentrical_alignment() output ")
+            traindata_aligned(cfg, files, cfg['test_fraction'], cfg['num_features'], cfg['savgol_filter'], check_parameter)
+        elif data_fraction != None:
+            print("Creating trainset from the vame.egocentrical_alignment() output ")
+            traindata_aligned_fractional(cfg, files, cfg['test_fraction'], cfg['num_features'], cfg['savgol_filter'], check_parameter, data_fraction)
     else:
         print("Creating trainset from the vame.csv_to_numpy() output ")
         traindata_fixed(cfg, files, cfg['test_fraction'], cfg['num_features'], cfg['savgol_filter'], check_parameter)
