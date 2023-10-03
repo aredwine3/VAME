@@ -139,11 +139,15 @@ def traindata_aligned(cfg, files, testfraction, num_features, savgol_filter, che
                 X_z[(X_z > cfg['iqr_factor']*iqr_val) |  (X_z < -cfg['iqr_factor']*iqr_val)] = np.nan
 
                 X_z = interpol(X_z)
-                
-            X_len = len(data.T)
-            pos_temp += X_len
-            pos.append(pos_temp)
-            X_train.append(X_z)
+            try:
+                X_len = len(data.T)
+                pos_temp += X_len
+                pos.append(pos_temp)
+                X_train.append(X_z)
+            except Exception as e:
+                print(f"Error occurred while processing {file}. Skipping this file.")
+                print(e)
+                continue
         except Exception as e:
             print(f"Error occurred while processing {file}. Skipping this file.")
             print(e)
