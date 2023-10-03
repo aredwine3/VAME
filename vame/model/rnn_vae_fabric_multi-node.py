@@ -33,6 +33,7 @@ from torch.optim.lr_scheduler import StepLR, ReduceLROnPlateau
 from lightning.fabric.plugins.environments.cluster_environment import ClusterEnvironment
 from lightning.fabric.plugins.environments import SLURMEnvironment
 from lightning.fabric.plugins.environments import MPIEnvironment
+from lightning.fabric.accelerators.accelerator import CUDAAccelerator
 
 # Local application/library specific imports
 from vame.util.auxiliary import read_config
@@ -43,12 +44,12 @@ from vame.model.rnn_model import RNN_VAE, RNN_VAE_LEGACY
 import warnings
 
 fabric = L.Fabric(
-    accelerator="auto", 
+    accelerator="cuda", 
     devices=2, # number of GPUs
     strategy='ddp',
     num_nodes=2,
     precision='32',
-    plugins=[SLURMEnvironment()]
+    plugins=[SLURMEnvironment(), CUDAAccelerator()]
     )
 
 
@@ -843,7 +844,8 @@ def train_model(config):
 
 if __name__ == "__main__":
     #config = "/Volumes/G-DRIVE_SSD/VAME_working/ALR_VAME_1-Sep15-2023/config_fabric.yaml"
-    config= "/work/wachslab/aredwine3/VAME_working/config_fabric_2.yaml"
+    config= "/home/wachslab/aredwine3/VAME/config_fabric_2.yaml"
+    #config= "/work/wachslab/aredwine3/VAME_working/config_fabric_2.yaml"
 
     train_model(config)
 
