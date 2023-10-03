@@ -114,11 +114,23 @@ def traindata_aligned(cfg, files, testfraction, num_features, savgol_filter, che
         try: 
             print("z-scoring of file %s" %file)
             path_to_file = os.path.join(cfg['project_path'],"data", file, file+'-PE-seq.npy')
-            data = np.load(path_to_file)
             
-            X_mean = np.mean(data,axis=None)
-            X_std = np.std(data, axis=None)
-            X_z = (data.T - X_mean) / X_std
+            # 1. File Loading
+            try:
+                data = np.load(path_to_file)
+            except Exception as e:
+                print(f"Error occurred while loading {file}. Skipping this file.")
+                print(e)
+                continue
+           
+            # 2. Z-Scoring
+            try:
+                X_mean = np.mean(data,axis=None)
+                X_std = np.std(data, axis=None)
+                X_z = (data.T - X_mean) / X_std
+            except Exception as e:
+                print(f"Error occurred while z-scoring {file}. Skipping this file.")
+                print(e)
             
             # Introducing artificial error spikes
             # rang = [1.5, 2, 2.5, 3, 3.5, 3, 3, 2.5, 2, 1.5]
@@ -200,8 +212,12 @@ def traindata_aligned(cfg, files, testfraction, num_features, savgol_filter, che
         np.save(os.path.join(cfg['project_path'],"data", "train", 'test_seq.npy'), z_test)
         
         for i, file in enumerate(files):
-            np.save(os.path.join(cfg['project_path'],"data", file, file+'-PE-seq-clean.npy'), X_med[:,pos[i]:pos[i+1]])
-            
+            try:
+                np.save(os.path.join(cfg['project_path'],"data", file, file+'-PE-seq-clean.npy'), X_med[:,pos[i]:pos[i+1]])
+            except Exception as e:
+                print(f"Error occurred while saving {file}. Skipping this file.")
+                print(e)
+                continue
         
         print('Lenght of train data: %d' %len(z_train.T))
         print('Lenght of test data: %d' %len(z_test.T))
