@@ -193,21 +193,47 @@ def calculate_mse(filepath, test_loader, seq_len_half, model, model_name,
 def plot_loss(cfg, filepath, model_name, suffix=None):
     basepath = os.path.join(cfg['project_path'],"model","model_losses")
     #train_loss = np.load(os.path.join(basepath,'train_losses_'+model_name+'.npy'))
-    train_loss = np.load(next(f for f in os.listdir(basepath) if re.search(r'(train.*losses|losses.*train).*' + re.escape(model_name) + r'.*\.npy$', f)))
+    forbidden_words = ['test', 'mse', 'kmeans', 'kl', 'fut']
+    train_loss = np.load(os.path.join(basepath, (next(f for f in os.listdir(basepath)
+                                                      if re.search(r'(train.*losses|losses.*train).*' + re.escape(model_name) + r'.*\.npy$', f)
+                                                      and all(word not in f for word in forbidden_words)))))
     #test_loss = np.load(os.path.join(basepath,'test_losses_'+model_name+'.npy'))
-    test_loss = np.load(next(f for f in os.listdir(basepath) if re.search(r'(test.*losses|losses.*test).*' + re.escape(model_name) + r'.*\.npy$', f)))
+    
+    forbidden_words = ['train', 'mse', 'kmeans', 'kl', 'fut']
+    test_loss = np.load(os.path.join(basepath, (next(f for f in os.listdir(basepath)
+                                                     if re.search(r'(test.*losses|losses.*test).*' + re.escape(model_name) + r'.*\.npy$', f)
+                                                     and all(word not in f for word in forbidden_words)))))
     #mse_loss_train = np.load(os.path.join(basepath,'mse_train_losses_'+model_name+'.npy'))
-    mse_loss_train = np.load(next(f for f in os.listdir(basepath) if re.search(r'(mse.*train.*losses|losses.*mse.*train|train.*mse.*losses).*' + re.escape(model_name) + r'.*\.npy$', f)))
+    forbidden_words = ['test', 'kmeans', 'kl', 'fut']
+    mse_loss_train = np.load(os.path.join(basepath, (next(f for f in os.listdir(basepath)
+                                                          if re.search(r'(mse.*train.*losses|losses.*mse.*train|train.*mse.*losses).*' + re.escape(model_name) + r'.*\.npy$', f)
+                                                          and all(word not in f for word in forbidden_words)))))
     #mse_loss_test = np.load(os.path.join(basepath,'mse_test_losses_'+model_name+'.npy'))
-    mse_loss_test = np.load(next(f for f in os.listdir(basepath) if re.search(r'(mse.*test.*losses|losses.*mse.*test|test.*mse.*losses).*' + re.escape(model_name) + r'.*\.npy$', f)))
+    forbidden_words = ['train', 'kmeans', 'kl', 'fut']
+    mse_loss_test = np.load(os.path.join(basepath, (next(f for f in os.listdir(basepath)
+                                                         if re.search(r'(mse.*test.*losses|losses.*mse.*test|test.*mse.*losses).*' + re.escape(model_name) + r'.*\.npy$', f)
+                                                         and all(word not in f for word in forbidden_words)))))
 #    km_loss = np.load(os.path.join(basepath,'kmeans_losses_'+model_name+'.npy'), allow_pickle=True)
     #km_losses = np.load(os.path.join(basepath,'kmeans_losses_'+model_name+'.npy'),  allow_pickle=True)
-    train_km_losses = np.load(next(f for f in os.listdir(basepath) if re.search(r'(kmeans.*train.*losses|losses.*kmeans.*train|train.*kmeans.*losses).*' + re.escape(model_name) + r'.*\.npy$', f)))
-    test_km_losses = np.load(next(f for f in os.listdir(basepath) if re.search(r'(kmeans.*test.*losses|losses.*kmeans.*test|test.*kmeans.*losses).*' + re.escape(model_name) + r'.*\.npy$', f)))
+    forbidden_words = ['test', 'mse', 'kl', 'fut']
+    train_km_losses = np.load(os.path.join(basepath, next(f for f in os.listdir(basepath) 
+                                                        if re.search(r'(kmeans.*train.*losses|losses.*kmeans.*train|train.*kmeans.*losses).*' + re.escape(model_name) + r'.*\.npy$', f) 
+                                                        and all(word not in f for word in forbidden_words))))
+
+    forbidden_words = ['train', 'mse', 'kl', 'fut']
+    test_km_losses = np.load(os.path.join(basepath, next(f for f in os.listdir(basepath) 
+                                                        if re.search(r'(kmeans.*test.*losses|losses.*kmeans.*test|test.*kmeans.*losses).*' + re.escape(model_name) + r'.*\.npy$', f) 
+                                                        and all(word not in f for word in forbidden_words))))
     #kl_loss = np.load(os.path.join(basepath,'kl_losses_'+model_name+'.npy'),  allow_pickle=True)
-    train_kl_loss = np.load(next(f for f in os.listdir(basepath) if re.search(r'(kl.*train.*losses|losses.*kl.*train|train.*kl.*losses).*' + re.escape(model_name) + r'.*\.npy$', f)))
+    forbidden_words = ['test', 'mse', 'kmeans', 'fut']
+    train_kl_loss = np.load(os.path.join(basepath, next(f for f in os.listdir(basepath) 
+                                                        if re.search(r'(kl.*train.*losses|losses.*kl.*train|train.*kl.*losses).*' + re.escape(model_name) + r'.*\.npy$', f)
+                                                        and all(word not in f for word in forbidden_words))))
     #fut_loss = np.load(os.path.join(basepath,'fut_losses_'+model_name+'.npy'), allow_pickle=True)
-    train_fut_loss = np.load(next(f for f in os.listdir(basepath) if re.search(r'(fut.*train.*losses|losses.*fut.*train|train.*fut.*losses).*' + re.escape(model_name) + r'.*\.npy$', f)))
+    forbidden_words = ['train', 'mse', 'kmeans', 'kl']
+    train_fut_loss = np.load(os.path.join(basepath, next(f for f in os.listdir(basepath) 
+                                                        if re.search(r'(fut.*train.*losses|losses.*fut.*train|train.*fut.*losses).*' + re.escape(model_name) + r'.*\.npy$', f)
+                                                        and all(word not in f for word in forbidden_words))))
 
 #    km_losses = []
 #    for i in range(len(km_loss)):
