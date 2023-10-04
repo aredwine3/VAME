@@ -43,19 +43,6 @@ from vame.model.rnn_model import RNN_VAE, RNN_VAE_LEGACY
 # Warnings
 import warnings
 
-fabric = L.Fabric(
-    accelerator="cuda", 
-    devices=2, # number of GPUs
-    strategy='ddp',
-    num_nodes=2,
-    precision='32',
-    plugins=[SLURMEnvironment(), CUDAAccelerator()]
-    )
-
-
-fabric.launch()
-
-device = fabric.device
 
 
 # Ignore these specific types of warnings
@@ -483,7 +470,23 @@ def test(fabric, test_loader, epoch, model, optimizer, BETA, kl_weight, seq_len,
 
 def train_model(config):
     logging.info("Start of train_model() with multi-node training...")
-    num_workers = 4
+    
+    fabric = L.Fabric(
+        accelerator="cuda", 
+        devices=2, # number of GPUs
+        strategy='ddp',
+        num_nodes=2,
+        precision='32',
+        plugins=[SLURMEnvironment()]
+        )
+
+
+    fabric.launch()
+
+
+    device = fabric.device
+    
+    num_workers = 8
     train_start = time.time()
     
     logging.info("Fabric initialized with %d processes" % fabric.world_size)
