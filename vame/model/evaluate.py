@@ -19,10 +19,12 @@ else:
     matplotlib.use('Qt5Agg')  # Use this backend for environments with a display server
 
 import torch
+import glob
 import numpy as np
 from pathlib import Path
 from matplotlib import pyplot as plt
 import torch.utils.data as Data
+import re
 
 from torch.utils.data import DataLoader
 
@@ -190,14 +192,22 @@ def calculate_mse(filepath, test_loader, seq_len_half, model, model_name,
 
 def plot_loss(cfg, filepath, model_name, suffix=None):
     basepath = os.path.join(cfg['project_path'],"model","model_losses")
-    train_loss = np.load(os.path.join(basepath,'train_losses_'+model_name+'.npy'))
-    test_loss = np.load(os.path.join(basepath,'test_losses_'+model_name+'.npy'))
-    mse_loss_train = np.load(os.path.join(basepath,'mse_train_losses_'+model_name+'.npy'))
-    mse_loss_test = np.load(os.path.join(basepath,'mse_test_losses_'+model_name+'.npy'))
+    #train_loss = np.load(os.path.join(basepath,'train_losses_'+model_name+'.npy'))
+    train_loss = np.load(next(f for f in os.listdir(basepath) if re.search(r'(train.*losses|losses.*train).*' + re.escape(model_name) + r'.*\.npy$', f)))
+    #test_loss = np.load(os.path.join(basepath,'test_losses_'+model_name+'.npy'))
+    test_loss = np.load(next(f for f in os.listdir(basepath) if re.search(r'(test.*losses|losses.*test).*' + re.escape(model_name) + r'.*\.npy$', f)))
+    #mse_loss_train = np.load(os.path.join(basepath,'mse_train_losses_'+model_name+'.npy'))
+    mse_loss_train = np.load(next(f for f in os.listdir(basepath) if re.search(r'(mse.*train.*losses|losses.*mse.*train|train.*mse.*losses).*' + re.escape(model_name) + r'.*\.npy$', f)))
+    #mse_loss_test = np.load(os.path.join(basepath,'mse_test_losses_'+model_name+'.npy'))
+    mse_loss_test = np.load(next(f for f in os.listdir(basepath) if re.search(r'(mse.*test.*losses|losses.*mse.*test|test.*mse.*losses).*' + re.escape(model_name) + r'.*\.npy$', f)))
 #    km_loss = np.load(os.path.join(basepath,'kmeans_losses_'+model_name+'.npy'), allow_pickle=True)
-    km_losses = np.load(os.path.join(basepath,'kmeans_losses_'+model_name+'.npy'),  allow_pickle=True)
-    kl_loss = np.load(os.path.join(basepath,'kl_losses_'+model_name+'.npy'),  allow_pickle=True)
-    fut_loss = np.load(os.path.join(basepath,'fut_losses_'+model_name+'.npy'), allow_pickle=True)
+    #km_losses = np.load(os.path.join(basepath,'kmeans_losses_'+model_name+'.npy'),  allow_pickle=True)
+    train_km_losses = np.load(next(f for f in os.listdir(basepath) if re.search(r'(kmeans.*train.*losses|losses.*kmeans.*train|train.*kmeans.*losses).*' + re.escape(model_name) + r'.*\.npy$', f)))
+    test_km_losses = np.load(next(f for f in os.listdir(basepath) if re.search(r'(kmeans.*test.*losses|losses.*kmeans.*test|test.*kmeans.*losses).*' + re.escape(model_name) + r'.*\.npy$', f)))
+    #kl_loss = np.load(os.path.join(basepath,'kl_losses_'+model_name+'.npy'),  allow_pickle=True)
+    train_kl_loss = np.load(next(f for f in os.listdir(basepath) if re.search(r'(kl.*train.*losses|losses.*kl.*train|train.*kl.*losses).*' + re.escape(model_name) + r'.*\.npy$', f)))
+    #fut_loss = np.load(os.path.join(basepath,'fut_losses_'+model_name+'.npy'), allow_pickle=True)
+    train_fut_loss = np.load(next(f for f in os.listdir(basepath) if re.search(r'(fut.*train.*losses|losses.*fut.*train|train.*fut.*losses).*' + re.escape(model_name) + r'.*\.npy$', f)))
 
 #    km_losses = []
 #    for i in range(len(km_loss)):
@@ -212,9 +222,13 @@ def plot_loss(cfg, filepath, model_name, suffix=None):
     ax1.plot(test_loss, label='Test-Loss')
     ax1.plot(mse_loss_train, label='MSE-Train-Loss')
     ax1.plot(mse_loss_test, label='MSE-Test-Loss')
-    ax1.plot(km_losses, label='KMeans-Loss')
-    ax1.plot(kl_loss, label='KL-Loss')
-    ax1.plot(fut_loss, label='Prediction-Loss')
+    ax1.plot(train_km_losses, label='KMeans-Train-Loss')
+    ax1.plot(test_km_losses, label='KMeans-Test-Loss')
+    #ax1.plot(km_losses, label='KMeans-Loss')
+    #ax1.plot(kl_loss, label='KL-Loss')
+    ax1.plot(train_kl_loss, label='KL-Train-Loss')
+    #ax1.plot(fut_loss, label='Prediction-Loss')
+    ax1.plot(train_fut_loss, label='Fut-Train-Loss')
     ax1.legend()
     #fig.savefig(filepath+'evaluate/'+'MSE-and-KL-Loss'+model_name+'.png')
     if not suffix:
