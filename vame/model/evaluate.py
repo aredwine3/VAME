@@ -222,7 +222,7 @@ def plot_loss(cfg, filepath, model_name, suffix=None):
 
     forbidden_words = ['train', 'mse', 'kl', 'fut']
     test_km_losses = np.load(os.path.join(basepath, next(f for f in os.listdir(basepath) 
-                                                        if re.search(r'(kmeans.*test.*losses|losses.*kmeans.*test|test.*kmeans.*losses).*' + re.escape(model_name) + r'.*\.npy$', f) 
+                                                        if re.search(r'(km.*test.*losses|losses.*km.*test|test.*km.*losses).*' + re.escape(model_name) + r'.*\.npy$', f) 
                                                         and all(word not in f for word in forbidden_words))))
     #kl_loss = np.load(os.path.join(basepath,'kl_losses_'+model_name+'.npy'),  allow_pickle=True)
     forbidden_words = ['test', 'mse', 'kmeans', 'fut']
