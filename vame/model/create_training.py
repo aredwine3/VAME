@@ -23,6 +23,7 @@ import numpy as np
 import pandas as pd
 from pathlib import Path
 import scipy.signal
+from datetime import date
 from scipy.stats import iqr # type: ignore
 import matplotlib.pyplot as plt
 
@@ -363,16 +364,26 @@ def traindata_aligned_fractional(cfg, files, testfraction, num_features, savgol_
     z_train = X_med[:,test:]
       
     if check_parameter == True:
-        plot_check_parameter(cfg, iqr_val, num_frames, X_true, X_med) # , anchor_1, anchor_2)
+        plot_check_parameter(cfg, iqr_val, num_frames, X_true, X_med, anchor_1, anchor_2)
         
     else:        
         #save numpy arrays the the test/train info:
         np.save(os.path.join(cfg['project_path'],"data", "train",'train_seq.npy'), z_train)
         np.save(os.path.join(cfg['project_path'],"data", "train", 'test_seq.npy'), z_test)
         
+        # Have the user choose a suffix to denote this training set
+        suffix = input("Please enter a suffix to denote this training set: ")
+
+        # Get the current date
+        today = date.today()
+
+        # Update the config file with the suffix, adding the suffix to load_data: -PE-seq-clean_{today}_{suffix}.npy after wiping the text that was there before
+        cfg['load_data'] = cfg['load_data'].split('_')[0] + f"_PE-seq-clean_{today}_{suffix}.npy"
+        
         for i, file in enumerate(files):
             try:
-                np.save(os.path.join(cfg['project_path'],"data", file, file+'-PE-seq-clean.npy'), X_med[:,pos[i]:pos[i+1]])
+                #np.save(os.path.join(cfg['project_path'],"data", file, file+'-PE-seq-clean.npy'), X_med[:,pos[i]:pos[i+1]])
+                np.save(os.path.join(cfg['project_path'],"data", file, f"{file}-PE-seq-clean_{today}_{suffix}.npy"), X_med[:,pos[i]:pos[i+1]])
             except Exception as e:
                 print(f"Error occurred while saving {file}. Skipping this file.")
                 print(e)
