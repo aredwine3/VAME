@@ -129,9 +129,10 @@ def get_motif_usage(label, n_cluster):
     motif_usage = np.unique(label, return_counts=True)
     motif_usage=list(motif_usage)
     for i in range(n_cluster):
-        if motif_usage[0][i]!=i:
-            motif_usage[0] = np.insert(motif_usage[0], i, i, axis=0)
-            motif_usage[1] = np.insert(motif_usage[1], i, 0, axis=0)
+        if i < len(motif_usage[0]):
+            if motif_usage[0][i]!=i:
+                motif_usage[0] = np.insert(motif_usage[0], i, i, axis=0)
+                motif_usage[1] = np.insert(motif_usage[1], i, 0, axis=0)
     motif_usage = tuple(motif_usage)
     cons = consecutive(motif_usage[0])
     if len(cons) != 1:
