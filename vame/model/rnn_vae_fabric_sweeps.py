@@ -1058,7 +1058,8 @@ def train_model():
     if convergence > model_convergence or epoch == EPOCHS:
         wandb.finish()
 
-if __name__ == "__main__":
+#if __name__ == "__main__":
+if fabric.global_rank == 0:
     #config = "/Volumes/G-DRIVE_SSD/VAME_working/ALR_VAME_1-Sep15-2023/config_fabric.yaml"
     #config= "/work/wachslab/aredwine3/VAME_working/config_fabric_2.yaml"
 
