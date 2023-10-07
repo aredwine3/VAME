@@ -658,15 +658,8 @@ wandb.login(key='bcd2a5a57142a0e6bb3d51242f679ab3d00dd8d4')
 sweep_id = wandb.sweep(sweep=sweep_configuration, project="VAME", entity="aredwine3")
 
 def train_model():
-    wandb.init()
     
-    wandb.init(
-        name=wandb.config.model_name + '__local_rank__' + str(fabric.local_rank) + '__global_rank__' + str(fabric.global_rank) + '_date_' + time.strftime('%Y-%m-%d_%H-%M-%S'),
-        group='DDP_2',
-        config=wandb.config,
-        reinit=True,
-    )
-   
+    wandb.init()
     num_workers = 32
 
     legacy = wandb.config.legacy
@@ -729,7 +722,7 @@ def train_model():
 
     BEST_LOSS = 999999
     convergence = 0
-    fabric.print('Latent Dimensions: %d, Time window: %d, Batch Size: %d, Beta: %d, lr: %.4f\n' %(ZDIMS, time_window, TRAIN_BATCH_SIZE, BETA, LEARNING_RATE))
+    fabric.print('Latent Dimensions: %d, Time window: %d, Batch Size: %d, Beta: %d, lr: %.4f\n' %(ZDIMS, wandb.config.time_window, TRAIN_BATCH_SIZE, BETA, LEARNING_RATE))
     
     # simple logging of diverse losses.
     avg_train_losses = []
