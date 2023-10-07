@@ -571,7 +571,7 @@ sweep_configuration = {
       "distribution": "constant"
     },
     "scheduler_gamma": {
-      "values": 0.2,
+      "value": 0.2,
       "distribution": "constant"
     },
     "scheduler_threshold": {
