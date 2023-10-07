@@ -658,10 +658,10 @@ wandb.login(key='bcd2a5a57142a0e6bb3d51242f679ab3d00dd8d4')
 sweep_id = wandb.sweep(sweep=sweep_configuration, project="VAME", entity="aredwine3")
 
 def train_model():
+    
     wandb.init(
-        project=wandb.config.Project,
         name=wandb.config.model_name + '__local_rank__' + str(fabric.local_rank) + '__global_rank__' + str(fabric.global_rank) + '_date_' + time.strftime('%Y-%m-%d_%H-%M-%S'),
-        group='DDP_1',
+        group='DDP_2',
         config=wandb.config,
         reinit=True,
     )
