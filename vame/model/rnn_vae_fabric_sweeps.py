@@ -582,11 +582,11 @@ sweep_configuration = {
       "values": [True, False]
     },
     "hidden_layer_size_1": {
-      "values": [256, 512]
+      "values": [256, 512],
       "distribution": "categorical"
     },
     "hidden_layer_size_2": {
-     "values": [256, 512]
+     "values": [256, 512],
       "distribution": "categorical"
     },
     "dropout_encoder": {
@@ -594,7 +594,7 @@ sweep_configuration = {
       "distribution": "categorical"
     },
     "hidden_size_rec": {
-     "values": [256, 512]
+     "values": [256, 512],
       "distribution": "categorical"
     },
     "dropout_rec": {
@@ -607,7 +607,7 @@ sweep_configuration = {
       "distribution": "int_uniform"
     },
     "hidden_size_pred": {
-      "values": [256, 512]
+      "values": [256, 512],
       "distribution": "categorical"
     },
     "dropout_pred": {
@@ -627,7 +627,7 @@ sweep_configuration = {
       "distribution": "constant",
     },
     "kmeans_lambda": {
-      "value": 0.1
+      "value": 0.1,
       "distribution": "constant"
     },
     "anneal_function": {
