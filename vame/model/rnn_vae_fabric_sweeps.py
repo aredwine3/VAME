@@ -653,9 +653,9 @@ sweep_configuration = {
   }
 }
 
-wandb.login(key='bcd2a5a57142a0e6bb3d51242f679ab3d00dd8d4')
-
-sweep_id = wandb.sweep(sweep=sweep_configuration, project="VAME", entity="aredwine3")
+if fabric.global_rank == 0:
+    wandb.login(key='bcd2a5a57142a0e6bb3d51242f679ab3d00dd8d4')
+    sweep_id = wandb.sweep(sweep=sweep_configuration, project="VAME", entity="aredwine3")
 
 def train_model():
     
@@ -870,9 +870,7 @@ def train_model():
                     avg_test_mse_loss.item(), avg_test_km_loss.item(), avg_test_km_loss.item()))
 
         
-        #print(f"Before barrier for epoch metrics, rank: {fabric.global_rank}")
         fabric.barrier()
-        #print(f"After barrier for epoch metrics, rank: {fabric.global_rank}")
 
         avg_train_losses.append(avg_train_loss.item())
         avg_train_kmeans_losses.append(avg_train_km_loss.item())
@@ -928,7 +926,8 @@ def train_model():
             "noise": noise,
         }
         
-        wandb.log(epoch_metrics)
+        if fabric.global_rank == 0:
+            wandb.log(epoch_metrics)
 
         """ Saving the best model yet """
             # Check conditions for best loss
@@ -937,14 +936,14 @@ def train_model():
             fabric.print("Saving model!")
             save_path = os.path.join(project_path, "model", "best_model", model_name + '_' + project + '_epoch_' + str(epoch) + '.pkl')
             fabric.save(path=save_path, state=model.state_dict())
-            #fabric.print("Model saved!")    #fabric.log_dict(epoch_metrics)
+
             convergence = 0
         else:
             convergence += 1
         
-        #print(f"Before barrier for convergence, rank: {fabric.global_rank}")
+
         fabric.barrier()
-        #print(f"After barrier for convergence, rank: {fabric.global_rank}")
+
         conv_counter.append(convergence)
 
         """ Saving the model at the checkpoint """
@@ -1015,11 +1014,7 @@ def train_model():
                 logging.debug(f"Could not save dataframe to disk. Error: {e}")
                 print("Data frame saved!")
         
-        #print(f"Before barrier for dataframe saving, rank: {fabric.global_rank}")
         fabric.barrier()
-        #print(f"After barrier for dataframe saving, rank: {fabric.global_rank}")
-        
-        #print(f"Process {fabric.global_rank} before convergence check")
 
         if convergence > model_convergence:
             fabric.print('Finished training...')
