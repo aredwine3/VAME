@@ -46,7 +46,7 @@ fabric = L.Fabric(
     )
 
 
-#fabric.launch()
+fabric.launch()
 
 device = fabric.device
 
