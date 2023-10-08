@@ -80,12 +80,20 @@ def get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag, fps=30,
     elif cluster_method == 'hmm':
         labels = np.load(glob.glob(path_to_file+'/'+str(n_cluster)+'_km_label_'+'*.npy')[0])
 
+    print("Video file variable:", file)  # Debug print 1
+    print("Video type:", videoType)  # Debug print 1
+
+    full_video_path = os.path.join(cfg['project_path'], "videos", file + videoType)
+    print("Full path to video:", full_video_path)  # Debug print 2
+
     capture = cv.VideoCapture(os.path.join(cfg['project_path'],"videos",file+videoType))  
 
     if capture.isOpened():
+        print("Video capture successful")  # Debug print 3
         width  = capture.get(cv.CAP_PROP_FRAME_WIDTH)
         height = capture.get(cv.CAP_PROP_FRAME_HEIGHT)
     else:
+        print("Video capture failed")  # Debug print 3
         raise OSError("Could not open OpenCV capture device.")
     
     if extractData:
