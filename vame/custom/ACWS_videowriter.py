@@ -88,8 +88,8 @@ def get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag, fps=30,
     print("Full path to video:", full_video_path)  # Debug print 2
     
     # Resolve symlink to actual file path
-    original_path = os.path.join(cfg['project_path'], "videos", file + videoType)
-    resolved_path = os.path.realpath(original_path)
+    expanded_path = os.path.expandvars(full_video_path)
+    resolved_path = os.path.realpath(expanded_path)
     
     print("Resolved path to video:", resolved_path)  # Debug print
 
