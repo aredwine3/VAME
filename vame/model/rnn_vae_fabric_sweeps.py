@@ -661,10 +661,9 @@ if fabric.global_rank==0:
 
 def train_model():
     
-    if fabric.global_rank==0:
-        wandb.init(
-            group="DDP_2"
-        )
+    wandb.init(
+        group="DDP_2"
+    )
         
         #wandb.setup()
     
@@ -778,7 +777,7 @@ def train_model():
         fabric.broadcast(BEST_LOSS, src=0)
         fabric.broadcast(convergence, src=0)
 
-        
+    print(f"Global rank: {fabric.global_rank} at broadcast barrier")
     fabric.barrier()
     
     
