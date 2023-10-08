@@ -37,18 +37,7 @@ from vame.model.rnn_model import RNN_VAE, RNN_VAE_LEGACY
 # Warnings
 import warnings
 
-fabric = L.Fabric(
-    accelerator="auto", 
-    devices="auto", # number of GPUs
-    strategy='ddp',
-    num_nodes=1,
-    precision='32',
-    )
 
-
-#fabric.launch()
-
-device = fabric.device
 
 
 logging.basicConfig(filename='rnn_vae_fabric.log', level=logging.DEBUG)
@@ -662,6 +651,24 @@ def train_model():
     wandb.init(
         group="DDP_2"
     )
+    
+    wandb.setup()
+    
+    fabric = L.Fabric(
+        accelerator="auto", 
+        devices="auto", # number of GPUs
+        strategy='ddp',
+        num_nodes=1,
+        precision='32',
+    )
+
+
+    fabric.launch()
+
+    device = fabric.device
+    
+
+    
     num_workers = 32
 
     legacy = wandb.config.legacy
