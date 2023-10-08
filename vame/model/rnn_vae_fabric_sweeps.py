@@ -652,14 +652,8 @@ wandb.login(key='bcd2a5a57142a0e6bb3d51242f679ab3d00dd8d4')
 
 
 def train_model():
-    
-    wandb.init(
-        group="DDP_2"
-    )
+    wandb.require("service")
 
-    wandb.setup()
-
-    
     device = fabric.device
 
     num_workers = 32
@@ -1120,9 +1114,14 @@ fabric = L.Fabric(
 
 fabric.launch()
 
-if fabric.global_rank==0:
+
+if __name__ == "__main__":
     #config = "/Volumes/G-DRIVE_SSD/VAME_working/ALR_VAME_1-Sep15-2023/config_fabric.yaml"
     #config= "/work/wachslab/aredwine3/VAME_working/config_fabric_2.yaml"
+    
+    wandb.init(
+        group="DDP_2"
+    )
     
     sweep_id = wandb.sweep(sweep=sweep_configuration, project="VAME", entity="aredwine3")
     
