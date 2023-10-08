@@ -219,7 +219,7 @@ def get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag, fps=30,
     capture.release()
 
 #%%
-def motif_videos(config, model_name, videoType='.mp4', fps=30, bins=6, cluster_method="kmeans", extractData=False):
+def motif_videos(config, model_name, videoType='.mp4', fps=30, bins=6, cluster_method="kmeans", extractData=False, symlinks=False):
     """Create custom motif videos. This differs from the function in the main vame repository in that 
     rather than the first frames 1000 frames (or whatever number assigned in config.yaml) of each cluster,
     motif videos will sample the longest sequential number of frames in the same behavioral cluster.
@@ -254,6 +254,7 @@ def motif_videos(config, model_name, videoType='.mp4', fps=30, bins=6, cluster_m
     cfg = read_config(config_file)
     model_name = cfg['model_name']
     n_cluster = cfg['n_cluster']
+    symlinks = symlinks
     flag = 'motif'
     
     files = []
@@ -284,7 +285,7 @@ def motif_videos(config, model_name, videoType='.mp4', fps=30, bins=6, cluster_m
         if not os.path.exists(path_to_file+'/cluster_videos/'):
             os.mkdir(path_to_file+'/cluster_videos/')
 
-        get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag, fps=fps, bins=bins, cluster_method=cluster_method, extractData=extractData, symlinks=False)
+        get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag, fps=fps, bins=bins, cluster_method=cluster_method, extractData=extractData, symlinks=symlinks)
 
     print("All videos have been created!")
     
