@@ -86,9 +86,16 @@ def get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag, fps=30,
 
     full_video_path = os.path.join(cfg['project_path'], "videos", file + videoType)
     print("Full path to video:", full_video_path)  # Debug print 2
+    
+    # Resolve symlink to actual file path
+    original_path = os.path.join(cfg['project_path'], "videos", file + videoType)
+    resolved_path = os.path.realpath(original_path)
+    
+    print("Resolved path to video:", resolved_path)  # Debug print
 
-    capture = cv.VideoCapture(os.path.join(cfg['project_path'],"videos",file+videoType))
-    capture = cv.VideoCapture(full_video_path)
+    #capture = cv.VideoCapture(os.path.join(cfg['project_path'],"videos",file+videoType))
+    capture = cv.VideoCapture(resolved_path)
+
       
     try:
         if capture.isOpened():
