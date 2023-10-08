@@ -286,11 +286,11 @@ sweep_configuration = {
       "distribution": "categorical"
     },
     "project_path": {
-      "values": ["/content/VAME_files/ALR_VAME_1-Sep15-2023"],
+      "values": ["/work/wachslab/aredwine3/VAME_working/"],
       "distribution": "categorical"
     },
     "model_name": {
-      "values": ["VAME"],
+      "values": ["VAME_15prcnt_sweep"],
       "distribution": "categorical"
     },
     "pretrained_model": {
@@ -310,7 +310,7 @@ sweep_configuration = {
       "distribution": "categorical"
     },
     "max_epochs": {
-      "value": 100,
+      "value": 150,
       "distribution": "constant"
     },
     "model_snapshot": {
@@ -362,12 +362,12 @@ sweep_configuration = {
       "distribution": "constant"
     },
     "scheduler_step_size": {
-      "values": [50, 60, 70, 80, 90, 100, 110, 120],
-      "distribution": "categorical"
+      "value": 100,
+      "distribution": "constant"
     },
     "scheduler_gamma": {
-      "values": [0.1, 0.2, 0.3, 0.4, 0.5],
-      "distribution": "categorical"
+      "value": 0.2,
+      "distribution": "constant"
     },
     "scheduler_threshold": {
       "values": [0.0001, 0.001, 0.01, 0.05, 0.1],
@@ -377,20 +377,20 @@ sweep_configuration = {
       "values": [True, False]
     },
     "hidden_layer_size_1": {
-      "value": 256,
-      "distribution": "constant"
+      "values": [256, 512],
+      "distribution": "categorical"
     },
     "hidden_layer_size_2": {
-      "value": 256,
-      "distribution": "constant"
+     "values": [256, 512],
+      "distribution": "categorical"
     },
     "dropout_encoder": {
       "values": [0, 1],
       "distribution": "categorical"
     },
     "hidden_size_rec": {
-      "value": 256,
-      "distribution": "constant"
+     "values": [256, 512],
+      "distribution": "categorical"
     },
     "dropout_rec": {
       "values": [0, 1],
@@ -402,8 +402,8 @@ sweep_configuration = {
       "distribution": "int_uniform"
     },
     "hidden_size_pred": {
-      "value": 256,
-      "distribution": "constant"
+      "values": [256, 512],
+      "distribution": "categorical"
     },
     "dropout_pred": {
       "values": [0, 1],
@@ -418,12 +418,12 @@ sweep_configuration = {
       "distribution": "categorical"
     },
     "kmeans_loss": {
-      "values": [30, 35, 40, 45],
-      "distribution": "categorical",
+      "value": 30,
+      "distribution": "constant",
     },
     "kmeans_lambda": {
-      "values": [0.1, 0.15, 0.2, 0.25, 0.3],
-      "distribution": "categorical"
+      "value": 0.1,
+      "distribution": "constant"
     },
     "anneal_function": {
       "values": ["linear", "sigmoid"],
@@ -442,7 +442,7 @@ sweep_configuration = {
       "distribution": "categorical"
     },
     "egocentric_data": {
-      "values": [True],
+      "values": [False],
       "distribution": "categorical"
     }
   }
@@ -601,8 +601,8 @@ def train_model():
 
     if device == torch.device("cuda"): 
         cuda_generator = torch.Generator(device='cuda')
-        train_loader = Data.DataLoader(trainset, batch_size=TRAIN_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4, generator=cuda_generator)
-        test_loader = Data.DataLoader(testset, batch_size=TEST_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4, generator=cuda_generator)
+        train_loader = Data.DataLoader(trainset, batch_size=TRAIN_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=16, generator=cuda_generator)
+        test_loader = Data.DataLoader(testset, batch_size=TEST_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=16, generator=cuda_generator)
     elif device == torch.device("mps"):
         mps_generator = torch.Generator(device='mps')
         train_loader = Data.DataLoader(trainset, batch_size=TRAIN_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4, generator=mps_generator)
@@ -611,7 +611,8 @@ def train_model():
         train_loader = Data.DataLoader(trainset, batch_size=TRAIN_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4)
         test_loader = Data.DataLoader(testset, batch_size=TEST_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4)
 
-
+    wandb.watch(model, log="all")
+    
     print("Start training... ")
 
     for epoch in range(1,EPOCHS):
@@ -754,4 +755,4 @@ def train_model():
     if convergence > model_convergence or epoch == EPOCHS:
         wandb.finish()
     
-wandb.agent(sweep_id, function=train_model, count=5)
+wandb.agent(sweep_id, function=train_model, count=10)
