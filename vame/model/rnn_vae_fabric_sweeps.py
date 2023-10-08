@@ -664,66 +664,66 @@ def train_model():
 
     num_workers = 32
 
-    if fabric.global_rank==0:
-        legacy = wandb.config.legacy
-        project = wandb.config.Project
-        project_path = wandb.config.project_path
-        model_name = wandb.config.model_name
-        pretrained_weights = wandb.config.pretrained_weights
-        pretrained_model = wandb.config.pretrained_model
-        fixed = wandb.config.egocentric_data
+    legacy = wandb.config.legacy
+    project = wandb.config.Project
+    project_path = wandb.config.project_path
+    model_name = wandb.config.model_name
+    pretrained_weights = wandb.config.pretrained_weights
+    pretrained_model = wandb.config.pretrained_model
+    fixed = wandb.config.egocentric_data
 
-        os.makedirs(os.path.join(project_path,'model','best_model'), exist_ok=True)
-        os.makedirs(os.path.join(project_path,'model','best_model','snapshots'), exist_ok=True)
-        os.makedirs(os.path.join(project_path,'model','model_losses',""), exist_ok=True)
+    os.makedirs(os.path.join(project_path,'model','best_model'), exist_ok=True)
+    os.makedirs(os.path.join(project_path,'model','best_model','snapshots'), exist_ok=True)
+    os.makedirs(os.path.join(project_path,'model','model_losses',""), exist_ok=True)
 
-        #device, use_gpu, use_mps = set_device()
+    #device, use_gpu, use_mps = set_device()
 
-        """ HYPERPARAMTERS """
-        # General
-        # CUDA = use_gpu
-        SEED = 19
-        TRAIN_BATCH_SIZE = wandb.config.batch_size
-        TEST_BATCH_SIZE = int(wandb.config.batch_size/4)
-        EPOCHS = wandb.config.max_epochs
-        ZDIMS = wandb.config.zdims
-        BETA  = wandb.config.beta
-        SNAPSHOT = wandb.config.model_snapshot
-        LEARNING_RATE = wandb.config.learning_rate
-        NUM_FEATURES = wandb.config.num_features
-        if fixed == False:
-            NUM_FEATURES = NUM_FEATURES - 2
-        TEMPORAL_WINDOW = wandb.config.time_window*2
-        FUTURE_DECODER = wandb.config.prediction_decoder
-        FUTURE_STEPS = wandb.config.prediction_steps
-        model_convergence = wandb.config.model_convergence
+    """ HYPERPARAMTERS """
+    # General
+    # CUDA = use_gpu
+    SEED = 19
+    TRAIN_BATCH_SIZE = wandb.config.batch_size
+    TEST_BATCH_SIZE = int(wandb.config.batch_size/4)
+    EPOCHS = wandb.config.max_epochs
+    ZDIMS = wandb.config.zdims
+    BETA  = wandb.config.beta
+    SNAPSHOT = wandb.config.model_snapshot
+    LEARNING_RATE = wandb.config.learning_rate
+    NUM_FEATURES = wandb.config.num_features
+    if fixed == False:
+        NUM_FEATURES = NUM_FEATURES - 2
+    TEMPORAL_WINDOW = wandb.config.time_window*2
+    FUTURE_DECODER = wandb.config.prediction_decoder
+    FUTURE_STEPS = wandb.config.prediction_steps
+    model_convergence = wandb.config.model_convergence
 
-        # RNN
-        hidden_size_layer_1 = wandb.config.hidden_layer_size_1
-        hidden_size_layer_2 = wandb.config.hidden_layer_size_2
-        hidden_size_rec = wandb.config.hidden_size_rec
-        hidden_size_pred = wandb.config.hidden_size_pred
-        dropout_encoder = wandb.config.dropout_encoder
-        dropout_rec = wandb.config.dropout_rec
-        dropout_pred = wandb.config.dropout_pred
-        noise = wandb.config.noise
-        scheduler_gamma = wandb.config.scheduler_gamma
-        scheduler_step_size = wandb.config.scheduler_step_size
-        scheduler_thresh = wandb.config.scheduler_threshold
-        softplus = wandb.config.softplus
+    # RNN
+    hidden_size_layer_1 = wandb.config.hidden_layer_size_1
+    hidden_size_layer_2 = wandb.config.hidden_layer_size_2
+    hidden_size_rec = wandb.config.hidden_size_rec
+    hidden_size_pred = wandb.config.hidden_size_pred
+    dropout_encoder = wandb.config.dropout_encoder
+    dropout_rec = wandb.config.dropout_rec
+    dropout_pred = wandb.config.dropout_pred
+    noise = wandb.config.noise
+    scheduler_gamma = wandb.config.scheduler_gamma
+    scheduler_step_size = wandb.config.scheduler_step_size
+    scheduler_thresh = wandb.config.scheduler_threshold
+    softplus = wandb.config.softplus
 
-        # Loss
-        MSE_REC_REDUCTION = wandb.config.mse_reconstruction_reduction
-        MSE_PRED_REDUCTION = wandb.config.mse_prediction_reduction
-        KMEANS_LOSS = wandb.config.kmeans_loss
-        KMEANS_LAMBDA = wandb.config.kmeans_lambda
-        KL_START = wandb.config.kl_start
-        ANNEALTIME = wandb.config.annealtime
-        anneal_function = wandb.config.anneal_function
-        optimizer_scheduler = wandb.config.scheduler
+    # Loss
+    MSE_REC_REDUCTION = wandb.config.mse_reconstruction_reduction
+    MSE_PRED_REDUCTION = wandb.config.mse_prediction_reduction
+    KMEANS_LOSS = wandb.config.kmeans_loss
+    KMEANS_LAMBDA = wandb.config.kmeans_lambda
+    KL_START = wandb.config.kl_start
+    ANNEALTIME = wandb.config.annealtime
+    anneal_function = wandb.config.anneal_function
+    optimizer_scheduler = wandb.config.scheduler
 
-        BEST_LOSS = 999999
-        convergence = 0     
+    BEST_LOSS = 999999
+    convergence = 0     
+        """
         print(f"Global rank: {fabric.global_rank} about to broadcast")
         fabric.broadcast(legacy, src=0)
         fabric.broadcast(project, src=0)
@@ -768,6 +768,7 @@ def train_model():
         fabric.broadcast(BEST_LOSS, src=0)
         fabric.broadcast(convergence, src=0)
         print(f"Global rank: {fabric.global_rank} finished broadcasting")
+        """
 
     print(f"Global rank: {fabric.global_rank} at broadcast barrier")
     fabric.barrier()
