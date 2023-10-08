@@ -40,16 +40,7 @@ from vame.model.rnn_model import RNN_VAE, RNN_VAE_LEGACY
 # Warnings
 import warnings
 
-fabric = L.Fabric(
-    accelerator="auto", 
-    devices="auto", # number of GPUs
-    strategy='ddp',
-    num_nodes=1,
-    precision='32',
-)
 
-
-fabric.launch()
 
 
 
@@ -658,11 +649,19 @@ sweep_configuration = {
 
 wandb.login(key='bcd2a5a57142a0e6bb3d51242f679ab3d00dd8d4')
 
-if fabric.global_rank==0:
-    sweep_id = wandb.sweep(sweep=sweep_configuration, project="VAME", entity="aredwine3")
-    fabric.broadcast(sweep_id, src=0)
+sweep_id = wandb.sweep(sweep=sweep_configuration, project="VAME", entity="aredwine3")
 
 def train_model():
+    
+    fabric = L.Fabric(
+        accelerator="auto", 
+        devices="auto", # number of GPUs
+        strategy='ddp',
+        num_nodes=1,
+        precision='32',
+    )
+    
+    fabric.launch()
     
     print(f"Global rank: {fabric.global_rank} about to init wandb")
     wandb.init(
