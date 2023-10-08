@@ -656,18 +656,9 @@ def train_model():
     wandb.init(
         group="DDP_2"
     )
-    
-    
-    fabric = L.Fabric(
-        accelerator="auto", 
-        devices="auto", # number of GPUs
-        strategy='ddp',
-        num_nodes=1,
-        precision='32',
-    )
-    
+
     wandb.setup()
-    fabric.launch()
+
     
     device = fabric.device
 
@@ -1118,7 +1109,17 @@ def train_model():
     if convergence > model_convergence or epoch == EPOCHS:
         wandb.finish()
 
-if __name__ == "__main__":
+fabric = L.Fabric(
+    accelerator="auto", 
+    devices="auto", # number of GPUs
+    strategy='ddp',
+    num_nodes=1,
+    precision='32',
+)
+
+fabric.launch()
+
+if fabric.global_rank==0:
     #config = "/Volumes/G-DRIVE_SSD/VAME_working/ALR_VAME_1-Sep15-2023/config_fabric.yaml"
     #config= "/work/wachslab/aredwine3/VAME_working/config_fabric_2.yaml"
     
