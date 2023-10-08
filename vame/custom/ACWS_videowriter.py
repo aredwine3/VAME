@@ -72,6 +72,12 @@ def get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag, fps=30,
     None. Saves motif videos.
     
     """
+    import cv2 as cv
+    import os
+    import glob
+    import numpy as np
+
+    print("Function inputs:", cfg, path_to_file, file, n_cluster, videoType, flag, fps, bins, cluster_method, extractData)
     projectPath=cfg['project_path']
     print("Videos being created for "+file+" ...")
     if cluster_method == 'kmeans':
