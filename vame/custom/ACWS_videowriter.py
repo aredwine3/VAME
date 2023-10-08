@@ -9,6 +9,7 @@ https://github.com/LINCellularNeuroscience/VAME
 Licensed under GNU General Public License v3.0
 """
 
+from email.quoprimime import header_check
 from math import e
 import os
 
@@ -33,14 +34,26 @@ from matplotlib.collections import LineCollection
 from matplotlib.animation import FFMpegWriter
 from tqdm import trange
 from vame.util import auxiliary as aux
+import re
 
 #%%
 def consecutive(data, stepsize=1):
     data = data[:]
     return np.split(data, np.where(np.diff(data) != stepsize)[0]+1)
 
+def count_headers(file_path):
+    num_headers = 0
+    with open(file_path, 'r') as csvfile:
+        csvreader = csv.reader(csvfile)
+        for row in csvreader:
+            # Assuming headers contain only non-numeric values
+            if all(not x.replace('.', '', 1).isdigit() for x in row if x):
+                num_headers += 1
+            else:
+                break
+    return num_headers
 #%%
-def get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag, fps=30, bins=6, cluster_method='kmeans', extractData=False):
+def get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag, fps=30, bins=6, cluster_method='kmeans', extractData=False, symlinks=False):
     """This creates motif videos based on the longest sequences of each motif, rather than the first frames in that motif (the default in VAME).
     You can limit the length of each sequence used with 'bins', this parameter sets the minimum number of distinct examples that will be sampled
     in the video (if that many examples exist).
@@ -77,7 +90,7 @@ def get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag, fps=30,
     import glob
     import numpy as np
 
-    print("Function inputs:", cfg, path_to_file, file, n_cluster, videoType, flag, fps, bins, cluster_method, extractData)
+
     projectPath=cfg['project_path']
     print("Videos being created for "+file+" ...")
     if cluster_method == 'kmeans':
@@ -87,46 +100,53 @@ def get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag, fps=30,
     elif cluster_method == 'hmm':
         labels = np.load(glob.glob(path_to_file+'/'+str(n_cluster)+'_km_label_'+'*.npy')[0])
 
-    print("cfg['project_path']:", cfg['project_path'])
-    print("file:", file)
-    print("videoType:", videoType)
 
-    expanded_project_path = os.path.expandvars(cfg['project_path'])
-    resolved_project_path = os.path.realpath(expanded_project_path)
-
-    print("Expanded project path:", expanded_project_path)
-    print("Resolved project path:", resolved_project_path)
+    if not symlinks:
+        capture = cv.VideoCapture(os.path.join(cfg['project_path'],"videos",file+videoType))
     
-    full_video_path = os.path.join(resolved_project_path, "videos", file + videoType)
-    expanded_path = os.path.expandvars(full_video_path)
-    resolved_path = os.path.realpath(expanded_path)
+    if symlinks:
+        # Your original file name
+        original_file_name = file + videoType
+        
+        # Use regular expression to trim off "_RatX" from the file name but keep the extension
+        trimmed_file_name = re.sub(r'_Rat\d+', '', original_file_name)
+        
+        # Construct the full path with the trimmed file name
+        trimmed_full_video_path = os.path.join(cfg['project_path'], "real_videos", trimmed_file_name)
 
-    print("Full path to video:", full_video_path)
-    print("Expanded path to video:", expanded_path)
-    print("Resolved path to video:", resolved_path)
+        # Resolve symlink to actual file path
+        expanded_path = os.path.expandvars(trimmed_full_video_path)
+        resolved_path = os.path.realpath(expanded_path)
 
-    #capture = cv.VideoCapture(os.path.join(cfg['project_path'],"videos",file+videoType))
-    capture = cv.VideoCapture(resolved_path)
+        print("Full path to video with trimmed name:", trimmed_full_video_path)
+        
+        capture = cv.VideoCapture(trimmed_full_video_path)
 
-      
-    try:
-        if capture.isOpened():
-            print("Video capture successful")  # Debug print 3
-            width  = capture.get(cv.CAP_PROP_FRAME_WIDTH)
-            height = capture.get(cv.CAP_PROP_FRAME_HEIGHT)
-        else:
-            print("Video capture failed")  # Debug print 3
-            raise OSError("Could not open OpenCV capture device.")
-    except OSError as e:
-        print(e)
-        raise OSError("Could not open OpenCV capture device.") from e
+    
+    if capture.isOpened():
+        print("Video capture successful")  # Debug print 3
+        width  = capture.get(cv.CAP_PROP_FRAME_WIDTH)
+        height = capture.get(cv.CAP_PROP_FRAME_HEIGHT)
+    else:
+        print("Video capture failed")  # Debug print 3
+        raise OSError("Could not open OpenCV capture device.")
+
     
     if extractData:
         if not os.path.exists(os.path.join(path_to_file, 'dlcPoseData')):
             os.mkdir(os.path.join(path_to_file, 'dlcPoseData'))
+        
         dataFile = glob.glob(os.path.join(projectPath, 'videos', 'pose_estimation',file+'*.csv'))
         dataFile = dataFile[0] if dataFile else None
-        data = pd.read_csv(dataFile, index_col=0, header=[0,1,2])
+            
+        if dataFile:
+            header_check = count_headers(os.path.join(projectPath, 'videos', 'pose_estimation',file+'*.csv'))
+            
+            if header_check == 2:
+                data = pd.read_csv(dataFile, index_col=0, header=[0,1])
+                
+            elif header_check == 3:
+                data = pd.read_csv(dataFile, index_col=0, header=[0,1,2])
         
     for cluster in range(n_cluster):
         print('Cluster: %d' %(cluster))
@@ -264,7 +284,7 @@ def motif_videos(config, model_name, videoType='.mp4', fps=30, bins=6, cluster_m
         if not os.path.exists(path_to_file+'/cluster_videos/'):
             os.mkdir(path_to_file+'/cluster_videos/')
 
-        get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag, fps=fps, bins=bins, cluster_method=cluster_method, extractData=extractData)
+        get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag, fps=fps, bins=bins, cluster_method=cluster_method, extractData=extractData, symlinks=False)
 
     print("All videos have been created!")
     
