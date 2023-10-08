@@ -12,6 +12,9 @@ Licensed under GNU General Public License v3.0
 import os
 import time
 from pathlib import Path
+from fastapi import params
+
+from matplotlib.pylab import f
 
 # Third-party libraries
 import vame
@@ -37,6 +40,16 @@ from vame.model.rnn_model import RNN_VAE, RNN_VAE_LEGACY
 # Warnings
 import warnings
 
+fabric = L.Fabric(
+    accelerator="auto", 
+    devices="auto", # number of GPUs
+    strategy='ddp',
+    num_nodes=1,
+    precision='32',
+)
+
+
+fabric.launch()
 
 
 
@@ -388,7 +401,7 @@ def train(fabric, train_loader, epoch, model, optimizer, anneal_function, BETA, 
         mse_loss += rec_loss.item()
         kullback_loss += kl_loss.item()
         kmeans_losses += kmeans_loss.item()
-
+    """
     train_log_dict = {
         'train_loss': train_loss / idx,
         'train_mse_loss': mse_loss / idx,
@@ -398,7 +411,7 @@ def train(fabric, train_loader, epoch, model, optimizer, anneal_function, BETA, 
     }
 
     wandb.log(train_log_dict)
-
+    """
         # if idx % 1000 == 0:
         #     print('Epoch: %d.  loss: %.4f' %(epoch, loss.item()))
    
@@ -450,6 +463,7 @@ def test(fabric, test_loader, epoch, model, optimizer, BETA, kl_weight, seq_len,
             kullback_loss += kl_loss.item()
             kmeans_losses += kmeans_loss
         
+        """
         test_log_dict = {
             'test_loss': test_loss / idx,
             'test_mse_loss': mse_loss / idx,
@@ -459,9 +473,8 @@ def test(fabric, test_loader, epoch, model, optimizer, BETA, kl_weight, seq_len,
         
         #fabric.log_dict(test_log_dict)
         wandb.log(test_log_dict)
+        """
 
-    
-    
     return mse_loss / idx, test_loss / idx, kl_weight * kmeans_losses / idx
 
 sweep_configuration = {
@@ -642,95 +655,133 @@ sweep_configuration = {
   }
 }
 
-
-wandb.login(key='bcd2a5a57142a0e6bb3d51242f679ab3d00dd8d4')
-sweep_id = wandb.sweep(sweep=sweep_configuration, project="VAME", entity="aredwine3")
+if fabric.global_rank==0:
+    wandb.login(key='bcd2a5a57142a0e6bb3d51242f679ab3d00dd8d4')
+    sweep_id = wandb.sweep(sweep=sweep_configuration, project="VAME", entity="aredwine3")
 
 def train_model():
     
-    wandb.init(
-        group="DDP_2"
-    )
+    if fabric.global_rank==0:
+        wandb.init(
+            group="DDP_2"
+        )
+        
+        #wandb.setup()
     
-    wandb.setup()
-    
-    fabric = L.Fabric(
-        accelerator="auto", 
-        devices="auto", # number of GPUs
-        strategy='ddp',
-        num_nodes=1,
-        precision='32',
-    )
 
-
-    fabric.launch()
 
     device = fabric.device
-    
 
-    
     num_workers = 32
 
-    legacy = wandb.config.legacy
-    project = wandb.config.Project
-    project_path = wandb.config.project_path
-    model_name = wandb.config.model_name
-    pretrained_weights = wandb.config.pretrained_weights
-    pretrained_model = wandb.config.pretrained_model
-    fixed = wandb.config.egocentric_data
+    if fabric.global_rank==0:
+        legacy = wandb.config.legacy
+        project = wandb.config.Project
+        project_path = wandb.config.project_path
+        model_name = wandb.config.model_name
+        pretrained_weights = wandb.config.pretrained_weights
+        pretrained_model = wandb.config.pretrained_model
+        fixed = wandb.config.egocentric_data
 
+        os.makedirs(os.path.join(project_path,'model','best_model'), exist_ok=True)
+        os.makedirs(os.path.join(project_path,'model','best_model','snapshots'), exist_ok=True)
+        os.makedirs(os.path.join(project_path,'model','model_losses',""), exist_ok=True)
 
-    os.makedirs(os.path.join(project_path,'model','best_model'), exist_ok=True)
-    os.makedirs(os.path.join(project_path,'model','best_model','snapshots'), exist_ok=True)
-    os.makedirs(os.path.join(project_path,'model','model_losses',""), exist_ok=True)
+        #device, use_gpu, use_mps = set_device()
 
-    #device, use_gpu, use_mps = set_device()
+        """ HYPERPARAMTERS """
+        # General
+        # CUDA = use_gpu
+        SEED = 19
+        TRAIN_BATCH_SIZE = wandb.config.batch_size
+        TEST_BATCH_SIZE = int(wandb.config.batch_size/4)
+        EPOCHS = wandb.config.max_epochs
+        ZDIMS = wandb.config.zdims
+        BETA  = wandb.config.beta
+        SNAPSHOT = wandb.config.model_snapshot
+        LEARNING_RATE = wandb.config.learning_rate
+        NUM_FEATURES = wandb.config.num_features
+        if fixed == False:
+            NUM_FEATURES = NUM_FEATURES - 2
+        TEMPORAL_WINDOW = wandb.config.time_window*2
+        FUTURE_DECODER = wandb.config.prediction_decoder
+        FUTURE_STEPS = wandb.config.prediction_steps
+        model_convergence = wandb.config.model_convergence
 
-    """ HYPERPARAMTERS """
-    # General
-    # CUDA = use_gpu
-    SEED = 19
-    TRAIN_BATCH_SIZE = wandb.config.batch_size
-    TEST_BATCH_SIZE = int(wandb.config.batch_size/4)
-    EPOCHS = wandb.config.max_epochs
-    ZDIMS = wandb.config.zdims
-    BETA  = wandb.config.beta
-    SNAPSHOT = wandb.config.model_snapshot
-    LEARNING_RATE = wandb.config.learning_rate
-    NUM_FEATURES = wandb.config.num_features
-    if fixed == False:
-        NUM_FEATURES = NUM_FEATURES - 2
-    TEMPORAL_WINDOW = wandb.config.time_window*2
-    FUTURE_DECODER = wandb.config.prediction_decoder
-    FUTURE_STEPS = wandb.config.prediction_steps
-    model_convergence = wandb.config.model_convergence
+        # RNN
+        hidden_size_layer_1 = wandb.config.hidden_layer_size_1
+        hidden_size_layer_2 = wandb.config.hidden_layer_size_2
+        hidden_size_rec = wandb.config.hidden_size_rec
+        hidden_size_pred = wandb.config.hidden_size_pred
+        dropout_encoder = wandb.config.dropout_encoder
+        dropout_rec = wandb.config.dropout_rec
+        dropout_pred = wandb.config.dropout_pred
+        noise = wandb.config.noise
+        scheduler_gamma = wandb.config.scheduler_gamma
+        scheduler_step_size = wandb.config.scheduler_step_size
+        scheduler_thresh = wandb.config.scheduler_threshold
+        softplus = wandb.config.softplus
 
-    # RNN
-    hidden_size_layer_1 = wandb.config.hidden_layer_size_1
-    hidden_size_layer_2 = wandb.config.hidden_layer_size_2
-    hidden_size_rec = wandb.config.hidden_size_rec
-    hidden_size_pred = wandb.config.hidden_size_pred
-    dropout_encoder = wandb.config.dropout_encoder
-    dropout_rec = wandb.config.dropout_rec
-    dropout_pred = wandb.config.dropout_pred
-    noise = wandb.config.noise
-    scheduler_gamma = wandb.config.scheduler_gamma
-    scheduler_step_size = wandb.config.scheduler_step_size
-    scheduler_thresh = wandb.config.scheduler_threshold
-    softplus = wandb.config.softplus
+        # Loss
+        MSE_REC_REDUCTION = wandb.config.mse_reconstruction_reduction
+        MSE_PRED_REDUCTION = wandb.config.mse_prediction_reduction
+        KMEANS_LOSS = wandb.config.kmeans_loss
+        KMEANS_LAMBDA = wandb.config.kmeans_lambda
+        KL_START = wandb.config.kl_start
+        ANNEALTIME = wandb.config.annealtime
+        anneal_function = wandb.config.anneal_function
+        optimizer_scheduler = wandb.config.scheduler
 
-    # Loss
-    MSE_REC_REDUCTION = wandb.config.mse_reconstruction_reduction
-    MSE_PRED_REDUCTION = wandb.config.mse_prediction_reduction
-    KMEANS_LOSS = wandb.config.kmeans_loss
-    KMEANS_LAMBDA = wandb.config.kmeans_lambda
-    KL_START = wandb.config.kl_start
-    ANNEALTIME = wandb.config.annealtime
-    anneal_function = wandb.config.anneal_function
-    optimizer_scheduler = wandb.config.scheduler
+        BEST_LOSS = 999999
+        convergence = 0     
+        
+        fabric.broadcast(legacy, src=0)
+        fabric.broadcast(project, src=0)
+        fabric.broadcast(project_path, src=0)
+        fabric.broadcast(model_name, src=0)
+        fabric.broadcast(pretrained_weights, src=0)
+        fabric.broadcast(pretrained_model, src=0)
+        fabric.broadcast(fixed, src=0)
+        fabric.broadcast(SEED, src=0)
+        fabric.broadcast(TRAIN_BATCH_SIZE, src=0)
+        fabric.broadcast(TEST_BATCH_SIZE, src=0)
+        fabric.broadcast(EPOCHS, src=0)
+        fabric.broadcast(ZDIMS, src=0)
+        fabric.broadcast(BETA, src=0)
+        fabric.broadcast(SNAPSHOT, src=0)
+        fabric.broadcast(LEARNING_RATE, src=0)
+        fabric.broadcast(NUM_FEATURES, src=0)
+        fabric.broadcast(TEMPORAL_WINDOW, src=0)
+        fabric.broadcast(FUTURE_DECODER, src=0)
+        fabric.broadcast(FUTURE_STEPS, src=0)
+        fabric.broadcast(model_convergence, src=0)
+        fabric.broadcast(hidden_size_layer_1, src=0)
+        fabric.broadcast(hidden_size_layer_2, src=0)
+        fabric.broadcast(hidden_size_rec, src=0)
+        fabric.broadcast(hidden_size_pred, src=0)
+        fabric.broadcast(dropout_encoder, src=0)
+        fabric.broadcast(dropout_rec, src=0)
+        fabric.broadcast(dropout_pred, src=0)
+        fabric.broadcast(noise, src=0)
+        fabric.broadcast(scheduler_gamma, src=0)
+        fabric.broadcast(scheduler_step_size, src=0)
+        fabric.broadcast(scheduler_thresh, src=0)
+        fabric.broadcast(softplus, src=0)
+        fabric.broadcast(MSE_REC_REDUCTION, src=0)
+        fabric.broadcast(MSE_PRED_REDUCTION, src=0)
+        fabric.broadcast(KMEANS_LOSS, src=0)
+        fabric.broadcast(KMEANS_LAMBDA, src=0)
+        fabric.broadcast(KL_START, src=0)
+        fabric.broadcast(ANNEALTIME, src=0)
+        fabric.broadcast(anneal_function, src=0)
+        fabric.broadcast(optimizer_scheduler, src=0)
+        fabric.broadcast(BEST_LOSS, src=0)
+        fabric.broadcast(convergence, src=0)
 
-    BEST_LOSS = 999999
-    convergence = 0
+        
+    fabric.barrier()
+    
+    
     fabric.print('Latent Dimensions: %d, Time window: %d, Batch Size: %d, Beta: %d, lr: %.4f\n' %(ZDIMS, wandb.config.time_window, TRAIN_BATCH_SIZE, BETA, LEARNING_RATE))
     
     # simple logging of diverse losses.
