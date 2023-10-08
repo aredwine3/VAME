@@ -653,6 +653,16 @@ wandb.login(key='bcd2a5a57142a0e6bb3d51242f679ab3d00dd8d4')
 
 def train_model():
     wandb.require("service")
+    
+    fabric = L.Fabric(
+        accelerator="auto", 
+        devices="auto", # number of GPUs
+        strategy='ddp',
+        num_nodes=1,
+        precision='32',
+    )
+
+    fabric.launch()
 
     device = fabric.device
 
@@ -1104,15 +1114,7 @@ def train_model():
     if convergence > model_convergence or epoch == EPOCHS:
         wandb.finish()
 
-fabric = L.Fabric(
-    accelerator="auto", 
-    devices="auto", # number of GPUs
-    strategy='ddp',
-    num_nodes=1,
-    precision='32',
-)
 
-fabric.launch()
 
 
 if __name__ == "__main__":
