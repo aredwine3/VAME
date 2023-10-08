@@ -9,6 +9,7 @@ https://github.com/LINCellularNeuroscience/VAME
 Licensed under GNU General Public License v3.0
 """
 
+from math import e
 import os
 
 import matplotlib
@@ -86,15 +87,20 @@ def get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag, fps=30,
     full_video_path = os.path.join(cfg['project_path'], "videos", file + videoType)
     print("Full path to video:", full_video_path)  # Debug print 2
 
-    capture = cv.VideoCapture(os.path.join(cfg['project_path'],"videos",file+videoType))  
-
-    if capture.isOpened():
-        print("Video capture successful")  # Debug print 3
-        width  = capture.get(cv.CAP_PROP_FRAME_WIDTH)
-        height = capture.get(cv.CAP_PROP_FRAME_HEIGHT)
-    else:
-        print("Video capture failed")  # Debug print 3
-        raise OSError("Could not open OpenCV capture device.")
+    capture = cv.VideoCapture(os.path.join(cfg['project_path'],"videos",file+videoType))
+    capture = cv.VideoCapture(full_video_path)
+      
+    try:
+        if capture.isOpened():
+            print("Video capture successful")  # Debug print 3
+            width  = capture.get(cv.CAP_PROP_FRAME_WIDTH)
+            height = capture.get(cv.CAP_PROP_FRAME_HEIGHT)
+        else:
+            print("Video capture failed")  # Debug print 3
+            raise OSError("Could not open OpenCV capture device.")
+    except OSError as e:
+        print(e)
+        raise OSError("Could not open OpenCV capture device.") from e
     
     if extractData:
         if not os.path.exists(os.path.join(path_to_file, 'dlcPoseData')):
