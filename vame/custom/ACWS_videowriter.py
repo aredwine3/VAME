@@ -81,17 +81,23 @@ def get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag, fps=30,
     elif cluster_method == 'hmm':
         labels = np.load(glob.glob(path_to_file+'/'+str(n_cluster)+'_km_label_'+'*.npy')[0])
 
-    print("Video file variable:", file)  # Debug print 1
-    print("Video type:", videoType)  # Debug print 1
+    print("cfg['project_path']:", cfg['project_path'])
+    print("file:", file)
+    print("videoType:", videoType)
 
-    full_video_path = os.path.join(cfg['project_path'], "videos", file + videoType)
-    print("Full path to video:", full_video_path)  # Debug print 2
+    expanded_project_path = os.path.expandvars(cfg['project_path'])
+    resolved_project_path = os.path.realpath(expanded_project_path)
+
+    print("Expanded project path:", expanded_project_path)
+    print("Resolved project path:", resolved_project_path)
     
-    # Resolve symlink to actual file path
+    full_video_path = os.path.join(resolved_project_path, "videos", file + videoType)
     expanded_path = os.path.expandvars(full_video_path)
     resolved_path = os.path.realpath(expanded_path)
-    
-    print("Resolved path to video:", resolved_path)  # Debug print
+
+    print("Full path to video:", full_video_path)
+    print("Expanded path to video:", expanded_path)
+    print("Resolved path to video:", resolved_path)
 
     #capture = cv.VideoCapture(os.path.join(cfg['project_path'],"videos",file+videoType))
     capture = cv.VideoCapture(resolved_path)
