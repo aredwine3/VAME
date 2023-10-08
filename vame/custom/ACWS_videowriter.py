@@ -19,7 +19,7 @@ if os.environ.get('DISPLAY', '') == '':
 else:
     matplotlib.use('Qt5Agg')  # Use this backend for environments with a display server
 
-os.chdir('/d1/software/VAME')
+#os.chdir('/d1/software/VAME')
 from pathlib import Path
 import numpy as np
 import pandas as pd
