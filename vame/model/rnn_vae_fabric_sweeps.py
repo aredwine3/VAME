@@ -649,9 +649,14 @@ sweep_configuration = {
 
 wandb.login(key='bcd2a5a57142a0e6bb3d51242f679ab3d00dd8d4')
 
-sweep_id = wandb.sweep(sweep=sweep_configuration, project="VAME", entity="aredwine3")
+
 
 def train_model():
+    
+    wandb.init(
+        group="DDP_2"
+    )
+    
     
     fabric = L.Fabric(
         accelerator="auto", 
@@ -661,17 +666,9 @@ def train_model():
         precision='32',
     )
     
+    wandb.setup()
     fabric.launch()
     
-    print(f"Global rank: {fabric.global_rank} about to init wandb")
-    wandb.init(
-        group="DDP_2"
-    )
-    print(f"Global rank: {fabric.global_rank} initialized wandb")
-        #wandb.setup()
-    
-
-
     device = fabric.device
 
     num_workers = 32
@@ -1124,7 +1121,9 @@ def train_model():
 if __name__ == "__main__":
     #config = "/Volumes/G-DRIVE_SSD/VAME_working/ALR_VAME_1-Sep15-2023/config_fabric.yaml"
     #config= "/work/wachslab/aredwine3/VAME_working/config_fabric_2.yaml"
-
+    
+    sweep_id = wandb.sweep(sweep=sweep_configuration, project="VAME", entity="aredwine3")
+    
     wandb.agent(sweep_id, function=train_model, count=10)
 
 """ Lighting Fabric Options
