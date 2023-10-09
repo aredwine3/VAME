@@ -395,7 +395,7 @@ def train_model(config):
     if device == torch.device("cuda"): 
         cuda_generator = torch.Generator(device='cuda')
         train_loader = Data.DataLoader(trainset, batch_size=TRAIN_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=14, generator=cuda_generator, pin_memory=True, pin_memory_device="cuda")
-        test_loader = Data.DataLoader(testset, batch_size=TEST_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=14, generator=cuda_generator, pin_memory=True, pin_memory_device="cuda") 
+        test_loader = Data.DataLoader(testset, batch_size=TEST_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=14, generator=cuda_generator, pin_memory=True, pin_memory_device="cuda")
     elif device == torch.device("mps"):
         mps_generator = torch.Generator(device='mps')
         train_loader = Data.DataLoader(trainset, batch_size=TRAIN_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4, generator=mps_generator)
