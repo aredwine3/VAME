@@ -27,6 +27,7 @@ from torch.optim.lr_scheduler import StepLR, ReduceLROnPlateau
 from numba import NumbaDeprecationWarning, NumbaPendingDeprecationWarning
 
 # Local application/library specific imports
+import vame
 from vame.util.auxiliary import read_config
 from vame.model.dataloader import SEQUENCE_DATASET
 from vame.model.rnn_model import RNN_VAE, RNN_VAE_LEGACY
@@ -598,5 +599,6 @@ def train_model(config):
     if wandb_usage:    
         wandb.finish()
     
-
-
+if __name__ == '__main__':
+    config = 'lustre/work/wachslab/aredwine3/VAME_working/config_fabric_3.yaml'
+    train_model(config)
