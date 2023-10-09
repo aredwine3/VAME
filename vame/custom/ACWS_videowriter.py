@@ -35,6 +35,7 @@ from matplotlib.animation import FFMpegWriter
 from tqdm import trange
 from vame.util import auxiliary as aux
 import re
+import csv
 
 #%%
 def consecutive(data, stepsize=1):
