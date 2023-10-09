@@ -513,7 +513,7 @@ def train_model():
     optimizer_scheduler = wandb.config.scheduler
 
 
-
+    """
     # make sure torch uses cuda or MPS for GPU computing
     use_gpu = torch.cuda.is_available()
     use_mps = torch.backends.mps.is_available() and not use_gpu
@@ -532,9 +532,9 @@ def train_model():
         device = torch.device("cpu")
         logging.info("warning, a GPU was not found... proceeding with CPU (slow!) \n")
         #raise NotImplementedError('GPU Computing is required!')
-
+    """
         
-    #device, use_gpu, use_mps = set_device()
+    device, use_gpu, use_mps = set_device()
         
     SEED = 19
     # CUDA = use_gpu    
