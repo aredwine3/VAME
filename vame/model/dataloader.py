@@ -88,7 +88,8 @@ class SEQUENCE_DATASET(Dataset):
         sequence = (sequence-self.mean)/self.std
             
         # Convert the sequence to a PyTorch tensor and return it
-        return torch.from_numpy(sequence)
+        #return torch.from_numpy(sequence)
+        return torch.from_numpy(sequence).cpu() # PyTorch 2.1.0 compatibility
     
     
     
