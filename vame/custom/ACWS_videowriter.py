@@ -104,6 +104,13 @@ def get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag, fps=30,
 
     if not symlinks:
         capture = cv.VideoCapture(os.path.join(cfg['project_path'],"videos",file+videoType))
+        
+        if capture.isOpened():
+            print("Video capture successful")  # Debug print 3
+            width  = capture.get(cv.CAP_PROP_FRAME_WIDTH)
+            height = capture.get(cv.CAP_PROP_FRAME_HEIGHT)
+        else:
+            print("Video capture failed") 
     
     if symlinks:
         # Your original file name
@@ -122,17 +129,13 @@ def get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag, fps=30,
         print("Full path to video with trimmed name:", trimmed_full_video_path)
         
         capture = cv.VideoCapture(resolved_path)
-        
-    try:
+
         if capture.isOpened():
             print("Video capture successful")  # Debug print 3
             width  = capture.get(cv.CAP_PROP_FRAME_WIDTH)
             height = capture.get(cv.CAP_PROP_FRAME_HEIGHT)
         else:
             print("Video capture failed")  # Debug print 3
-    except Exception as e:
-        OSError("Video capture failed: " + str(e))
-
 
     
     if extractData:
