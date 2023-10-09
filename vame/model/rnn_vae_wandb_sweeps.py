@@ -43,7 +43,7 @@ random_suffix = str(np.random.randint(100))
 
 # Set up logging
 logging.basicConfig(
-    filename=f'rnn_vae_wandb_sweeps_{random_suffix}.log', level=logging.DEBUG)
+    filename=f'rnn_vae_wandb_sweeps_{random_suffix}.log', level=logging.INFO)
 
 
 def set_device(counters={"gpu_count": 0, "cpu_count": 0}):
@@ -55,9 +55,6 @@ def set_device(counters={"gpu_count": 0, "cpu_count": 0}):
     if use_gpu:
         device = torch.device("cuda")
         torch.set_default_tensor_type('torch.cuda.FloatTensor')
-        # torch.set_default_device(f'cuda:{torch.cuda.current_device()}')
-        torch.set_default_device('cuda')
-        torch.set_default_dtype(torch.float32)
         counters["gpu_count"] += 1
         if counters["gpu_count"] == 1:
             logging.info("Using CUDA")
@@ -65,8 +62,7 @@ def set_device(counters={"gpu_count": 0, "cpu_count": 0}):
             logging.info('GPU used: %s', torch.cuda.get_device_name(0))
     elif use_mps:
         device = torch.device("mps")
-        # torch.set_default_tensor_type('torch.FloatTensor')
-        torch.set_default_device('mps')
+        torch.set_default_tensor_type('torch.FloatTensor')
         counters["gpu_count"] += 1
         if counters["gpu_count"] == 1:
             logging.info("Using MPS")
@@ -160,53 +156,50 @@ def train(train_loader, epoch, model, optimizer, anneal_function, BETA, kl_start
     else:
         dtype = torch.FloatTensor
     
-    try:
-        for idx, data_item in enumerate(train_loader):
-            data_item = Variable(data_item.to(device)).permute(0, 2, 1)
-            data = data_item[:, :seq_len_half, :].type(dtype)
-            fut = data_item[:, seq_len_half:seq_len_half +
-                            future_steps, :].type(dtype)
+    for idx, data_item in enumerate(train_loader):
+        data_item = Variable(data_item.to(device)).permute(0, 2, 1)
+        data = data_item[:, :seq_len_half, :].type(dtype)
+        fut = data_item[:, seq_len_half:seq_len_half +
+                        future_steps, :].type(dtype)
 
-            if noise:
-                data_gaussian = gaussian(data, True, seq_len_half)
-            else:
-                data_gaussian = data
+        if noise:
+            data_gaussian = gaussian(data, True, seq_len_half)
+        else:
+            data_gaussian = data
 
-            if future_decoder:
-                data_tilde, future, latent, mu, logvar = model(data_gaussian)
+        if future_decoder:
+            data_tilde, future, latent, mu, logvar = model(data_gaussian)
 
-                rec_loss = reconstruction_loss(data, data_tilde, mse_red)
-                fut_rec_loss = future_reconstruction_loss(fut, future, mse_pred)
-                kmeans_loss = cluster_loss(latent.T, kloss, klmbda, bsize)
-                kl_loss = kullback_leibler_loss(mu, logvar)
-                kl_weight = kl_annealing(
-                    epoch, kl_start, annealtime, anneal_function)
-                loss = rec_loss + fut_rec_loss + BETA*kl_weight*kl_loss + kl_weight*kmeans_loss
-                fut_loss += fut_rec_loss.detach()  # .item()
+            rec_loss = reconstruction_loss(data, data_tilde, mse_red)
+            fut_rec_loss = future_reconstruction_loss(fut, future, mse_pred)
+            kmeans_loss = cluster_loss(latent.T, kloss, klmbda, bsize)
+            kl_loss = kullback_leibler_loss(mu, logvar)
+            kl_weight = kl_annealing(
+                epoch, kl_start, annealtime, anneal_function)
+            loss = rec_loss + fut_rec_loss + BETA*kl_weight*kl_loss + kl_weight*kmeans_loss
+            fut_loss += fut_rec_loss.detach()  # .item()
 
-            else:
-                data_tilde, latent, mu, logvar = model(data_gaussian)
+        else:
+            data_tilde, latent, mu, logvar = model(data_gaussian)
 
-                rec_loss = reconstruction_loss(data, data_tilde, mse_red)
-                kl_loss = kullback_leibler_loss(mu, logvar)
-                kmeans_loss = cluster_loss(latent.T, kloss, klmbda, bsize)
-                kl_weight = kl_annealing(
-                    epoch, kl_start, annealtime, anneal_function)
-                loss = rec_loss + BETA*kl_weight*kl_loss + kl_weight*kmeans_loss
+            rec_loss = reconstruction_loss(data, data_tilde, mse_red)
+            kl_loss = kullback_leibler_loss(mu, logvar)
+            kmeans_loss = cluster_loss(latent.T, kloss, klmbda, bsize)
+            kl_weight = kl_annealing(
+                epoch, kl_start, annealtime, anneal_function)
+            loss = rec_loss + BETA*kl_weight*kl_loss + kl_weight*kmeans_loss
 
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
 
-            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=5)
+        torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=5)
 
-            train_loss += loss.item()
-            mse_loss += rec_loss.item()
-            kullback_loss += kl_loss.item()
-            kmeans_losses += kmeans_loss.item()
-    except Exception as e:
-        logging.info(f"Exception in training for loop: {e}")
-        
+        train_loss += loss.item()
+        mse_loss += rec_loss.item()
+        kullback_loss += kl_loss.item()
+        kmeans_losses += kmeans_loss.item()
+    
         # if idx % 1000 == 0:
         #     logging.info('Epoch: %d.  loss: %.4f' %(epoch, loss.item()))
 
@@ -239,8 +232,6 @@ def test(test_loader, epoch, model, optimizer, BETA, kl_weight, seq_len, mse_red
     with torch.no_grad():
         # we're only going to infer, so no autograd at all required
         # make sure torch uses cuda or MPS for GPU computing
-        use_gpu = torch.cuda.is_available()
-        use_mps = torch.backends.mps.is_available() and not use_gpu
 
         dtype = None
         if use_gpu:
@@ -659,9 +650,9 @@ def train_model():
         weight_values.append(weight)
         train_mse_losses.append(train_mse_loss)
 
-        fut_losses.append(fut_loss)
+        #fut_losses.append(fut_loss)
 
-        """fut_losses.append(fut_loss.cpu().item())"""
+        fut_losses.append(fut_loss.cpu().item())
 
         test_losses.append(test_loss)
         test_mse_losses.append(test_mse_loss)
@@ -752,16 +743,16 @@ def train_model():
         np.save(os.path.join(project_path, 'model', 'model_losses',
                 'mse_test_losses_'+model_name+'_'+random_suffix), test_mse_losses)
 
-        np.save(os.path.join(project_path, 'model', 'model_losses',
-                'fut_losses_' + model_name+'_'+random_suffix), fut_losses)
+        #np.save(os.path.join(project_path, 'model', 'model_losses',
+        #        'fut_losses_' + model_name+'_'+random_suffix), fut_losses)
 
-        """
+
         # Convert fut_losses to a tensor and save
         logging.debug("Converting fut_losses to a tensor and saving")
         fut_losses_tensor = torch.tensor(fut_losses)
         fut_losses_array = fut_losses_tensor.cpu().detach().numpy()
         np.save(os.path.join(project_path, 'model', 'model_losses', 'fut_losses_' + model_name+'_'+random_suffix), fut_losses_array)
-        """
+
         # df_data = np.column_stack((train_losses, test_losses, train_kmeans_losses, train_kl_losses, weight_values, train_mse_losses, fut_losses, learn_rates, conv_counter))
         # df = pd.DataFrame(df_data.T, columns=['Train_losses', 'Test_losses', 'Kmeans_losses', 'KL_losses', 'Weight_values', 'MSE_losses', 'Future_losses', 'Learning_Rate', 'Convergence_counter'])
         df = pd.DataFrame([train_losses, test_losses, train_kmeans_losses, train_kl_losses,
