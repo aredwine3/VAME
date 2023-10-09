@@ -63,7 +63,7 @@ def set_device(counters={"gpu_count": 0, "cpu_count": 0}):
         counters["gpu_count"] += 1
         if counters["gpu_count"] == 1:
             logging.info("Using CUDA")
-            logging.info('GPU active:', torch.cuda.is_available())
+            logging.info('GPU active: %s', torch.cuda.is_available())
             logging.info('GPU used:', torch.cuda.get_device_name(0))
     elif use_mps:
         device = torch.device("mps")
