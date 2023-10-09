@@ -126,16 +126,15 @@ def get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag, fps=30,
         
         capture = cv.VideoCapture(trimmed_file_name)
         
-        if capture.isOpened():
-            print("Video capture successful")  # Debug print 3
-            width  = capture.get(cv.CAP_PROP_FRAME_WIDTH)
-            height = capture.get(cv.CAP_PROP_FRAME_HEIGHT)
-        else:
-            print("Video capture failed")  # Debug print 3
-            
-        os.chdir(cwd)
-
         
+        if capture.isOpened():
+            try:
+                print("Video capture successful")  # Debug print 3
+                width  = capture.get(cv.CAP_PROP_FRAME_WIDTH)
+                height = capture.get(cv.CAP_PROP_FRAME_HEIGHT)
+            except Exception as e:
+                print(f"Video capture failed: {e}")
+
         
         """
         # Construct the full path with the trimmed file name
