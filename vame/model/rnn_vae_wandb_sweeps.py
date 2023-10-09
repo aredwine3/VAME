@@ -151,7 +151,7 @@ def train(train_loader, epoch, model, optimizer, anneal_function, BETA, kl_start
     except Exception as e:
       logging.debug(f"Error setting device {e}")
     
-    logging.info(f"set_device() returned device:{device}, use_gpu:{use_gpu}, use_mps{use_mps}")
+    logging.info(f"set_device() returned device:{device}, use_gpu:{use_gpu}, use_mps:{use_mps}")
     
     try:
       dtype = None
@@ -276,7 +276,14 @@ def train(train_loader, epoch, model, optimizer, anneal_function, BETA, kl_start
           loss = rec_loss + BETA*kl_weight*kl_loss + kl_weight*kmeans_loss
         
         optimizer.zero_grad()
-        loss.backward()
+        
+        try:
+          logging.info("Starting backward pass.")
+          loss.backward()
+          logging.info("Completed backward pass.")
+        except Exception as e:
+          logging.debug(f"Error in backward pass: {e}")
+          
         optimizer.step()
         
         torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm = 5)
@@ -734,8 +741,9 @@ def train_model():
         weight_values.append(weight)
         train_mse_losses.append(train_mse_loss)
         
-        #fut_losses.append(fut_loss)
-        fut_losses.append(fut_loss.cpu().item())
+        fut_losses.append(fut_loss)
+        
+        """fut_losses.append(fut_loss.cpu().item())"""
 
         test_losses.append(test_loss)
         test_mse_losses.append(test_mse_loss)
@@ -815,14 +823,16 @@ def train_model():
         np.save(os.path.join(project_path,'model','model_losses','weight_values_'+model_name+'_'+random_suffix), weight_values)
         np.save(os.path.join(project_path,'model','model_losses','mse_train_losses_'+model_name+'_'+random_suffix), train_mse_losses)
         np.save(os.path.join(project_path,'model','model_losses','mse_test_losses_'+model_name+'_'+random_suffix), test_mse_losses)
-        # np.save(os.path.join(cfg['project_path'], 'model', 'model_losses', 'fut_losses_' + model_name), fut_losses)
-
+        
+        np.save(os.path.join(project_path, 'model', 'model_losses', 'fut_losses_' + model_name+'_'+random_suffix), fut_losses)
+        
+        """
         # Convert fut_losses to a tensor and save
         logging.debug("Converting fut_losses to a tensor and saving")
         fut_losses_tensor = torch.tensor(fut_losses)
         fut_losses_array = fut_losses_tensor.cpu().detach().numpy()
         np.save(os.path.join(project_path, 'model', 'model_losses', 'fut_losses_' + model_name+'_'+random_suffix), fut_losses_array)
-
+        """
         #df_data = np.column_stack((train_losses, test_losses, train_kmeans_losses, train_kl_losses, weight_values, train_mse_losses, fut_losses, learn_rates, conv_counter))
         #df = pd.DataFrame(df_data.T, columns=['Train_losses', 'Test_losses', 'Kmeans_losses', 'KL_losses', 'Weight_values', 'MSE_losses', 'Future_losses', 'Learning_Rate', 'Convergence_counter'])
         df = pd.DataFrame([train_losses, test_losses, train_kmeans_losses, train_kl_losses, weight_values, train_mse_losses, fut_losses, learn_rates, conv_counter]).T
