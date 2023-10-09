@@ -119,6 +119,35 @@ def get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag, fps=30,
         # Use regular expression to trim off "_RatX" from the file name but keep the extension
         trimmed_file_name = re.sub(r'_Rat\d+', '', original_file_name)
         
+        capture = cv.VideoCapture(os.path.join(cfg['project_path'],"real_videos",trimmed_file_name))
+        
+        if capture.isOpened():
+            print("Video capture successful")  # Debug print 3
+            width  = capture.get(cv.CAP_PROP_FRAME_WIDTH)
+            height = capture.get(cv.CAP_PROP_FRAME_HEIGHT)
+        else:
+            print("Video capture failed")  # Debug print 3
+            
+        """
+        # Get the current working directory
+        cwd = os.getcwd()
+        
+        os.chdir('/lustre/work/wachslab/aredwine3/VAME_working/real_videos/')
+        
+        capture = cv.VideoCapture(trimmed_file_name)
+        
+        if capture.isOpened():
+            print("Video capture successful")  # Debug print 3
+            width  = capture.get(cv.CAP_PROP_FRAME_WIDTH)
+            height = capture.get(cv.CAP_PROP_FRAME_HEIGHT)
+        else:
+            print("Video capture failed")  # Debug print 3
+            
+        os.chdir(cwd)
+        """
+        
+        
+        """
         # Construct the full path with the trimmed file name
         trimmed_full_video_path = os.path.join(cfg['project_path'], "real_videos", trimmed_file_name)
 
@@ -136,6 +165,7 @@ def get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag, fps=30,
             height = capture.get(cv.CAP_PROP_FRAME_HEIGHT)
         else:
             print("Video capture failed")  # Debug print 3
+        """
 
     
     if extractData:
