@@ -21,6 +21,7 @@ import getpass
 import json
 import io
 import tempfile
+import logging
 import numpy as np
 import pandas as pd
 from torch import nn
@@ -41,6 +42,11 @@ import warnings
 warnings.filterwarnings("ignore", category=NumbaDeprecationWarning)
 warnings.filterwarnings("ignore", category=NumbaPendingDeprecationWarning)
 
+ # Generate a random number to use as a suffix for saving the model
+random_suffix = str(np.random.randint(100))
+
+# Set up logging
+logging.basicConfig(filename=f'rnn_vae_wandb_sweeps_{random_suffix}.log' , level=logging.INFO)
 
 def set_device(counters={"gpu_count": 0, "cpu_count": 0}):
   
@@ -53,20 +59,20 @@ def set_device(counters={"gpu_count": 0, "cpu_count": 0}):
         torch.set_default_tensor_type('torch.cuda.FloatTensor')
         counters["gpu_count"] += 1
         if counters["gpu_count"] == 1:
-            print("Using CUDA")
-            print('GPU active:', torch.cuda.is_available())
-            print('GPU used:', torch.cuda.get_device_name(0))
+            logging.info("Using CUDA")
+            logging.info('GPU active:', torch.cuda.is_available())
+            logging.info('GPU used:', torch.cuda.get_device_name(0))
     elif use_mps:
         device = torch.device("mps")
         torch.set_default_tensor_type('torch.FloatTensor')
         counters["gpu_count"] += 1
         if counters["gpu_count"] == 1:
-            print("Using MPS")
+            logging.info("Using MPS")
     else:
         device = torch.device("cpu")
         counters["cpu_count"] += 1
         if counters["cpu_count"] == 1:
-            print("Using CPU")
+            logging.info("Using CPU")
         
     return device, use_gpu, use_mps
 
@@ -135,13 +141,9 @@ def train(train_loader, epoch, model, optimizer, anneal_function, BETA, kl_start
     kullback_loss = 0.0
     kmeans_losses = 0.0
     fut_loss = 0.0
-    # fut_loss = torch.zeros(1).to(device) #TRY NEXT
     loss = 0.0
     seq_len_half = int(seq_len / 2)
 
-    # make sure torch uses cuda or MPS for GPU computing
-    #use_gpu = torch.cuda.is_available()
-    #use_mps = torch.backends.mps.is_available() and not use_gpu
     device, use_gpu, use_mps = set_device()
 
     dtype = None
@@ -196,17 +198,17 @@ def train(train_loader, epoch, model, optimizer, anneal_function, BETA, kl_start
         kmeans_losses += kmeans_loss.item()
 
         # if idx % 1000 == 0:
-        #     print('Epoch: %d.  loss: %.4f' %(epoch, loss.item()))
+        #     logging.info('Epoch: %d.  loss: %.4f' %(epoch, loss.item()))
 
     scheduler.step(loss) #be sure scheduler is called before optimizer in >1.1 pytorch
 
     if future_decoder:
-        print(time.strftime('%H:%M:%S'))
-        print('Train loss: {:.3f}, MSE-Loss: {:.3f}, MSE-Future-Loss {:.3f}, KL-Loss: {:.3f}, Kmeans-Loss: {:.3f}, weight: {:.2f}'.format(train_loss / idx,
+        logging.info(time.strftime('%H:%M:%S'))
+        logging.info('Train loss: {:.3f}, MSE-Loss: {:.3f}, MSE-Future-Loss {:.3f}, KL-Loss: {:.3f}, Kmeans-Loss: {:.3f}, weight: {:.2f}'.format(train_loss / idx,
               mse_loss /idx, fut_loss/idx, BETA*kl_weight*kullback_loss/idx, kl_weight*kmeans_losses/idx, kl_weight))
     else:
-        print(time.strftime('%H:%M:%S'))
-        print('Train loss: {:.3f}, MSE-Loss: {:.3f}, KL-Loss: {:.3f}, Kmeans-Loss: {:.3f}, weight: {:.2f}'.format(train_loss / idx,
+        logging.info(time.strftime('%H:%M:%S'))
+        logging.info('Train loss: {:.3f}, MSE-Loss: {:.3f}, KL-Loss: {:.3f}, Kmeans-Loss: {:.3f}, weight: {:.2f}'.format(train_loss / idx,
               mse_loss /idx, BETA*kl_weight*kullback_loss/idx, kl_weight*kmeans_losses/idx, kl_weight))
 
     return kl_weight, train_loss/idx, kl_weight*kmeans_losses/idx, kullback_loss/idx, mse_loss/idx, fut_loss/idx
@@ -257,14 +259,14 @@ def test(test_loader, epoch, model, optimizer, BETA, kl_weight, seq_len, mse_red
                 kmeans_loss = cluster_loss(latent.T, kloss, klmbda, bsize)
                 loss = rec_loss + BETA*kl_weight*kl_loss + kl_weight*kmeans_loss
 
-            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm = 5)
+            #torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm = 5)
 
             test_loss += loss.item()
             test_mse_loss += rec_loss.item()
             test_kullback_loss += kl_loss.item()
             test_kmeans_losses += kmeans_loss
 
-    print('Test loss: {:.3f}, MSE-Loss: {:.3f}, KL-Loss: {:.3f}, Kmeans-Loss: {:.3f}'.format(test_loss / idx,
+    logging.info('Test loss: {:.3f}, MSE-Loss: {:.3f}, KL-Loss: {:.3f}, Kmeans-Loss: {:.3f}'.format(test_loss / idx,
           test_mse_loss /idx, BETA*kl_weight*test_kullback_loss/idx, kl_weight*test_kmeans_losses/idx))
 
     return test_mse_loss/idx, test_loss/idx, kl_weight*test_kmeans_losses/idx
@@ -306,7 +308,7 @@ sweep_configuration = {
       "distribution": "constant"
     },
     "batch_size": {
-      "values": [256, 512, 1024, 2048],
+      "values": [256, 512, 1024],
       "distribution": "categorical"
     },
     "max_epochs": {
@@ -338,7 +340,7 @@ sweep_configuration = {
       "distribution": "categorical"
     },
     "learning_rate": {
-      "values": [0.0001, 0.0005, 0.001, 0.005, 0.01],
+      "values": [0.0001, 0.0005, 0.001, 0.005],
       "distribution": "categorical"
     },
     "time_window": {
@@ -347,6 +349,7 @@ sweep_configuration = {
     },
     "prediction_decoder": {
       "value": 1,
+      
       "distribution": "constant"
     },
     "prediction_steps": {
@@ -453,8 +456,10 @@ wandb.login(key='bcd2a5a57142a0e6bb3d51242f679ab3d00dd8d4')
 sweep_id = wandb.sweep(sweep=sweep_configuration, project="VAME", entity="aredwine3")
 
 def train_model():
-    wandb.init()
-
+    wandb.init(
+      group="VAME_15prcnt_sweep",
+    )
+    
     legacy = wandb.config.legacy
     project = wandb.config.Project
     project_path = wandb.config.project_path
@@ -463,7 +468,7 @@ def train_model():
     pretrained_model = wandb.config.pretrained_model
     fixed = wandb.config.egocentric_data
 
-    print("Train Variational Autoencoder - model name: %s \n" %model_name)
+    logging.info("Train Variational Autoencoder - model name: %s \n" %model_name)
     os.makedirs(os.path.join(project_path,'model','best_model'), exist_ok=True)
     os.makedirs(os.path.join(project_path,'model','best_model','snapshots'), exist_ok=True)
     os.makedirs(os.path.join(project_path,'model','model_losses',""), exist_ok=True)
@@ -508,7 +513,7 @@ def train_model():
     optimizer_scheduler = wandb.config.scheduler
 
 
-
+    """
     # make sure torch uses cuda or MPS for GPU computing
     use_gpu = torch.cuda.is_available()
     use_mps = torch.backends.mps.is_available() and not use_gpu
@@ -516,24 +521,27 @@ def train_model():
     if use_gpu:
         device = torch.device("cuda")
         torch.set_default_tensor_type('torch.cuda.FloatTensor')
-        print("Using CUDA")
-        print('GPU active:', torch.cuda.is_available())
-        print('GPU used:', torch.cuda.get_device_name(0))
+        logging.info("Using CUDA")
+        logging.info('GPU active:', torch.cuda.is_available())
+        logging.info('GPU used:', torch.cuda.get_device_name(0))
     elif use_mps:
         device = torch.device("mps")
         torch.set_default_tensor_type('torch.FloatTensor')
-        print("Using MPS")
+        logging.info("Using MPS")
     else:
         device = torch.device("cpu")
-        print("warning, a GPU was not found... proceeding with CPU (slow!) \n")
+        logging.info("warning, a GPU was not found... proceeding with CPU (slow!) \n")
         #raise NotImplementedError('GPU Computing is required!')
+    """
+        
+    device, use_gpu, use_mps = set_device()
         
     SEED = 19
     # CUDA = use_gpu    
 
     BEST_LOSS = 999999
     convergence = 0
-    print('Latent Dimensions: %d, Time window: %d, Batch Size: %d, Beta: %d, lr: %.4f\n' %(ZDIMS, int(TEMPORAL_WINDOW/2), TRAIN_BATCH_SIZE, BETA, LEARNING_RATE))
+    logging.info('Latent Dimensions: %d, Time window: %d, Batch Size: %d, Beta: %d, lr: %.4f\n' %(ZDIMS, int(TEMPORAL_WINDOW/2), TRAIN_BATCH_SIZE, BETA, LEARNING_RATE))
 
     # simple logging of diverse losses
     train_losses = []
@@ -573,7 +581,7 @@ def train_model():
     optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE, amsgrad=True)
 
     if optimizer_scheduler:
-        print('Scheduler step size: %d, Scheduler gamma: %.2f, Scheduler Threshold: %.5f\n' %(scheduler_step_size, scheduler_gamma, scheduler_thresh))
+        logging.info('Scheduler step size: %d, Scheduler gamma: %.2f, Scheduler Threshold: %.5f\n' %(scheduler_step_size, scheduler_gamma, scheduler_thresh))
     # Thanks to @alexcwsmith for the optimized scheduler contribution
         scheduler = ReduceLROnPlateau(optimizer, 'min', factor=scheduler_gamma, patience=scheduler_step_size, threshold=scheduler_thresh, threshold_mode='rel', verbose=True)
     else:
@@ -581,19 +589,19 @@ def train_model():
 
     if pretrained_weights:
         try:
-            print("Loading pretrained weights from model: %s\n" %os.path.join(project_path,'model','best_model',pretrained_model+'_'+project+'.pkl'))
+            logging.info("Loading pretrained weights from model: %s\n" %os.path.join(project_path,'model','best_model',pretrained_model+'_'+project+'.pkl'))
             model.load_state_dict(torch.load(os.path.join(project_path,'model','best_model',pretrained_model+'_'+project+'.pkl')))
             KL_START = 0
             ANNEALTIME = 1
         except:
-            print("No file found at %s\n" %os.path.join(project_path,'model','best_model',pretrained_model+'_'+project+'.pkl'))
+            logging.info("No file found at %s\n" %os.path.join(project_path,'model','best_model',pretrained_model+'_'+project+'.pkl'))
             try:
-                print("Loading pretrained weights from %s\n" %pretrained_model)
+                logging.info("Loading pretrained weights from %s\n" %pretrained_model)
                 model.load_state_dict(torch.load(pretrained_model))
                 KL_START = 0
                 ANNEALTIME = 1
             except:
-                print("Could not load pretrained model. Check file path in config.yaml.")
+                logging.info("Could not load pretrained model. Check file path in config.yaml.")
             
     """ DATASET """
     trainset = SEQUENCE_DATASET(os.path.join(project_path,"data", "train",""), data='train_seq.npy', train=True, temporal_window=TEMPORAL_WINDOW)
@@ -601,8 +609,8 @@ def train_model():
 
     if device == torch.device("cuda"): 
         cuda_generator = torch.Generator(device='cuda')
-        train_loader = Data.DataLoader(trainset, batch_size=TRAIN_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=16, generator=cuda_generator)
-        test_loader = Data.DataLoader(testset, batch_size=TEST_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=16, generator=cuda_generator)
+        train_loader = Data.DataLoader(trainset, batch_size=TRAIN_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=24, generator=cuda_generator)
+        test_loader = Data.DataLoader(testset, batch_size=TEST_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=24, generator=cuda_generator)
     elif device == torch.device("mps"):
         mps_generator = torch.Generator(device='mps')
         train_loader = Data.DataLoader(trainset, batch_size=TRAIN_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4, generator=mps_generator)
@@ -613,11 +621,11 @@ def train_model():
 
     wandb.watch(model, log="all")
     
-    print("Start training... ")
+    logging.info("Start training... ")
 
     for epoch in range(1,EPOCHS):
-        print('Epoch: %d' %epoch + ', Epochs on convergence counter: %d' %convergence)
-        print('Train: ')
+        logging.info('Epoch: %d' %epoch + ', Epochs on convergence counter: %d' %convergence)
+        logging.info('Train: ')
 
         weight, train_loss, train_km_loss, train_kl_loss, train_mse_loss, fut_loss = train(train_loader, epoch, model, optimizer, 
                                                                             anneal_function, BETA, KL_START, 
@@ -697,7 +705,7 @@ def train_model():
         # save best model
         if weight > 0.99 and test_mse_loss <= BEST_LOSS:
             BEST_LOSS = test_mse_loss
-            print("Saving model!")
+            logging.info("Saving model!")
             torch.save(model.state_dict(), os.path.join(project_path,"model", "best_model",model_name+'_'+project+'.pkl'))
             convergence = 0
         else:
@@ -706,35 +714,35 @@ def train_model():
 
         # save model snapshot
         if epoch % SNAPSHOT == 0:
-            print("Saving model snapshot!\n")
+            logging.info("Saving model snapshot!\n")
             torch.save(model.state_dict(), os.path.join(project_path,'model','best_model','snapshots',model_name+'_'+project+'_epoch_'+str(epoch)+'.pkl'))
             wandb.save(os.path.join(project_path,'model','best_model','snapshots',model_name+'_'+project+'_epoch_'+str(epoch)+'.pkl'))
 
         # save logged losses
-        np.save(os.path.join(project_path,'model','model_losses','train_losses_'+model_name), train_losses)
-        np.save(os.path.join(project_path,'model','model_losses','test_losses_'+model_name), test_losses)
-        np.save(os.path.join(project_path,'model','model_losses','kmeans_losses_'+model_name), train_kmeans_losses)
-        np.save(os.path.join(project_path,'model','model_losses','kl_losses_'+model_name), train_kl_losses)
-        np.save(os.path.join(project_path,'model','model_losses','weight_values_'+model_name), weight_values)
-        np.save(os.path.join(project_path,'model','model_losses','mse_train_losses_'+model_name), train_mse_losses)
-        np.save(os.path.join(project_path,'model','model_losses','mse_test_losses_'+model_name), test_mse_losses)
+        np.save(os.path.join(project_path,'model','model_losses','train_losses_'+model_name+'_'+random_suffix), train_losses)
+        np.save(os.path.join(project_path,'model','model_losses','test_losses_'+model_name+'_'+random_suffix), test_losses)
+        np.save(os.path.join(project_path,'model','model_losses','kmeans_losses_'+model_name+'_'+random_suffix), train_kmeans_losses)
+        np.save(os.path.join(project_path,'model','model_losses','kl_losses_'+model_name+'_'+random_suffix), train_kl_losses)
+        np.save(os.path.join(project_path,'model','model_losses','weight_values_'+model_name+'_'+random_suffix), weight_values)
+        np.save(os.path.join(project_path,'model','model_losses','mse_train_losses_'+model_name+'_'+random_suffix), train_mse_losses)
+        np.save(os.path.join(project_path,'model','model_losses','mse_test_losses_'+model_name+'_'+random_suffix), test_mse_losses)
         # np.save(os.path.join(cfg['project_path'], 'model', 'model_losses', 'fut_losses_' + model_name), fut_losses)
 
         # Convert fut_losses to a tensor and save
         fut_losses_tensor = torch.tensor(fut_losses)
         fut_losses_array = fut_losses_tensor.cpu().detach().numpy()
-        np.save(os.path.join(project_path, 'model', 'model_losses', 'fut_losses_' + model_name), fut_losses_array)
+        np.save(os.path.join(project_path, 'model', 'model_losses', 'fut_losses_' + model_name+'_'+random_suffix), fut_losses_array)
 
         #df_data = np.column_stack((train_losses, test_losses, train_kmeans_losses, train_kl_losses, weight_values, train_mse_losses, fut_losses, learn_rates, conv_counter))
         #df = pd.DataFrame(df_data.T, columns=['Train_losses', 'Test_losses', 'Kmeans_losses', 'KL_losses', 'Weight_values', 'MSE_losses', 'Future_losses', 'Learning_Rate', 'Convergence_counter'])
         df = pd.DataFrame([train_losses, test_losses, train_kmeans_losses, train_kl_losses, weight_values, train_mse_losses, fut_losses, learn_rates, conv_counter]).T
         df.columns=['Train_losses', 'Test_losses', 'Kmeans_losses', 'KL_losses', 'Weight_values', 'MSE_losses', 'Future_losses', 'Learning_Rate', 'Convergence_counter']
-        df.to_csv(project_path+'/model/model_losses/'+model_name+'_LossesSummary.csv')     
-        print("\n")
+        df.to_csv(project_path+'/model/model_losses/'+model_name+'_'+random_suffix+'_LossesSummary.csv')     
+        logging.info("\n")
 
         if convergence > model_convergence:
-            print('Finished training...')
-            print('Model converged. Please check your model with vame.evaluate_model(). \n'
+            logging.info('Finished training...')
+            logging.info('Model converged. Please check your model with vame.evaluate_model(). \n'
                     'You can also re-run vame.trainmodel() to further improve your model. \n'
                     'Make sure to set _pretrained_weights_ in your config.yaml to "true" \n'
                     'and plug your current model name into _pretrained_model_. \n'
@@ -746,7 +754,7 @@ def train_model():
             break
 
     if convergence < model_convergence:
-        print('Model seemed to have not reached convergence. You may want to check your model \n'
+        logging.info('Model seemed to have not reached convergence. You may want to check your model \n'
                 'with vame.evaluate_model(). If your satisfied you can continue with \n'
                 'Use vame.behavior_segmentation() to identify behavioral motifs!\n\n'
                 'OPTIONAL: You can re-run vame.rnn_model() to improve performance.')
