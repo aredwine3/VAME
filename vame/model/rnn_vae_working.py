@@ -121,9 +121,6 @@ def gaussian(ins, is_training, seq_len, std_n=0.8):
         return ins + (noise*emp_std)
     return ins
 
-def worker_init_fn(worker_id):
-    np.random.seed(np.random.get_state()[1][0] + worker_id)
-
 
 def train(train_loader, epoch, model, optimizer, anneal_function, BETA, kl_start,
           annealtime, seq_len, future_decoder, future_steps, scheduler, mse_red, 
@@ -197,10 +194,6 @@ def train(train_loader, epoch, model, optimizer, anneal_function, BETA, kl_start
 
         # if idx % 1000 == 0:
         #     print('Epoch: %d.  loss: %.4f' %(epoch, loss.item()))
-
-        wandb.log({'batch_train_loss': loss.item()})
-        wandb.log({'batch_train_mse_loss': rec_loss.item()})
-
    
     #scheduler.step(loss) #be sure scheduler is called before optimizer in >1.1 pytorch
 
@@ -266,9 +259,6 @@ def test(test_loader, epoch, model, optimizer, BETA, kl_weight, seq_len, mse_red
             mse_loss += rec_loss.item()
             kullback_loss += kl_loss.item()
             kmeans_losses += kmeans_loss
-
-            wandb.log({'batch_test_loss': loss.item()})
-            wandb.log({'batch_test_mse_loss': rec_loss.item()})
 
     print('Test loss: {:.3f}, MSE-Loss: {:.3f}, KL-Loss: {:.3f}, Kmeans-Loss: {:.3f}'.format(test_loss / idx,
           mse_loss /idx, BETA*kl_weight*kullback_loss/idx, kl_weight*kmeans_losses/idx))
