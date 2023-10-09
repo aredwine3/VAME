@@ -592,5 +592,5 @@ def train_model(config):
         wandb.finish()
     
 if __name__ == '__main__':
-    config = '$WORK/VAME_working/config_fabric_3.yaml'
+    config = 'work/wachslab/aredwine3/VAME_working/config_fabric_3.yaml'
     train_model(config)
