@@ -152,7 +152,7 @@ def train(train_loader, epoch, model, optimizer, anneal_function, BETA, kl_start
     else:
         dtype = torch.FloatTensor
 
-    for idx, data_item.cpu() in enumerate(train_loader):
+    for idx, data_item in enumerate(train_loader):
         data_item = Variable(data_item.to(device)).permute(0,2,1)
         data = data_item[:,:seq_len_half,:].type(dtype)
         fut = data_item[:,seq_len_half:seq_len_half+future_steps,:].type(dtype)
@@ -394,8 +394,8 @@ def train_model(config):
 
     if device == torch.device("cuda"): 
         cuda_generator = torch.Generator(device='cuda')
-        train_loader = Data.DataLoader(trainset, batch_size=TRAIN_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4, generator=cuda_generator)
-        test_loader = Data.DataLoader(testset, batch_size=TEST_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4, generator=cuda_generator)
+        train_loader = Data.DataLoader(trainset, batch_size=TRAIN_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=14)#, generator=cuda_generator)
+        test_loader = Data.DataLoader(testset, batch_size=TEST_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=14)#, generator=cuda_generator)     
     elif device == torch.device("mps"):
         mps_generator = torch.Generator(device='mps')
         train_loader = Data.DataLoader(trainset, batch_size=TRAIN_BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4, generator=mps_generator)
