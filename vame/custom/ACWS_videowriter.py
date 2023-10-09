@@ -142,7 +142,7 @@ def get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag, fps=30,
         dataFile = dataFile[0] if dataFile else None
             
         if dataFile:
-            header_check = count_headers(os.path.join(projectPath, 'videos', 'pose_estimation',file+'*.csv'))
+            header_check = count_headers(dataFile) 
             
             if header_check == 2:
                 data = pd.read_csv(dataFile, index_col=0, header=[0,1])
