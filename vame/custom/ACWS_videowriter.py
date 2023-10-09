@@ -120,16 +120,18 @@ def get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag, fps=30,
 
         print("Full path to video with trimmed name:", trimmed_full_video_path)
         
-        capture = cv.VideoCapture(trimmed_full_video_path)
+        capture = cv.VideoCapture(resolved_path)
+        
+    try:
+        if capture.isOpened():
+            print("Video capture successful")  # Debug print 3
+            width  = capture.get(cv.CAP_PROP_FRAME_WIDTH)
+            height = capture.get(cv.CAP_PROP_FRAME_HEIGHT)
+        else:
+            print("Video capture failed")  # Debug print 3
+    except Exception as e:
+        OSError("Video capture failed: " + str(e))
 
-    
-    if capture.isOpened():
-        print("Video capture successful")  # Debug print 3
-        width  = capture.get(cv.CAP_PROP_FRAME_WIDTH)
-        height = capture.get(cv.CAP_PROP_FRAME_HEIGHT)
-    else:
-        print("Video capture failed")  # Debug print 3
-        raise OSError("Could not open OpenCV capture device.")
 
     
     if extractData:
