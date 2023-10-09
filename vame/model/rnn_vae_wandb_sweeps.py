@@ -46,7 +46,7 @@ warnings.filterwarnings("ignore", category=NumbaPendingDeprecationWarning)
 random_suffix = str(np.random.randint(100))
 
 # Set up logging
-logging.basicConfig(filename=f'rnn_vae_wandb_sweeps_{random_suffix}.log' , level=logging.INFO)
+logging.basicConfig(filename=f'rnn_vae_wandb_sweeps_{random_suffix}.log' , level=logging.DEBUG)
 
 def set_device(counters={"gpu_count": 0, "cpu_count": 0}):
   
@@ -148,18 +148,28 @@ def train(train_loader, epoch, model, optimizer, anneal_function, BETA, kl_start
     loss = 0.0
     seq_len_half = int(seq_len / 2)
 
-    device, use_gpu, use_mps = set_device()
-
-    dtype = None
-    if use_gpu:
-        dtype = torch.cuda.FloatTensor
-    elif use_mps:
-        dtype = torch.FloatTensor
-    else:
-        dtype = torch.FloatTensor
+    try:
+      device, use_gpu, use_mps = set_device()
+    except Exception as e:
+      logging.debug(f"Error setting device {e}")
+    
+    try:
+      dtype = None
+      if use_gpu:
+          dtype = torch.cuda.FloatTensor
+      elif use_mps:
+          dtype = torch.FloatTensor
+      else:
+          dtype = torch.FloatTensor
+    except Exception as e:
+      logging.debug(f"Error setting dtype {e}")
     
     for idx, data_item in enumerate(train_loader):
-        data_item = data_item.to(device)
+        try:
+          data_item = data_item.to(device)
+        except Exception as e:
+          logging.debug(f"Error moving data to device {e}")
+        
         data_item = Variable(data_item)
         data_item = data_item.permute(0,2,1)
         data = data_item[:,:seq_len_half,:].type(dtype)
