@@ -59,7 +59,7 @@ def set_device(counters={"gpu_count": 0, "cpu_count": 0}):
         if counters["gpu_count"] == 1:
             logging.info("Using CUDA")
             logging.info('GPU active: %s', torch.cuda.is_available())
-            logging.info('GPU used:', torch.cuda.get_device_name(0))
+            logging.info('GPU used: %s', torch.cuda.get_device_name(0))
     elif use_mps:
         device = torch.device("mps")
         #torch.set_default_tensor_type('torch.FloatTensor')
