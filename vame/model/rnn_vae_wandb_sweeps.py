@@ -54,7 +54,7 @@ def set_device(counters={"gpu_count": 0, "cpu_count": 0}):
 
     if use_gpu:
         device = torch.device("cuda")
-        # torch.set_default_tensor_type('torch.cuda.FloatTensor')
+        torch.set_default_tensor_type('torch.cuda.FloatTensor')
         # torch.set_default_device(f'cuda:{torch.cuda.current_device()}')
         torch.set_default_device('cuda')
         torch.set_default_dtype(torch.float32)
@@ -159,51 +159,54 @@ def train(train_loader, epoch, model, optimizer, anneal_function, BETA, kl_start
         dtype = torch.FloatTensor
     else:
         dtype = torch.FloatTensor
+    
+    try:
+        for idx, data_item in enumerate(train_loader):
+            data_item = Variable(data_item.to(device)).permute(0, 2, 1)
+            data = data_item[:, :seq_len_half, :].type(dtype)
+            fut = data_item[:, seq_len_half:seq_len_half +
+                            future_steps, :].type(dtype)
 
-    for idx, data_item in enumerate(train_loader):
-        data_item = Variable(data_item.to(device)).permute(0, 2, 1)
-        data = data_item[:, :seq_len_half, :].type(dtype)
-        fut = data_item[:, seq_len_half:seq_len_half +
-                        future_steps, :].type(dtype)
+            if noise:
+                data_gaussian = gaussian(data, True, seq_len_half)
+            else:
+                data_gaussian = data
 
-        if noise:
-            data_gaussian = gaussian(data, True, seq_len_half)
-        else:
-            data_gaussian = data
+            if future_decoder:
+                data_tilde, future, latent, mu, logvar = model(data_gaussian)
 
-        if future_decoder:
-            data_tilde, future, latent, mu, logvar = model(data_gaussian)
+                rec_loss = reconstruction_loss(data, data_tilde, mse_red)
+                fut_rec_loss = future_reconstruction_loss(fut, future, mse_pred)
+                kmeans_loss = cluster_loss(latent.T, kloss, klmbda, bsize)
+                kl_loss = kullback_leibler_loss(mu, logvar)
+                kl_weight = kl_annealing(
+                    epoch, kl_start, annealtime, anneal_function)
+                loss = rec_loss + fut_rec_loss + BETA*kl_weight*kl_loss + kl_weight*kmeans_loss
+                fut_loss += fut_rec_loss.detach()  # .item()
 
-            rec_loss = reconstruction_loss(data, data_tilde, mse_red)
-            fut_rec_loss = future_reconstruction_loss(fut, future, mse_pred)
-            kmeans_loss = cluster_loss(latent.T, kloss, klmbda, bsize)
-            kl_loss = kullback_leibler_loss(mu, logvar)
-            kl_weight = kl_annealing(
-                epoch, kl_start, annealtime, anneal_function)
-            loss = rec_loss + fut_rec_loss + BETA*kl_weight*kl_loss + kl_weight*kmeans_loss
-            fut_loss += fut_rec_loss.detach()  # .item()
+            else:
+                data_tilde, latent, mu, logvar = model(data_gaussian)
 
-        else:
-            data_tilde, latent, mu, logvar = model(data_gaussian)
+                rec_loss = reconstruction_loss(data, data_tilde, mse_red)
+                kl_loss = kullback_leibler_loss(mu, logvar)
+                kmeans_loss = cluster_loss(latent.T, kloss, klmbda, bsize)
+                kl_weight = kl_annealing(
+                    epoch, kl_start, annealtime, anneal_function)
+                loss = rec_loss + BETA*kl_weight*kl_loss + kl_weight*kmeans_loss
 
-            rec_loss = reconstruction_loss(data, data_tilde, mse_red)
-            kl_loss = kullback_leibler_loss(mu, logvar)
-            kmeans_loss = cluster_loss(latent.T, kloss, klmbda, bsize)
-            kl_weight = kl_annealing(
-                epoch, kl_start, annealtime, anneal_function)
-            loss = rec_loss + BETA*kl_weight*kl_loss + kl_weight*kmeans_loss
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
 
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
+            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=5)
 
-        torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=5)
-
-        train_loss += loss.item()
-        mse_loss += rec_loss.item()
-        kullback_loss += kl_loss.item()
-        kmeans_losses += kmeans_loss.item()
-
+            train_loss += loss.item()
+            mse_loss += rec_loss.item()
+            kullback_loss += kl_loss.item()
+            kmeans_losses += kmeans_loss.item()
+    except Exception as e:
+        logging.info(f"Exception in training for loop: {e}")
+        
         # if idx % 1000 == 0:
         #     logging.info('Epoch: %d.  loss: %.4f' %(epoch, loss.item()))
 
