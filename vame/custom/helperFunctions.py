@@ -40,6 +40,29 @@ import glob
 import concurrent.futures
 from tqdm import tqdm
 
+def replace_date_underscores(directory):
+    """
+    Replaces underscores in date numbers (in the format xx_xx_xx) with hyphens in all filenames in a given directory.
+    
+    Parameters:
+        directory (str): The directory where the files are located.
+        
+    Returns:
+        None
+    """
+    
+    for filename in os.listdir(directory):
+        # Search for date pattern xx_xx_xx in the filename
+        new_filename = re.sub(r'(\d{2})_(\d{2})_(\d{2})', r'\1-\2-\3', filename)
+        
+        # Rename the file only if the filename has changed
+        if new_filename != filename:
+            original_file_path = os.path.join(directory, filename)
+            new_file_path = os.path.join(directory, new_filename)
+            os.rename(original_file_path, new_file_path)
+            print(f"Renamed {filename} to {new_filename}")
+
+
 def delete_files(directory, file_extension):
     # Iterate over all subdirectories
     for subdir, dirs, files in os.walk(directory):
@@ -91,6 +114,15 @@ def convert_multi_csv_to_individual_csv(csv_files_path):
             fname_temp.to_csv(fname_temp_path, index=True, header=True)
 
 def create_symlinks(video_dir, new_dir):
+    """_summary_
+
+    Args:
+    video_dir (str): The path to the directory containing the video files.
+    new_dir (str): The path to the directory where the video files will be moved and the symbolic links will be created.
+
+    1. It moves the video files from the original directory (video_dir) to a new directory (new_dir).
+    2. It creates symbolic links in the original directory that point to the moved video files in the new directory.
+    """
     # Create the new directory if it doesn't exist
     os.makedirs(new_dir, exist_ok=True)
 
@@ -102,6 +134,7 @@ def create_symlinks(video_dir, new_dir):
 
     # Loop through each video file
     for video_path in video_files:
+        
         # Get the video filename
         video_filename = os.path.basename(video_path)
 
