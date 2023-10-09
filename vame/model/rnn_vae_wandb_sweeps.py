@@ -796,4 +796,9 @@ def train_model():
         wandb.finish()
 
 
-wandb.agent(sweep_id, function=train_model, count=10)
+#wandb.agent(sweep_id, function=train_model, count=10)
+
+wandb.agent(sweep_id='wd53266y', function=train_model, count=10, entity="aredwine3", project="VAME")
+
+
+
