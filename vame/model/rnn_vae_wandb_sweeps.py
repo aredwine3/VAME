@@ -10,6 +10,7 @@ Licensed under GNU General Public License v3.0
 """
 # Standard libraries
 import os
+from tempfile import TemporaryFile
 import time
 from pathlib import Path
 
@@ -134,6 +135,8 @@ def gaussian(ins, is_training, seq_len, std_n=0.8):
 def train(train_loader, epoch, model, optimizer, anneal_function, BETA, kl_start,
           annealtime, seq_len, future_decoder, future_steps, scheduler, mse_red, 
           mse_pred, kloss, klmbda, bsize, noise):
+    logging.info(f"In the training loop. Epoch: {epoch}")
+    
     model.train() # toggle model to train mode
     train_loss = 0.0
     mse_loss = 0.0
@@ -148,6 +151,8 @@ def train(train_loader, epoch, model, optimizer, anneal_function, BETA, kl_start
     except Exception as e:
       logging.debug(f"Error setting device {e}")
     
+    logging.info(f"set_device() returned device:{device}, use_gpu:{use_gpu}, use_mps{use_mps}")
+    
     try:
       dtype = None
       if use_gpu:
@@ -158,10 +163,14 @@ def train(train_loader, epoch, model, optimizer, anneal_function, BETA, kl_start
           dtype = torch.FloatTensor
     except Exception as e:
       logging.debug(f"Error setting dtype {e}")
+      
+    logging.info(f"set dtype to {dtype}")
     
     for idx, data_item in enumerate(train_loader):
+        logging.info(f"Starting iteration {idx} in training loop.")
         try:
           data_item = data_item.to(device)
+          logging.info(f"data_item moved to device")
         except Exception as e:
           logging.debug(f"Error moving data to device {e}")
         
@@ -176,24 +185,95 @@ def train(train_loader, epoch, model, optimizer, anneal_function, BETA, kl_start
             data_gaussian = data
 
         if future_decoder:
+          
+          try:
+            logging.info("Starting forward pass")
             data_tilde, future, latent, mu, logvar = model(data_gaussian)
+            logging.info("Forward pass completed")
+          except Exception as e:
+            logging.debug(f"Error in forward pass {e}")
 
+          try:
+            logging.info("Calculating reconstruction loss.")
             rec_loss = reconstruction_loss(data, data_tilde, mse_red)
+            logging.info("Calculated reconstruction loss.")
+          except Exception as e:
+            logging.debug(f"Error calculating reconstruction loss: {e}")
+          
+          try:
+            logging.info("Calculating future reconstruction loss.")
             fut_rec_loss = future_reconstruction_loss(fut, future, mse_pred)
+            logging.info("Calculated future reconstruction loss.")
+          except Exception as e:
+            logging.debug(f"Error calculating future reconstruction loss: {e}")
+          
+          try:
+            logging.info("Calculating kmeans loss.")
             kmeans_loss = cluster_loss(latent.T, kloss, klmbda, bsize)
+            logging.info("Calculated kmeans loss.")
+          except Exception as e:
+            logging.debug(f"Error calculating kmeans loss: {e}")
+          
+          try:
+            logging.info("Calculating KL loss.")
             kl_loss = kullback_leibler_loss(mu, logvar)
+            logging.info("Calculated KL loss.")
+          except Exception as e:
+            logging.debug(f"Error calculating KL loss: {e}")
+            
+          try:
+            logging.info("Calculating KL weight.")
             kl_weight = kl_annealing(epoch, kl_start, annealtime, anneal_function)
-            loss = rec_loss + fut_rec_loss + BETA*kl_weight*kl_loss + kl_weight*kmeans_loss
+            logging.info("Calculated KL weight.")
+          except Exception as e:
+            logging.debug(f"Error calculating KL weight: {e}")
+          
+          loss = rec_loss + fut_rec_loss + BETA*kl_weight*kl_loss + kl_weight*kmeans_loss
+          
+          try:
+            logging.info("Detaching future reconstruction loss.")
             fut_loss += fut_rec_loss.detach()#.item()
+            logging.info("Detached future reconstruction loss.")
+          except Exception as e:
+            logging.debug(f"Error detaching future reconstruction loss: {e}")
 
         else:
+          try:
+            logging.info("Starting forward pass for non-future decoder.")
             data_tilde, latent, mu, logvar = model(data_gaussian)
+            logging.info("Forward pass completed for non-future decoder.")
+          except Exception as e:
+            logging.debug(f"Error in forward pass for non-future decoder: {e}")
 
+          try:
+            logging.info("Calculating reconstruction loss.")
             rec_loss = reconstruction_loss(data, data_tilde, mse_red)
+            logging.info("Calculated reconstruction loss.")
+          except Exception as e:
+            logging.debug(f"Error calculating reconstruction loss: {e}")
+            
+          try:
+            logging.info("Calculating KL loss.")
             kl_loss = kullback_leibler_loss(mu, logvar)
+            logging.info("Calculated KL loss.")
+          except Exception as e:
+            logging.debug(f"Error calculating KL loss: {e}")
+            
+          try:
+            logging.info("Calculating kmeans loss.")
             kmeans_loss = cluster_loss(latent.T, kloss, klmbda, bsize)
+            logging.info("Calculated kmeans loss.")
+          except Exception as e:
+            logging.debug(f"Error calculating kmeans loss: {e}")
+            
+          try:
+            logging.info("Calculating KL weight.")
             kl_weight = kl_annealing(epoch, kl_start, annealtime, anneal_function)
-            loss = rec_loss + BETA*kl_weight*kl_loss + kl_weight*kmeans_loss
+            logging.info("Calculated KL weight.")
+          except Exception as e:
+            logging.debug(f"Error calculating KL weight: {e}")
+            
+          loss = rec_loss + BETA*kl_weight*kl_loss + kl_weight*kmeans_loss
         
         optimizer.zero_grad()
         loss.backward()
@@ -738,6 +818,7 @@ def train_model():
         # np.save(os.path.join(cfg['project_path'], 'model', 'model_losses', 'fut_losses_' + model_name), fut_losses)
 
         # Convert fut_losses to a tensor and save
+        logging.debug("Converting fut_losses to a tensor and saving")
         fut_losses_tensor = torch.tensor(fut_losses)
         fut_losses_array = fut_losses_tensor.cpu().detach().numpy()
         np.save(os.path.join(project_path, 'model', 'model_losses', 'fut_losses_' + model_name+'_'+random_suffix), fut_losses_array)
