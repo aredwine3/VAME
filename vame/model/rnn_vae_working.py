@@ -196,7 +196,7 @@ def train(train_loader, epoch, model, optimizer, anneal_function, BETA, kl_start
         # if idx % 1000 == 0:
         #     print('Epoch: %d.  loss: %.4f' %(epoch, loss.item()))
    
-    #scheduler.step(loss) #be sure scheduler is called before optimizer in >1.1 pytorch
+    scheduler.step(loss) #be sure scheduler is called before optimizer in >1.1 pytorch
 
     if future_decoder:
         print(time.strftime('%H:%M:%S'))
@@ -504,14 +504,6 @@ def train_model(config):
         test_mse_loss, test_loss, test_list = test(test_loader, epoch, model, optimizer,
                                                   BETA, weight, TEMPORAL_WINDOW, MSE_REC_REDUCTION,
                                                   KMEANS_LOSS, KMEANS_LAMBDA, FUTURE_DECODER, TEST_BATCH_SIZE)
-
-        scheduler.step(test_loss) #be sure scheduler is called before optimizer in >1.1 pytorch
-        
-        # The scheduler.step() should be called after validating the model because 
-        # we're using the ReduceLROnPlateau scheduler. This particular scheduler 
-        # adjusts the learning rate based on a monitored metric (in this case, 
-        # the validation (test) loss). Therefore, it's crucial to place scheduler.step(test_loss) 
-        # after the validation loop has calculated the validation loss for the current epoch.
         
         # logging losses
         train_losses.append(train_loss)
@@ -527,7 +519,7 @@ def train_model(config):
         lr = optimizer.param_groups[0]['lr']
         learn_rates.append(lr)
 
-        if wandb_usage is 'l' and wandb.run is not None:
+        if wandb_usage == 'l' and wandb.run is not None:
             wandb.log({'learning_rate': lr,
                     'train_loss': train_loss,
                     'mse_loss_train': mse_loss,
@@ -600,5 +592,5 @@ def train_model(config):
         wandb.finish()
     
 if __name__ == '__main__':
-    config = 'lustre/work/wachslab/aredwine3/VAME_working/config_fabric_3.yaml'
+    config = '$WORK/VAME_working/config_fabric_3.yaml'
     train_model(config)
