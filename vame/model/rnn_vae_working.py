@@ -12,6 +12,7 @@ Licensed under GNU General Public License v3.0
 import os
 import time
 from pathlib import Path
+from sympy import use
 
 # Third-party libraries
 import wandb
@@ -48,7 +49,9 @@ def set_device(counters={"gpu_count": 0, "cpu_count": 0}):
 
     if use_gpu:
         device = torch.device("cuda")
-        torch.set_default_tensor_type('torch.cuda.FloatTensor')
+        #torch.set_default_tensor_type('torch.cuda.FloatTensor')
+        torch.set_default_device('cuda')
+        torch.set_default_dtype(torch.float32)
         counters["gpu_count"] += 1
         if counters["gpu_count"] == 1:
             print("Using CUDA")
@@ -150,9 +153,7 @@ def train(train_loader, epoch, model, optimizer, anneal_function, BETA, kl_start
         dtype = torch.FloatTensor
 
     for idx, data_item in enumerate(train_loader):
-        data_item = data_item.to(device)
-        data_item = Variable(data_item)
-        data_item = data_item.permute(0,2,1)
+        data_item = Variable(data_item.to(device)).permute(0,2,1)
         data = data_item[:,:seq_len_half,:].type(dtype)
         fut = data_item[:,seq_len_half:seq_len_half+future_steps,:].type(dtype)
 
@@ -254,7 +255,7 @@ def test(test_loader, epoch, model, optimizer, BETA, kl_weight, seq_len, mse_red
                 kmeans_loss = cluster_loss(latent.T, kloss, klmbda, bsize)
                 loss = rec_loss + BETA*kl_weight*kl_loss + kl_weight*kmeans_loss
 
-            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm = 5)
+            #torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm = 5)
 
             test_loss += loss.item()
             mse_loss += rec_loss.item()
@@ -281,24 +282,8 @@ def train_model(config):
     os.makedirs(os.path.join(cfg['project_path'],'model','best_model','snapshots'), exist_ok=True)
     os.makedirs(os.path.join(cfg['project_path'],'model','model_losses',""), exist_ok=True)
 
-    # make sure torch uses cuda or MPS for GPU computing
-    use_gpu = torch.cuda.is_available()
-    use_mps = torch.backends.mps.is_available() and not use_gpu
-
-    if use_gpu:
-        device = torch.device("cuda")
-        torch.set_default_tensor_type('torch.cuda.FloatTensor')
-        print("Using CUDA")
-        print('GPU active:', torch.cuda.is_available())
-        print('GPU used:', torch.cuda.get_device_name(0))
-    elif use_mps:
-        device = torch.device("mps")
-        torch.set_default_tensor_type('torch.FloatTensor')
-        print("Using MPS")
-    else:
-        device = torch.device("cpu")
-        print("warning, a GPU was not found... proceeding with CPU (slow!) \n")
-        #raise NotImplementedError('GPU Computing is required!')
+    # make sure torch uses cuda or MPS for GPU computing        
+    device, use_gpu, use_mps = set_device()
         
     """ HYPERPARAMTERS """
     # General
