@@ -286,7 +286,7 @@ sweep_configuration = {
     },
     "early_terminate": {
         "type": "hyperband",
-        "min_iter": 15
+        "min_iter": 50
     },
     "parameters": {
         "Project": {
@@ -318,7 +318,7 @@ sweep_configuration = {
             "distribution": "categorical"
         },
         "max_epochs": {
-            "value": 350,
+            "value": 400,
             "distribution": "constant"
         },
         "model_snapshot": {
