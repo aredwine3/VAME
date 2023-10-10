@@ -54,7 +54,9 @@ def set_device(counters={"gpu_count": 0, "cpu_count": 0}):
 
     if use_gpu:
         device = torch.device("cuda")
-        torch.set_default_tensor_type('torch.cuda.FloatTensor')
+        #torch.set_default_tensor_type('torch.cuda.FloatTensor')
+        torch.set_default_device('cuda')
+        torch.set_default_dtype(torch.float32)
         counters["gpu_count"] += 1
         if counters["gpu_count"] == 1:
             logging.info("Using CUDA")
@@ -62,7 +64,9 @@ def set_device(counters={"gpu_count": 0, "cpu_count": 0}):
             logging.info('GPU used: %s', torch.cuda.get_device_name(0))
     elif use_mps:
         device = torch.device("mps")
-        torch.set_default_tensor_type('torch.FloatTensor')
+       # torch.set_default_tensor_type('torch.FloatTensor')
+        torch.set_default_device('mps')
+        torch.set_default_dtype(torch.float32)
         counters["gpu_count"] += 1
         if counters["gpu_count"] == 1:
             logging.info("Using MPS")
@@ -282,7 +286,7 @@ sweep_configuration = {
     },
     "early_terminate": {
         "type": "hyperband",
-        "min_iter": 3
+        "min_iter": 15
     },
     "parameters": {
         "Project": {
@@ -608,9 +612,9 @@ def train_model():
     if device == torch.device("cuda"):
         cuda_generator = torch.Generator(device='cuda')
         train_loader = Data.DataLoader(trainset, batch_size=TRAIN_BATCH_SIZE,
-                                       shuffle=True, drop_last=True, num_workers=24, generator=cuda_generator)
+                                       shuffle=True, drop_last=True, num_workers=24, generator=cuda_generator, pin_memory=True)
         test_loader = Data.DataLoader(testset, batch_size=TEST_BATCH_SIZE,
-                                      shuffle=True, drop_last=True, num_workers=24, generator=cuda_generator)
+                                      shuffle=True, drop_last=True, num_workers=24, generator=cuda_generator, pin_memory=True)
     elif device == torch.device("mps"):
         mps_generator = torch.Generator(device='mps')
         train_loader = Data.DataLoader(trainset, batch_size=TRAIN_BATCH_SIZE,
