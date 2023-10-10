@@ -318,7 +318,7 @@ sweep_configuration = {
             "distribution": "categorical"
         },
         "max_epochs": {
-            "value": 150,
+            "value": 350,
             "distribution": "constant"
         },
         "model_snapshot": {
