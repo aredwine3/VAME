@@ -461,7 +461,7 @@ sweep_configuration = {
 wandb.login(key='bcd2a5a57142a0e6bb3d51242f679ab3d00dd8d4')
 
 #sweep_id = wandb.sweep(sweep=sweep_configuration,
-                       project="VAME", entity="aredwine3")
+                      # project="VAME", entity="aredwine3")
 
 
 def train_model():
