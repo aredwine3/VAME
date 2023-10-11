@@ -286,6 +286,7 @@ sweep_configuration = {
     },
     "early_terminate": {
         "type": "hyperband",
+        "eta": 3,
         "min_iter": 50
     },
     "parameters": {
