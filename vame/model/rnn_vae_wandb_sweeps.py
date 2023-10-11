@@ -326,7 +326,7 @@ sweep_configuration = {
             "distribution": "constant"
         },
         "model_convergence": {
-            "value": 25,
+            "value": 50,
             "distribution": "constant"
         },
         "transition_function": {
