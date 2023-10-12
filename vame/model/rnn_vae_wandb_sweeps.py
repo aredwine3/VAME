@@ -463,8 +463,8 @@ sweep_configuration = {
 
 wandb.login(key='bcd2a5a57142a0e6bb3d51242f679ab3d00dd8d4')
 
-sweep_id = wandb.sweep(sweep=sweep_configuration,
-                      project="VAME", entity="aredwine3")
+#sweep_id = wandb.sweep(sweep=sweep_configuration,
+                      #project="VAME", entity="aredwine3")
 
 
 def train_model():
@@ -795,9 +795,10 @@ def train_model():
         wandb.finish()
 
 
-wandb.agent(sweep_id, function=train_model, count=10)
+#wandb.agent(sweep_id, function=train_model, count=10)
 
 #wandb.agent(sweep_id='wd53266y', function=train_model, count=20, entity="aredwine3", project="VAME")
+wandb.agent(sweep_id='uqmeisdr', function=train_model, count=20, entity="aredwine3", project="VAME")
 
 
 
