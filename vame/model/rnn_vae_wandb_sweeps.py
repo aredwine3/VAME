@@ -279,7 +279,7 @@ def test(test_loader, epoch, model, optimizer, BETA, kl_weight, seq_len, mse_red
 
 
 sweep_configuration = {
-    "method": "random",
+    "method": "random", # grid, random, bayes
     "metric": {
         "name": "train_loss",
         "goal": "minimize"
@@ -343,24 +343,26 @@ sweep_configuration = {
             "distribution": "categorical"
         },
         "zdims": {
-            "values": [10, 15, 20, 25, 30, 35, 40, 45, 50],
+            "values": [10, 20, 30, 40, 50], # [10, 15, 20, 25, 30, 35, 40, 45, 50],
             "distribution": "categorical"
         },
         "learning_rate": {
-            "values": [0.0001, 0.0005, 0.001, 0.005],
+            "values": [0.0005, 0.001, 0.002], # For use with random
             "distribution": "categorical"
+            #"min": 0.0005, # For use with bayes`
+            #"max": 0.002,
+            #"distribution": "uniform"
         },
         "time_window": {
-            "values": [30, 45, 60, 75, 90, 105, 120],
+            "values": [30, 45, 60],   # [30, 45, 60, 75, 90, 105, 120]
             "distribution": "categorical"
         },
         "prediction_decoder": {
             "value": 1,
-
             "distribution": "constant"
         },
         "prediction_steps": {
-            "values": [15, 20, 25, 30, 35],
+            "values": [15, 25, 35], # [15, 20, 25, 30, 35]
             "distribution": "categorical"
         },
         "noise": {
@@ -380,11 +382,12 @@ sweep_configuration = {
             "distribution": "constant"
         },
         "scheduler_threshold": {
-            "values": [0.0001, 0.001, 0.01, 0.05, 0.1],
+            "values": [0.0001, 0.01, 0.1], #[0.0001, 0.001, 0.01, 0.05, 0.1]
             "distribution": "categorical"
         },
         "softplus": {
-            "values": [True, False]
+            "values": [True, False],
+            "distribution": "categorical"
         },
         "hidden_layer_size_1": {
             "values": [256, 512],
