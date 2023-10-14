@@ -279,15 +279,15 @@ def test(test_loader, epoch, model, optimizer, BETA, kl_weight, seq_len, mse_red
 
 
 sweep_configuration = {
-    "method": "random", # grid, random, bayes
+    "method": "bayes", # grid, random, bayes
     "metric": {
         "name": "train_loss",
         "goal": "minimize"
     },
     "early_terminate": {
         "type": "hyperband",
-        "eta": 3,
-        "min_iter": 50
+        "eta": 2,
+        "min_iter": 150
     },
     "parameters": {
         "Project": {
@@ -315,8 +315,8 @@ sweep_configuration = {
             "distribution": "constant"
         },
         "batch_size": {
-            "values": [256, 512, 1024],
-            "distribution": "categorical"
+            "value": 256, #[256, 512, 1024]
+            "distribution": "constant"
         },
         "max_epochs": {
             "value": 400,
@@ -343,30 +343,38 @@ sweep_configuration = {
             "distribution": "categorical"
         },
         "zdims": {
-            "values": [10, 20, 30, 40, 50], # [10, 15, 20, 25, 30, 35, 40, 45, 50],
-            "distribution": "categorical"
+            #"values": [10, 20, 30, 40, 50], # [10, 15, 20, 25, 30, 35, 40, 45, 50], # For use with random
+            #"distribution": "categorical"
+            "min": 10, # For use with bayes`
+            "max": 50,
+            "distribution": "int_uniform"
         },
         "learning_rate": {
-            "values": [0.0005, 0.001, 0.002], # For use with random
-            "distribution": "categorical"
-            #"min": 0.0005, # For use with bayes`
-            #"max": 0.002,
-            #"distribution": "uniform"
+            #"values": [0.0005, 0.001, 0.002], # For use with random
+            #"distribution": "categorical",
+            "values": 0.0005, # Setting as constant for Bayes
+            "distribution": "constant"
         },
         "time_window": {
-            "values": [30, 45, 60],   # [30, 45, 60, 75, 90, 105, 120]
-            "distribution": "categorical"
+            #"values": [30, 45, 60],   # [30, 45, 60, 75, 90, 105, 120]
+            #"distribution": "categorical",
+            "min": 30, # For use with bayes`
+            "max": 60,
+            "distribution": "int_uniform"
         },
         "prediction_decoder": {
             "value": 1,
             "distribution": "constant"
         },
         "prediction_steps": {
-            "values": [15, 25, 35], # [15, 20, 25, 30, 35]
-            "distribution": "categorical"
+            #"values": [15, 25, 35], # [15, 20, 25, 30, 35]
+            #"distribution": "categorical"
+            "min": 15, # For use with bayes`
+            "max": 35,
+            "distribution": "int_uniform"
         },
         "noise": {
-            "values": [True, False],
+            "values": [False], # [True, False]
             "distribution": "categorical"
         },
         "scheduler": {
@@ -382,32 +390,45 @@ sweep_configuration = {
             "distribution": "constant"
         },
         "scheduler_threshold": {
-            "values": [0.0001, 0.01, 0.1], #[0.0001, 0.001, 0.01, 0.05, 0.1]
-            "distribution": "categorical"
+            "value": [0.0001], #[0.0001, 0.001, 0.01, 0.05, 0.1] 0.0001 is default value for ReduceLROnPlateau in PyTorch docs
+            "distribution": "constant"
         },
         "softplus": {
-            "values": [True, False],
+            "values": [False], #[True, False],
             "distribution": "categorical"
         },
         "hidden_layer_size_1": {
-            "values": [256, 512],
-            "distribution": "categorical"
+            #"values": [256, 512],
+            #"distribution": "categorical",
+            "min": 256, # For use with bayes`
+            "max": 512,
+            "distribution": "int_uniform"
         },
         "hidden_layer_size_2": {
-            "values": [256, 512],
-            "distribution": "categorical"
+            #"values": [256, 512],
+            #"distribution": "categorical",
+            "min": 256, # For use with bayes`
+            "max": 512,
+            "distribution": "int_uniform"
         },
         "dropout_encoder": {
-            "values": [0, 1],
-            "distribution": "categorical"
+            #"values": [0, 1],
+            #"distribution": "categorical"
+            "value": 1,
+            "distribution": "constant"
         },
         "hidden_size_rec": {
-            "values": [256, 512],
-            "distribution": "categorical"
+            #"values": [256, 512],
+            #"distribution": "categorical",
+            "min": 256, # For use with bayes`
+            "max": 512,
+            "distribution": "int_uniform"
         },
         "dropout_rec": {
-            "values": [0, 1],
-            "distribution": "categorical"
+            #"values": [0, 1],
+            #"distribution": "categorical"
+            "value": 1,
+            "distribution": "constant"
         },
         "n_layers": {
             "min": 2,
@@ -415,12 +436,17 @@ sweep_configuration = {
             "distribution": "int_uniform"
         },
         "hidden_size_pred": {
-            "values": [256, 512],
-            "distribution": "categorical"
+            #"values": [256, 512],
+            #"distribution": "categorical",
+            "min": 256, # For use with bayes`
+            "max": 512,
+            "distribution": "int_uniform"
         },
         "dropout_pred": {
-            "values": [0, 1],
-            "distribution": "categorical"
+            #"values": [0, 1],
+            #"distribution": "categorical"
+            "value": 1,
+            "distribution": "constant"
         },
         "mse_reconstruction_reduction": {
             "values": ["sum"],
@@ -439,7 +465,7 @@ sweep_configuration = {
             "distribution": "constant"
         },
         "anneal_function": {
-            "values": ["linear", "sigmoid"],
+            "values": ["linear"], #["linear", "sigmoid"]
             "distribution": "categorical"
         },
         "kl_start": {
