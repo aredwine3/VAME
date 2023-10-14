@@ -352,7 +352,7 @@ sweep_configuration = {
         "learning_rate": {
             #"values": [0.0005, 0.001, 0.002], # For use with random
             #"distribution": "categorical",
-            "values": 0.0005, # Setting as constant for Bayes
+            "value": 0.0005, # Setting as constant for Bayes
             "distribution": "constant"
         },
         "time_window": {
