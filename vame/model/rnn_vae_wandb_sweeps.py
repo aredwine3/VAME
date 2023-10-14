@@ -390,7 +390,7 @@ sweep_configuration = {
             "distribution": "constant"
         },
         "scheduler_threshold": {
-            "value": [0.0001], #[0.0001, 0.001, 0.01, 0.05, 0.1] 0.0001 is default value for ReduceLROnPlateau in PyTorch docs
+            "value": 0.0001, #[0.0001, 0.001, 0.01, 0.05, 0.1] 0.0001 is default value for ReduceLROnPlateau in PyTorch docs
             "distribution": "constant"
         },
         "softplus": {
