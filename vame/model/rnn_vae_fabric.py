@@ -29,11 +29,7 @@ import torch.distributed as dist
 import datetime
 from torch.autograd import Variable
 from torch.optim.lr_scheduler import StepLR, ReduceLROnPlateau
-from numba import NumbaDeprecationWarning, NumbaPendingDeprecationWarning
 
-from lightning.fabric.plugins.environments.cluster_environment import ClusterEnvironment
-from lightning.fabric.plugins.environments import SLURMEnvironment
-from lightning.fabric.plugins.environments import MPIEnvironment
 
 # Local application/library specific imports
 from vame.util.auxiliary import read_config
@@ -60,10 +56,6 @@ fabric = L.Fabric(
 
 device = fabric.device
 
-
-# Ignore these specific types of warnings
-warnings.filterwarnings("ignore", category=NumbaDeprecationWarning)
-warnings.filterwarnings("ignore", category=NumbaPendingDeprecationWarning)
 
 logging.basicConfig(filename='rnn_vae_fabric.log', level=logging.DEBUG)
 
@@ -790,6 +782,18 @@ def train_model(config):
         fabric.barrier()
         #print(f"After barrier for snapshot saving, rank: {fabric.global_rank}")
 
+        # Save training and test loss values to disk
+        """
+        This code loops through the loss dictionaries containing the 
+        training and test loss values for each epoch. It converts the lists
+        to tensors and numpy arrays, then saves the arrays to disk so they
+        can be loaded later for analysis and plotting.
+        
+        The losses are saved with file names containing the model name and 
+        loss type, under the model_losses folder. Only rank 0 saves the files
+        to avoid duplication between distributed training workers.
+        """
+        
         loss_lists = {
             'avg_train_losses': avg_train_losses,
             'avg_test_losses': avg_test_losses,
