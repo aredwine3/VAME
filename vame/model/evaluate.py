@@ -314,6 +314,8 @@ def eval_temporal(cfg, use_gpu, use_mps, model_name, fixed, snapshot=None, suffi
         if not snapshot:
             model.load_state_dict(torch.load(os.path.join(cfg['project_path'],"model","best_model",model_name+'_'+cfg['Project']+'.pkl')))
         elif snapshot:
+            print(f"Loading snapshot:{snapshot}")
+            
             model.load_state_dict(torch.load(snapshot))
     elif use_mps:
         torch.manual_seed(SEED)
