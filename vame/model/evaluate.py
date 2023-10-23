@@ -338,6 +338,7 @@ def eval_temporal(cfg, use_gpu, use_mps, model_name, fixed, snapshot=None, suffi
             ic(dropout_pred)
             ic(softplus)
             
+            # Temporary Debugging
             saved_state_dict = torch.load(snapshot)
             ic("Saved Model state_dict:")
             for param_tensor in saved_state_dict:
