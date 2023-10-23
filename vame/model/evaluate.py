@@ -316,25 +316,9 @@ def eval_temporal(cfg, use_gpu, use_mps, model_name, fixed, snapshot=None, suffi
         if not snapshot:
             model.load_state_dict(torch.load(os.path.join(cfg['project_path'],"model","best_model",model_name+'_'+cfg['Project']+'.pkl')))
         elif snapshot:
-            print(f"Loading snapshot:{snapshot}")
-            
-            print(f"Temporal Window:{TEMPORAL_WINDOW}")
-            
-            print(f"ZDIMS:{ZDIMS}")
-            print(f"NUM_FEATURES:{NUM_FEATURES}")
-            print(f"FUTURE_DECODER:{FUTURE_DECODER}")
-            print(f"FUTURE_STEPS:{FUTURE_STEPS}")
-            print(f"hidden_size_layer_1:{hidden_size_layer_1}")
-            print(f"hidden_size_layer_2:{hidden_size_layer_2}")
-            print(f"hidden_size_rec:{hidden_size_rec}")
-            print(f"hidden_size_pred:{hidden_size_pred}")
-            print(f"dropout_encoder:{dropout_encoder}")
-            print(f"dropout_rec:{dropout_rec}")
-            print(f"dropout_pred:{dropout_pred}")
-            print(f"softplus:{softplus}")
             
             ic(cfg)
-            
+            ic(model)
             ic(snapshot)
             ic(model_name)
             ic(TEMPORAL_WINDOW)
@@ -350,6 +334,17 @@ def eval_temporal(cfg, use_gpu, use_mps, model_name, fixed, snapshot=None, suffi
             ic(dropout_rec)
             ic(dropout_pred)
             ic(softplus)
+            
+            ic("Debugging Shape mismatch:")
+            ic("Current Model state_dict:")
+            for param_tensor in model.state_dict():
+                ic(param_tensor, "\t", model.state_dict()[param_tensor].size())
+            
+            
+            saved_state_dict = torch.load(snapshot)
+            ic("Saved Model state_dict:")
+            for param_tensor in saved_state_dict:
+                ic(param_tensor, "\t", saved_state_dict[param_tensor].size())
             
             model.load_state_dict(torch.load(snapshot))
     elif use_mps:
