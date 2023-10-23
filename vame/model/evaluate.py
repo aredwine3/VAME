@@ -350,9 +350,9 @@ def eval_temporal(cfg, use_gpu, use_mps, model_name, fixed, snapshot=None, suffi
                     if model_tensor_shape == saved_tensor_shape:
                         model.state_dict()[param_tensor].copy_(saved_state_dict[param_tensor])
                     else:
-                        ic(f"Size mismatch for {param_tensor}: model {model_tensor_shape} vs saved {saved_tensor_shape}")
+                        print(f"Size mismatch for {param_tensor}: model {model_tensor_shape} vs saved {saved_tensor_shape}")
                 except KeyError:
-                    ic(f"{param_tensor} not found in the model. Skipping.")
+                    print(f"{param_tensor} not found in the model. Skipping.")
                 
             
             model.load_state_dict(torch.load(snapshot))
