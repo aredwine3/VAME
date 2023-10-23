@@ -345,6 +345,7 @@ def eval_temporal(cfg, use_gpu, use_mps, model_name, fixed, snapshot=None, suffi
             ic("Saved Model state_dict:")
             for param_tensor in saved_state_dict:
                 ic(param_tensor, "\t", saved_state_dict[param_tensor].size())
+                
             
             model.load_state_dict(torch.load(snapshot))
     elif use_mps:
