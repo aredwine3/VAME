@@ -334,6 +334,7 @@ def eval_temporal(cfg, use_gpu, use_mps, model_name, fixed, snapshot=None, suffi
             print(f"softplus:{softplus}")
             
             ic(cfg)
+            
             ic(snapshot)
             ic(model_name)
             ic(TEMPORAL_WINDOW)
