@@ -312,12 +312,15 @@ def eval_temporal(cfg, use_gpu, use_mps, model_name, fixed, snapshot=None, suffi
         print()
         model = RNN_VAE(TEMPORAL_WINDOW,ZDIMS,NUM_FEATURES,FUTURE_DECODER,FUTURE_STEPS, hidden_size_layer_1,
                         hidden_size_layer_2, hidden_size_rec, hidden_size_pred, dropout_encoder,
-                        dropout_rec, dropout_pred, softplus)#.cuda()
+                        dropout_rec, dropout_pred, softplus).cuda()
         if not snapshot:
             model.load_state_dict(torch.load(os.path.join(cfg['project_path'],"model","best_model",model_name+'_'+cfg['Project']+'.pkl')))
         elif snapshot:
             
+            ic.disable()
             ic(cfg)
+            
+            ic.enable()
             ic(model)
             ic(snapshot)
             ic(model_name)
@@ -335,16 +338,20 @@ def eval_temporal(cfg, use_gpu, use_mps, model_name, fixed, snapshot=None, suffi
             ic(dropout_pred)
             ic(softplus)
             
-            ic("Debugging Shape mismatch:")
-            ic("Current Model state_dict:")
-            for param_tensor in model.state_dict():
-                ic(param_tensor, "\t", model.state_dict()[param_tensor].size())
-            
-            
             saved_state_dict = torch.load(snapshot)
             ic("Saved Model state_dict:")
             for param_tensor in saved_state_dict:
-                ic(param_tensor, "\t", saved_state_dict[param_tensor].size())
+                try:
+                    model_tensor_shape = model.state_dict()[param_tensor].size()
+                    saved_tensor_shape = saved_state_dict[param_tensor].size()
+                    
+                    # Check the size before loading
+                    if model_tensor_shape == saved_tensor_shape:
+                        model.state_dict()[param_tensor].copy_(saved_state_dict[param_tensor])
+                    else:
+                        ic(f"Size mismatch for {param_tensor}: model {model_tensor_shape} vs saved {saved_tensor_shape}")
+                except KeyError:
+                    ic(f"{param_tensor} not found in the model. Skipping.")
                 
             
             model.load_state_dict(torch.load(snapshot))
