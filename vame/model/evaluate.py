@@ -11,6 +11,7 @@ Licensed under GNU General Public License v3.0
 
 import os
 import matplotlib
+from icecream import ic
 
 # Set the Matplotlib backend based on the environment.
 if os.environ.get('DISPLAY', '') == '':
@@ -308,6 +309,7 @@ def eval_temporal(cfg, use_gpu, use_mps, model_name, fixed, snapshot=None, suffi
     # Depending on the available device, initialize the model and load its state
     if use_gpu:
         torch.cuda.manual_seed(SEED)
+        print()
         model = RNN_VAE(TEMPORAL_WINDOW,ZDIMS,NUM_FEATURES,FUTURE_DECODER,FUTURE_STEPS, hidden_size_layer_1,
                         hidden_size_layer_2, hidden_size_rec, hidden_size_pred, dropout_encoder,
                         dropout_rec, dropout_pred, softplus).cuda()
@@ -315,6 +317,38 @@ def eval_temporal(cfg, use_gpu, use_mps, model_name, fixed, snapshot=None, suffi
             model.load_state_dict(torch.load(os.path.join(cfg['project_path'],"model","best_model",model_name+'_'+cfg['Project']+'.pkl')))
         elif snapshot:
             print(f"Loading snapshot:{snapshot}")
+            
+            print(f"Temporal Window:{TEMPORAL_WINDOW}")
+            
+            print(f"ZDIMS:{ZDIMS}")
+            print(f"NUM_FEATURES:{NUM_FEATURES}")
+            print(f"FUTURE_DECODER:{FUTURE_DECODER}")
+            print(f"FUTURE_STEPS:{FUTURE_STEPS}")
+            print(f"hidden_size_layer_1:{hidden_size_layer_1}")
+            print(f"hidden_size_layer_2:{hidden_size_layer_2}")
+            print(f"hidden_size_rec:{hidden_size_rec}")
+            print(f"hidden_size_pred:{hidden_size_pred}")
+            print(f"dropout_encoder:{dropout_encoder}")
+            print(f"dropout_rec:{dropout_rec}")
+            print(f"dropout_pred:{dropout_pred}")
+            print(f"softplus:{softplus}")
+            
+            ic(cfg)
+            ic(snapshot)
+            ic(model_name)
+            ic(TEMPORAL_WINDOW)
+            ic(ZDIMS)
+            ic(NUM_FEATURES)
+            ic(FUTURE_DECODER)
+            ic(FUTURE_STEPS)
+            ic(hidden_size_layer_1)
+            ic(hidden_size_layer_2)
+            ic(hidden_size_rec)
+            ic(hidden_size_pred)
+            ic(dropout_encoder)
+            ic(dropout_rec)
+            ic(dropout_pred)
+            ic(softplus)
             
             model.load_state_dict(torch.load(snapshot))
     elif use_mps:
