@@ -52,7 +52,7 @@ fabric = L.Fabric(
     )
 
 
-#fabric.launch()
+fabric.launch()
 
 device = fabric.device
 
@@ -902,9 +902,12 @@ def train_model(config):
 
 if __name__ == "__main__":
     #config = "/Volumes/G-DRIVE_SSD/VAME_working/ALR_VAME_1-Sep15-2023/config_fabric.yaml"
-    config= "/work/wachslab/aredwine3/VAME_working/config_fabric_2.yaml"
+    #config= "/work/wachslab/aredwine3/VAME_working/config_fabric_2.yaml"
+    config = "/work/wachslab/aredwine3/VAME_working/config_sweep_drawn-sweep-88.yaml"
 
-    SLURMEnvironment(train_model(config))
+    #SLURMEnvironment(train_model(config))
+    
+    train_model(config)
 
 """ Lighting Fabric Options
   --accelerator [cpu|gpu|cuda|mps|tpu]
