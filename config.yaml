@@ -491,16 +491,11 @@ video_sets:
 - 22-05-05_Drug_Trt_DJL_TXBY_cropped_CRF0_0min_to_15min_Rat2
 - 22-05-05_Drug_Trt_DJL_TXBY_cropped_CRF0_0min_to_15min_Rat3
 - 22-05-05_Drug_Trt_DJL_TXBY_cropped_CRF0_0min_to_15min_Rat4
-
 # Data
-
-# Data
-
-# Data
-all_data: No
+all_data: Yes
 
 # Creation of train set:
-egocentric_data: true
+egocentric_data: False
 robust: true
 iqr_factor: 4
 axis:

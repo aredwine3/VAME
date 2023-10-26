@@ -497,6 +497,9 @@ def train_model():
     wandb.init(
         group="VAME_15prcnt_sweep",
     )
+    
+    # Get the wandb sweep name
+    sweep_name = wandb.run.name
 
     legacy = wandb.config.legacy
     project = wandb.config.Project
@@ -748,6 +751,8 @@ def train_model():
             logging.info("Saving model!")
             torch.save(model.state_dict(), os.path.join(
                 project_path, "model", "best_model", model_name+'_'+project+'.pkl'))
+            wandb.save(model.state_dict(), os.path.join(
+                project_path, "model", "best_model", model_name+'_'+project+'.pkl'))
             convergence = 0
         else:
             convergence += 1
@@ -758,9 +763,10 @@ def train_model():
             logging.info("Saving model snapshot!\n")
             torch.save(model.state_dict(), os.path.join(project_path, 'model', 'best_model',
                        'snapshots', model_name+'_'+project+'_epoch_'+str(epoch)+'.pkl'))
-            wandb.save(os.path.join(project_path, 'model', 'best_model',
+            wandb.save(model.state_dict(), os.path.join(project_path, 'model', 'best_model',
                        'snapshots', model_name+'_'+project+'_epoch_'+str(epoch)+'.pkl'))
 
+        """
         # save logged losses
         np.save(os.path.join(project_path, 'model', 'model_losses',
                 'train_losses_'+model_name+'_'+random_suffix), train_losses)
@@ -786,6 +792,37 @@ def train_model():
         fut_losses_tensor = torch.tensor(fut_losses)
         fut_losses_array = fut_losses_tensor.cpu().detach().numpy()
         np.save(os.path.join(project_path, 'model', 'model_losses', 'fut_losses_' + model_name+'_'+random_suffix), fut_losses_array)
+        """
+        
+        # List of loss names and their corresponding data
+        loss_data_list = [
+            ('train_losses', train_losses),
+            ('test_losses', test_losses),
+            ('kmeans_losses', train_kmeans_losses),
+            ('kl_losses', train_kl_losses),
+            ('weight_values', weight_values),
+            ('mse_train_losses', train_mse_losses),
+            ('mse_test_losses', test_mse_losses),
+            # Uncomment if fut_losses is active
+            ('fut_losses', fut_losses)
+        ]
+        
+        # Path to save the model losses
+        save_path = os.path.join(project_path, 'model', 'model_losses')
+        
+        # Loop through each loss name and data to save it
+        for loss_name, loss_data in loss_data_list:
+            file_name = f"{loss_name}_{model_name}_{random_suffix}.npy"
+            np.save(os.path.join(save_path, file_name), loss_data)
+
+        # Convert fut_losses to a tensor and save
+        logging.debug("Converting fut_losses to a tensor and saving")
+        fut_losses_tensor = torch.tensor(fut_losses)
+        fut_losses_array = fut_losses_tensor.cpu().detach().numpy()
+        np.save(os.path.join(save_path, f'fut_losses_{model_name}_{random_suffix}.npy'), fut_losses_array)
+        
+        # Save logged losses with wandb
+        wandb.save(train_losses, test_losses, train_kmeans_losses, train_kl_losses, weight_values, train_mse_losses, fut_losses_array, test_mse_losses, test_kmeans_losses)
 
         # df_data = np.column_stack((train_losses, test_losses, train_kmeans_losses, train_kl_losses, weight_values, train_mse_losses, fut_losses, learn_rates, conv_counter))
         # df = pd.DataFrame(df_data.T, columns=['Train_losses', 'Test_losses', 'Kmeans_losses', 'KL_losses', 'Weight_values', 'MSE_losses', 'Future_losses', 'Learning_Rate', 'Convergence_counter'])
@@ -795,6 +832,9 @@ def train_model():
                       'Weight_values', 'MSE_losses', 'Future_losses', 'Learning_Rate', 'Convergence_counter']
         df.to_csv(project_path+'/model/model_losses/'+model_name +
                   '_'+random_suffix+'_LossesSummary.csv')
+       
+        wandb.save(df)
+        
         logging.info("\n")
 
         if convergence > model_convergence:

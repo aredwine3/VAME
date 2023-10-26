@@ -44,9 +44,6 @@ from vame.model.rnn_model import RNN_VAE, RNN_VAE_LEGACY
 import warnings
 
 
-
-# Ignore these specific types of warnings
-
 logging.basicConfig(filename='rnn_vae_fabric_multi-node.log', level=logging.DEBUG)
 
 # Get the current date and time
@@ -473,7 +470,7 @@ def train_model(config):
     
     fabric = L.Fabric(
         accelerator="cuda", 
-        devices=2, # number of GPUs
+        devices=2, # number of GPUs or CPUs?
         strategy='ddp',
         num_nodes=2,
         precision='32',

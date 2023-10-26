@@ -737,20 +737,25 @@ def train_model(config):
         
 
         wandb.log(epoch_metrics)
-
-        avg_train_losses.append(avg_train_loss.item())
-        avg_train_kmeans_losses.append(avg_train_km_loss.item())
-        avg_train_kl_losses.append(avg_train_kl_loss.item())
-        avg_weight_values.append(avg_weight.item())
-        avg_train_mse_losses.append(avg_train_mse_loss.item())
-        avg_train_fut_losses.append(avg_train_fut_loss.item())
-
-        avg_test_losses.append(avg_test_loss.item())
-        avg_test_mse_losses.append(avg_test_mse_loss.item())
-        avg_test_km_losses.append(avg_test_km_loss.item())
         
         lr = optimizer.param_groups[0]['lr']
-        learn_rates.append(lr)
+
+        if fabric.global_rank == 0:
+            avg_train_losses.append(avg_train_loss.item())
+            avg_train_kmeans_losses.append(avg_train_km_loss.item())
+            avg_train_kl_losses.append(avg_train_kl_loss.item())
+            avg_weight_values.append(avg_weight.item())
+            avg_train_mse_losses.append(avg_train_mse_loss.item())
+            avg_train_fut_losses.append(avg_train_fut_loss.item())
+
+            avg_test_losses.append(avg_test_loss.item())
+            avg_test_mse_losses.append(avg_test_mse_loss.item())
+            avg_test_km_losses.append(avg_test_km_loss.item())
+            
+            #lr = optimizer.param_groups[0]['lr']
+            learn_rates.append(lr)
+            
+        fabric.barrier()
 
         """ Saving the best model yet """
             # Check conditions for best loss

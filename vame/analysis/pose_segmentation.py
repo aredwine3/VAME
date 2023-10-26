@@ -149,7 +149,7 @@ def get_motif_usage(label, n_cluster):
     return motif_usage
 
 
-def same_parameterization(cfg, files, latent_vector_files, states, parameterization, hmm_iters=100):
+def same_parameterization(cfg, files, latent_vector_files, states, parameterization, hmm_iters=200):
     random_state = cfg['random_state_kmeans']
     n_init = cfg['n_init_kmeans']
     n_cluster=cfg['n_cluster']

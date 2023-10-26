@@ -1,6 +1,6 @@
 # Project configurations
 Project: ALR_VAME_1
-model_name: VAME
+model_name: VAME_10prcnt
 n_cluster: 30
 pose_confidence: 0.99
 
@@ -13,7 +13,7 @@ name: VAME_1
 
 # Fabric configurations
 accelerator: auto # "cpu", "cuda", "mps", "gpu", "tpu", "auto"
-devices: 1 # Number of devices to run on (``int``), which devices to run on (``list`` or ``str``), or ``'auto'``. The value applies per node.
+devices: 2 # Number of devices to run on (``int``), which devices to run on (``list`` or ``str``), or ``'auto'``. The value applies per node.
 strategy: ddp # [ddp|dp|deepspeed|deepspeed_stage_1|deepspeed_stage_2|deepspeed_stage_3|fsdp] Strategy for how to run across multiple devices.
 num_nodes: 1 # Number of machines (nodes) for distributed execution.
 precision: 16 # 16-mixed|bf16-mixed|32-true|64-true|64|32|16|bf16] Double precision (``64-true`` or ``64``), 
@@ -491,16 +491,11 @@ video_sets:
 - 22-05-05_Drug_Trt_DJL_TXBY_cropped_CRF0_0min_to_15min_Rat2
 - 22-05-05_Drug_Trt_DJL_TXBY_cropped_CRF0_0min_to_15min_Rat3
 - 22-05-05_Drug_Trt_DJL_TXBY_cropped_CRF0_0min_to_15min_Rat4
-
-# Data
-
-# Data
-
 # Data
 all_data: No
 
 # Creation of train set:
-egocentric_data: true
+egocentric_data: false
 robust: true
 iqr_factor: 4
 axis:
@@ -513,15 +508,15 @@ test_fraction: 0.2
 pretrained_model: None
 pretrained_weights: false
 num_features: 28
-batch_size: 512
+batch_size: 1024
 max_epochs: 500
-model_snapshot: 10
+model_snapshot: 15
 model_convergence: 50
 transition_function: GRU
 beta: 1
 beta_norm: false
 zdims: 30
-learning_rate: 0.001
+learning_rate: 0.002
 time_window: 30
 prediction_decoder: 1
 prediction_steps: 15
@@ -555,16 +550,16 @@ num_points: 30000
 # RNN encoder hyperparamter:
 hidden_size_layer_1: 256
 hidden_size_layer_2: 256
-dropout_encoder: 0
+dropout_encoder: 1
 
 # RNN reconstruction hyperparameter:
 hidden_size_rec: 256
-dropout_rec: 0
+dropout_rec: 1
 n_layers: 1
 
 # RNN prediction hyperparamter:
 hidden_size_pred: 256
-dropout_pred: 0
+dropout_pred: 1
 
 # RNN loss hyperparameter:
 mse_reconstruction_reduction: sum
