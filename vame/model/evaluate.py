@@ -419,7 +419,11 @@ def evaluate_model(config, model_name, use_snapshots=False):#, suffix=None
     config_file = Path(config).resolve()
     cfg = read_config(config_file)
     legacy = cfg['legacy']
-    model_name = cfg['model_name']
+    
+    # Only set the model name if not set by the user when calling the function
+    if not model_name: 
+        model_name = cfg['model_name']
+    
     fixed = cfg['egocentric_data']
     
 
@@ -454,10 +458,12 @@ def evaluate_model(config, model_name, use_snapshots=False):#, suffix=None
     elif use_snapshots:
         snapshots=os.listdir(os.path.join(cfg['project_path'],'model','best_model','snapshots'))
         for snap in snapshots:
-            fullpath = os.path.join(cfg['project_path'],"model","best_model","snapshots",snap)
-            epoch=snap.split('_')[-1].strip('.pkl')
-            eval_temporal(cfg, use_gpu, use_mps, model_name, fixed, snapshot=fullpath, suffix='snapshot'+str(epoch))
-            eval_temporal(cfg, use_gpu, use_mps, model_name, fixed, suffix='bestModel')
+            # Only process snapshots that contain model_name as a substring
+            if model_name in snap:
+                fullpath = os.path.join(cfg['project_path'],"model","best_model","snapshots",snap)
+                epoch=snap.split('_')[-1].strip('.pkl')
+                eval_temporal(cfg, use_gpu, use_mps, model_name, fixed, snapshot=fullpath, suffix='snapshot'+str(epoch))
+                eval_temporal(cfg, use_gpu, use_mps, model_name, fixed, suffix='bestModel')
 
     print("You can find the results of the evaluation in '/Your-VAME-Project-Apr30-2020/model/evaluate/' \n"
           "OPTIONS:\n"
