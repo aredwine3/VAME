@@ -172,9 +172,9 @@ def same_parameterization(cfg, files, latent_vector_files, states, parameterizat
     elif parameterization == "hmm":
         if cfg['hmm_trained'] == False:
             print("Using a HMM as parameterization!")
-            hmm_model = hmm.GaussianHMM(n_components=states, covariance_type="full", n_iter=hmm_iters, verbose=True)
-            hmm_model.fit(latent_vector_cat)
-            label = hmm_model.predict(latent_vector_cat)
+            #hmm_model = hmm.GaussianHMM(n_components=states, covariance_type="full", n_iter=hmm_iters, verbose=True)
+            #hmm_model.fit(latent_vector_cat)
+            #label = hmm_model.predict(latent_vector_cat)
             
             
             # Number of states and features
