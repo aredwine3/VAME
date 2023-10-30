@@ -176,7 +176,7 @@ def same_parameterization(cfg, files, latent_vector_files, states, parameterizat
             #hmm_model.fit(latent_vector_cat)
             #label = hmm_model.predict(latent_vector_cat)
             
-            
+        
             # Number of states and features
             n_states = states  # Make sure this is the same as n_components in GaussianHMM
             n_features = len(latent_vector_cat[0])
@@ -212,7 +212,8 @@ def same_parameterization(cfg, files, latent_vector_files, states, parameterizat
             save_data = os.path.join(cfg['project_path'], "results")
             #with open(os.path.join(save_data, "hmm_trained_ncluster"+str(states)+".pkl"), "wb") as file: pickle.dump(hmm_model, file)
             with open(os.path.join(save_data, f"hmm_trained_ncluster{states}_{model_name}.pkl"), "wb") as file:
-                pickle.dump(hmm_model, file)
+                #pickle.dump(hmm_model, file)
+                pickle.dump(model, file)
         else:
             print("Using a pretrained HMM as parameterization!")
             save_data = os.path.join(cfg['project_path'], "results")
