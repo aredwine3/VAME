@@ -17,10 +17,13 @@ import numpy as np
 from pathlib import Path
 import glob
 import shutil
+import torch
 
 
 from hmmlearn import hmm
 from sklearn.cluster import KMeans
+from pomegranate.hmm import DenseHMM
+from pomegranate.distributions import Normal
 
 from vame.util.auxiliary import read_config
 from vame.model.rnn_model import RNN_VAE
@@ -151,6 +154,7 @@ def get_motif_usage(label, n_cluster):
 
 def same_parameterization(cfg, files, latent_vector_files, states, parameterization, hmm_iters=200):
     random_state = cfg['random_state_kmeans']
+    model_name = cfg['model_name']
     n_init = cfg['n_init_kmeans']
     n_cluster=cfg['n_cluster']
     labels = []
@@ -171,13 +175,52 @@ def same_parameterization(cfg, files, latent_vector_files, states, parameterizat
             hmm_model = hmm.GaussianHMM(n_components=states, covariance_type="full", n_iter=hmm_iters, verbose=True)
             hmm_model.fit(latent_vector_cat)
             label = hmm_model.predict(latent_vector_cat)
+            
+            
+            # Number of states and features
+            n_states = states  # Make sure this is the same as n_components in GaussianHMM
+            n_features = len(latent_vector_cat[0])
+            
+            initial_means = [np.zeros(n_features) for _ in range(n_states)]  # Replace with your own initial means
+            initial_covs = [np.identity(n_features) for _ in range(n_states)]  # Replace with your own initial covariances
+
+
+            # Initialize distributions
+            # Here, you might want to initialize based on some statistics of your data
+            distributions = []
+            for i in range(states):
+                state_distribution = Normal(means=initial_means[i], covs=initial_covs[i], covariance_type='full')
+                distributions.append(state_distribution)
+
+
+            # Initialize transition matrix
+            # Again, consider initializing based on data or domain knowledge
+            edges = np.full((n_states, n_states), 1.0 / n_states)
+
+            # Initialize start and end probabilities
+            starts = np.full(n_states, 1.0 / n_states)
+            ends = np.full(n_states, 1.0 / n_states)
+
+            model = DenseHMM(distributions=distributions, edges=edges, starts=starts, ends=ends, max_iter=hmm_iters, verbose=True, check_data=True)
+            
+            model.fit(latent_vector_cat)
+            
+
+            label = model.predict(latent_vector_cat)
+            
+            
             save_data = os.path.join(cfg['project_path'], "results")
-            with open(os.path.join(save_data, "hmm_trained_ncluster"+str(states)+".pkl"), "wb") as file: pickle.dump(hmm_model, file)
+            #with open(os.path.join(save_data, "hmm_trained_ncluster"+str(states)+".pkl"), "wb") as file: pickle.dump(hmm_model, file)
+            with open(os.path.join(save_data, f"hmm_trained_ncluster{states}_{model_name}.pkl"), "wb") as file:
+                pickle.dump(hmm_model, file)
         else:
             print("Using a pretrained HMM as parameterization!")
             save_data = os.path.join(cfg['project_path'], "results")
-            with open(os.path.join(save_data, "hmm_trained_ncluster"+str(states)+".pkl"), "rb") as file:
-                hmm_model = pickle.load(file)
+            #with open(os.path.join(save_data, "hmm_trained_ncluster"+str(states)+".pkl"), "rb") as file:
+            #    hmm_model = pickle.load(file)
+            with open(os.path.join(save_data, f"hmm_trained_ncluster{states}_{model_name}.pkl"), "rb") as file:
+                pickle.dump(hmm_model, file)
+                
             label = hmm_model.predict(latent_vector_cat)
         
     idx = 0
