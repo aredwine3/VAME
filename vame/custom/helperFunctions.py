@@ -17,6 +17,9 @@ from scipy.stats import ttest_ind
 from statsmodels.stats.multitest import multipletests
 from collections import defaultdict
 import matplotlib
+import vame.custom.ALR_helperFunctions as AlHf
+import vame.custom.ALR_analysis as ana
+from icecream import ic
 
 
 # Set the Matplotlib backend based on the environment.
@@ -40,339 +43,6 @@ import glob
 import concurrent.futures
 from tqdm import tqdm
 
-def replace_date_underscores(directory):
-    """
-    Replaces underscores in date numbers (in the format xx_xx_xx) with hyphens in all filenames in a given directory.
-    
-    Parameters:
-        directory (str): The directory where the files are located.
-        
-    Returns:
-        None
-    """
-    
-    for filename in os.listdir(directory):
-        # Search for date pattern xx_xx_xx in the filename
-        new_filename = re.sub(r'(\d{2})_(\d{2})_(\d{2})', r'\1-\2-\3', filename)
-        
-        # Rename the file only if the filename has changed
-        if new_filename != filename:
-            original_file_path = os.path.join(directory, filename)
-            new_file_path = os.path.join(directory, new_filename)
-            os.rename(original_file_path, new_file_path)
-            print(f"Renamed {filename} to {new_filename}")
-
-
-def delete_files(directory, file_extension):
-    # Iterate over all subdirectories
-    for subdir, dirs, files in os.walk(directory):
-        # Find all files with the given extension
-        for file in glob.glob(subdir + '/*' + file_extension):
-            # Delete the file
-            os.remove(file)
-            print(f"File {file} has been deleted")
-
-def find_video_files(directory):
-    """
-    Recursively finds all video files in a given directory.
-    
-    Parameters:
-    - directory (str): The directory to search in.
-    
-    Returns:
-    - List[str]: A list of complete paths to video files.
-    """
-    video_extensions = ['.mp4', '.avi', '.mkv', '.flv', '.mov', '.wmv']
-    video_files = []
-    
-    # Walk through directory
-    for dirpath, dirnames, filenames in os.walk(directory):
-        for filename in filenames:
-            if any(filename.endswith(ext) for ext in video_extensions):
-                full_path = os.path.join(dirpath, filename)
-                video_files.append(full_path)
-                
-    return video_files
-
-def convert_multi_csv_to_individual_csv(csv_files_path):
-    # Get a sorted list of all csv files in the provided path
-    csvs = sorted(glob.glob(os.path.join(csv_files_path, '*.csv*')))
-    
-    # Loop through each csv file
-    for csv in csvs:
-        # Read the csv file into a pandas DataFrame
-        fname = pd.read_csv(csv, header=[0,1,2], index_col=0, skiprows=1)
-        # Get a list of unique individuals from the DataFrame columns
-        individuals = fname.columns.get_level_values('individuals').unique()
-        # Loop through each individual
-        for ind in individuals:
-            # Create a temporary DataFrame for the current individual
-            fname_temp = fname[ind]
-            # Define the path for the new csv file
-            fname_temp_path = os.path.splitext(csv)[0] + '_' + ind + '.csv'
-            # Write the temporary DataFrame to a new csv file
-            fname_temp.to_csv(fname_temp_path, index=True, header=True)
-
-def create_symlinks(video_dir, new_dir):
-    """_summary_
-
-    Args:
-    video_dir (str): The path to the directory containing the video files.
-    new_dir (str): The path to the directory where the video files will be moved and the symbolic links will be created.
-
-    1. It moves the video files from the original directory (video_dir) to a new directory (new_dir).
-    2. It creates symbolic links in the original directory that point to the moved video files in the new directory.
-    """
-    # Create the new directory if it doesn't exist
-    os.makedirs(new_dir, exist_ok=True)
-
-    # Get a list of all video files in the directory
-    video_files = glob.glob(os.path.join(video_dir, '*.mp4'))  # adjust the extension if needed
-
-    # List of rat names
-    rat_names = ['Rat1', 'Rat2', 'Rat3', 'Rat4']
-
-    # Loop through each video file
-    for video_path in video_files:
-        
-        # Get the video filename
-        video_filename = os.path.basename(video_path)
-
-        # Move the video file to the new directory
-        new_video_path = os.path.join(new_dir, video_filename)
-        shutil.move(video_path, new_video_path)
-
-        # Create a symbolic link for each rat name
-        for rat_name in rat_names:
-            # Path for the symbolic link
-            symlink_path = os.path.join(video_dir, os.path.splitext(video_filename)[0] + '_' + rat_name + os.path.splitext(video_filename)[1])
-            # Create the symbolic link
-            os.symlink(new_video_path, symlink_path)
-
-# Usage:
-# create_symlinks('/path/to/videos', '/path/to/new_directory')
-
-def create_new_dirs_and_remove_old(parent_dir):
-    # Display a warning message and ask the user if they want to proceed
-    print("WARNING: This function will permanently delete the original directories and all files and subdirectories within them.")
-    print("Make sure you have a backup of any important data before proceeding.")
-    proceed = input("Do you want to proceed? (yes/no): ")
-    if proceed.lower() != 'yes':
-        print("Operation cancelled.")
-        return
-
-    # Get a list of all directories in the parent directory
-    dir_names = [name for name in os.listdir(parent_dir) if os.path.isdir(os.path.join(parent_dir, name))]
-
-    # List of rat names
-    rat_names = ['Rat1', 'Rat2', 'Rat3', 'Rat4']
-
-    # Loop through each directory
-    for dir_name in dir_names:
-        # Full path to the original directory
-        dir_path = os.path.join(parent_dir, dir_name)
-
-        # Create a new directory for each rat name
-        for rat_name in rat_names:
-            # Path for the new directory
-            new_dir_path = os.path.join(parent_dir, dir_name + '_' + rat_name)
-            # Create the new directory
-            os.makedirs(new_dir_path, exist_ok=True)
-
-        # Delete the original directory
-        shutil.rmtree(dir_path)
-
-# Usage:
-# create_new_dirs_and_remove_old('/path/to/parent_directory')
-
-def update_video_sets_in_config(config_path, video_dir):
-    # Get a list of all video files in the directory
-    video_files = glob.glob(os.path.join(video_dir, '*.mp4'))  # adjust the extension if needed
-
-    # Get the video names (without extension)
-    video_names = [os.path.splitext(os.path.basename(video_file))[0] for video_file in video_files]
-
-    # Create a YAML object
-    yaml = YAML()
-
-    # Load the existing config data
-    with open(config_path, 'r') as file:
-        config_data = yaml.load(file)
-
-    # Update the 'video_sets' field
-    config_data['video_sets'] = video_names
-
-    # Write the updated config data back to the file
-    with open(config_path, 'w') as file:
-        yaml.dump(config_data, file)
-
-# Usage:
-# update_video_sets_in_config('/path/to/config.yaml', '/path/to/videos')
-
-def print_body_parts(directory):
-    # Find the first CSV file in the directory
-    csv_files = glob.glob(os.path.join(directory, '*.csv'))
-    if not csv_files:
-        print("No CSV files found in the directory.")
-        return
-
-    csv_file = csv_files[0]
-
-    # Read the CSV file
-    df = pd.read_csv(csv_file, index_col=0, header=[0,1], nrows=1)
-
-    # Print the body part each index corresponds to
-    for i, body_part in enumerate(df.iloc[0]):
-        print(f"Index {i} corresponds to {body_part}")
-
-
-
-def rearrange_all_csv_columns(directory, body_parts_order):
-    # Find all CSV files in the directory
-    csv_files = glob.glob(os.path.join(directory, '*.csv'))
-
-    for csv_file in csv_files:
-        # Read the CSV file with two header rows and an index column
-        df = pd.read_csv(csv_file, header=[0, 1], index_col=0, low_memory=False)
-
-        # Create a new order of columns
-        new_columns = []
-        for body_part in body_parts_order:
-            # Find the columns for this body part
-            body_part_columns = [col for col in df.columns if body_part in col[0]]
-            new_columns.extend(body_part_columns)
-
-        # Reorder the columns
-        df = df[new_columns]
-
-        # Save the DataFrame back to the CSV file with two header rows and an index column
-        df.to_csv(csv_file, index=True, header=True)
-
-    return "All files rearranged successfully!"
-
-# Usage:
-# rearrange_all_csv_columns('/path/to/directory', ['snout', 'forehand_left', 'forehand_right', 'hindleft', 'hindright', 'tail'])
-
-def copy_file(file, src_dir, dest_dir):
-    shutil.copy(os.path.join(src_dir, file), dest_dir)
-
-def multithreaded_copy(src_dir, dest_dir):
-    files = os.listdir(src_dir)
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        # Wrap the files list with tqdm for a progress bar
-        for file in tqdm(files, desc="Copying files"):
-            executor.submit(copy_file, file, src_dir, dest_dir)
-
-def parse_filename(filename):
-    # Define the mapping from letter groups to groups
-    group_mapping = {
-        'A': 'Sham', 'I': 'Sham', 'L': 'Sham', 'T': 'Sham', 'W': 'Sham', 'X': 'Sham',
-        'D': 'Injured', 'E': 'Injured', 'F': 'Injured', 'H': 'Injured', 'K': 'Injured', 'O': 'Injured',
-        'J': 'Treated', 'M': 'Treated', 'N': 'Treated', 'P': 'Treated', 'S': 'Treated', 'Y': 'Treated',
-        'B': 'ABX', 'C': 'ABX', 'G': 'ABX', 'Q': 'ABX', 'R': 'ABX', 'U': 'ABX'
-    }
-
-    # Split the filename into parts
-    parts = filename.split('_')
-
-    # Print each part and its index
-    #for i, part in enumerate(parts):
-    #    print(f"{i}: {part}")
-
-
-    # Extract the study point, letter groups, and rat number
-    study_point = parts[1] + '_' + parts[2]
-    letter_groups = parts[4]
-    #rat_number = parts[-1][-1]
-
-    # Get the number directly following the text "Rat"
-    rat_number = re.search(r'Rat(\d)', filename).group(1)
-
-    # Check that letter_groups has the expected length
-    if len(letter_groups) != 4:
-        print(f"Letter groups: {letter_groups}")
-        raise ValueError(f"Unexpected letter group length in filename {filename}")
-
-    if rat_number in ['1', '2']:
-        full_group_notation = letter_groups[1]
-    elif rat_number in ['3', '4']:
-        full_group_notation = letter_groups[3]
-    else:
-        print(f"Rat number: {rat_number}")
-        raise ValueError(f"Unexpected rat number in filename {filename}")
-    
-    if rat_number in ['1']:
-        full_group_notation = full_group_notation + '1'
-    elif rat_number in ['2']:
-        full_group_notation = full_group_notation + '2'
-    elif rat_number in ['3']:
-        full_group_notation = full_group_notation + '1'
-    elif rat_number in ['4']:
-        full_group_notation = full_group_notation + '2'
-    else:
-        print(f"Rat number: {rat_number}")
-        raise ValueError(f"Unexpected rat number in filename {filename}")
-
-    # Determine the group of the animal
-    group = group_mapping[full_group_notation[0]]
-
-    return filename, study_point, group, full_group_notation
-
-def write_video_info_to_csv(video_dir, output_csv):
-    with open(output_csv, 'w', newline='') as file:
-        writer = csv.writer(file)
-        writer.writerow(["Filename", "Study Point", "Group", "Full Group Notation"])  # Write header
-        for filename in os.listdir(video_dir):
-            if filename.endswith('.mp4'):  # or whatever video format you're using
-                filename, study_point, group, full_group_notation = parse_filename(filename)
-                writer.writerow([filename, study_point, group, full_group_notation])  # Write data
-
-def group_counts(videos):
-    counts = defaultdict(lambda: defaultdict(int))
-    for video in videos:
-        _, study_point, group, _ = parse_filename(video)
-        counts[study_point][group] += 1
-    return counts
-
-def rename_files_and_dirs(directory):
-    for root, dirs, files in os.walk(directory):
-        for name in files + dirs:
-            new_name = re.sub(r'(\d{2})_(\d{2})_(\d{2})', r'\1-\2-\3', name)
-            if new_name != name:
-                os.rename(os.path.join(root, name), os.path.join(root, new_name))
-
-def select_videos(csv_file, percentage):
-    # Read the CSV file
-    df = pd.read_csv(csv_file)
-
-    # Group the data by 'Group' and 'Study Point'
-    grouped = df.groupby(['Group', 'Study Point'])
-
-    # Initialize an empty list to store the selected videos
-    selected_videos = []
-
-    # Loop over the groups
-    for name, group in grouped:
-        # Calculate the number of videos to select from this group
-        n = round(len(group) * percentage / 100)
-
-        print(name, n)
-
-        # Randomly select 'n' videos from this group
-        selected = group.sample(n)
-
-
-        # Append the selected videos to 'selected_videos'
-        selected_videos.append(selected)
-
-    # Concatenate all the selected videos into a single DataFrame
-    selected_videos = pd.concat(selected_videos)
-
-    # Return the names of the selected videos
-    return selected_videos['Filename']
-
-           
-#%%
 def trimFrames(directory, begin=1500, end=1500):
     """Crop csv or data files within specific frames. Good for removing unuseful frames from beginning, end, or both.
     
@@ -991,10 +661,27 @@ def drawHierarchyTrees(config, imagetype='.png'):
     modelName = cfg['model_name']
     videos = cfg['video_sets']
     parameterization=cfg['parameterization']
+    load_data = cfg['load_data']
+    model_name = cfg['model_name']
+
+    files = AlHf.get_files(config)
+    # First pass to determine the maximum number of unique motifs
+    max_motifs = 0
+    for file in files:
+        label = ana.get_label(cfg, file, model_name, n_cluster)
+        if label.size == 0:
+            print(f"Warning: No labels found for file {file}. Skipping this file.")
+            continue
+        max_motifs = max(max_motifs, len(np.unique(label)))
+        if max_motifs != n_cluster:
+            max_motifs = n_cluster
+
     for file in videos:
-        labels = np.load(os.path.join(projectPath, 'results', file, modelName, parameterization+'-'+str(n_cluster), str(n_cluster)+'_km_label_'+file+'.npy'))
-        motif_usage = np.load(os.path.join(projectPath, 'results', file, modelName, parameterization+'-'+str(n_cluster), 'motif_usage_'+file+'.npy'))
-        adj_mat, trans_mat = get_adjacency_matrix(labels, n_cluster)
+        labels = np.load(os.path.join(projectPath, 'results', file, modelName, load_data, parameterization+'-'+str(n_cluster), str(n_cluster)+'_km_label_'+file+'.npy'))
+        motif_usage = np.load(os.path.join(projectPath, 'results', file, modelName, load_data, parameterization+'-'+str(n_cluster), 'motif_usage_'+file+'.npy'))
+        #adj_mat, trans_mat = get_adjacency_matrix(labels, n_cluster)
+        trans_mat, _ = ana.create_transition_matrix(labels, max_motifs)
+        ic(trans_mat)
         T = graph_to_tree(motif_usage, trans_mat, n_cluster, merge_sel=1)
         draw_tree(T, file, imagetype=imagetype)
 

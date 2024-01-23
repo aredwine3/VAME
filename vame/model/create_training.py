@@ -249,35 +249,41 @@ def traindata_aligned_fractional(cfg, files, testfraction, num_features, savgol_
                 print(f"Error occurred while loading {file}. Skipping this file.")
                 print(e)
                 continue
-           
-            # 1.5 Get the fractional data
-            try:
-                # Get the number of frames in the data
-                frames = len(data.T)
-                # Get the number of frames to keep
-                kept_frames = int(frames * data_fraction)
+            
+            if data_fraction != 1.0:
+                # 1.5 Get the fractional data
+                try:
+                    # Get the number of frames in the data
+                    frames = len(data.T)
+                    # Get the number of frames to keep
+                    kept_frames = int(frames * data_fraction)
+                    
+                    # Set the min and max frames to keep
+                    min_frame = 0
+                    max_frame = int(frames - (frames * data_fraction))
+                    
+                    # Get a random frame to start at (ensures that the data is not biased in the time domain)
+                    rnd_frame = np.random.randint(min_frame, max_frame)
+                    
+                    rnd_frames.append(rnd_frame)
+                    
+                    # Get the last frame to keep
+                    last_frame = rnd_frame + kept_frames
+                    
+                    last_frames.append(last_frame)
+                    
+                    # Reduce the data to the fractional data
+                    data = data[:, rnd_frame:last_frame]
+                    
+                except Exception as e:
+                    print(f"Error occurred while getting fractional data for {file}. Skipping this file.")
+                    print(e)
+                    continue
+            else:
+                rnd_frame = 0
+                last_frame = len(data.T)
+                    
                 
-                # Set the min and max frames to keep
-                min_frame = 0
-                max_frame = int(frames - (frames * data_fraction))
-                
-                # Get a random frame to start at (ensures that the data is not biased in the time domain)
-                rnd_frame = np.random.randint(min_frame, max_frame)
-                
-                rnd_frames.append(rnd_frame)
-                
-                # Get the last frame to keep
-                last_frame = rnd_frame + kept_frames
-                
-                last_frames.append(last_frame)
-                
-                # Reduce the data to the fractional data
-                data = data[:, rnd_frame:last_frame]
-                
-            except Exception as e:
-                print(f"Error occurred while getting fractional data for {file}. Skipping this file.")
-                print(e)
-                continue
                 
             # 2. Z-Scoring
             try:
@@ -321,9 +327,11 @@ def traindata_aligned_fractional(cfg, files, testfraction, num_features, savgol_
             print(e)
             continue
     
-    # Save last_frame and rnd_frame to a dataframe
-    df = pd.DataFrame({'file_name': file_names, 'rnd_frame': rnd_frames, 'last_frame': last_frames})
-    df.to_csv(os.path.join(cfg['project_path'],"data", 'PE-seq-fractional-information.csv'))
+    if data_fraction != 1.0:
+         # Save last_frame and rnd_frame to a dataframe
+        df = pd.DataFrame({'file_name': file_names, 'rnd_frame': rnd_frames, 'last_frame': last_frames})
+        df.to_csv(os.path.join(cfg['project_path'],"data", 'PE-seq-fractional-information.csv'))
+
     
     X = np.concatenate(X_train, axis=0)
     # X_std = np.std(X)

@@ -1,0 +1,2573 @@
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+The following is a list of the modules and extensions currently available:
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  3dslicer: 3dslicer/4.11.20210226
+    3D Slicer is a free, open source and multi-platform software package widely used for medical, biomedical, and related imaging research.
+
+  abacas: abacas/1.3
+    ABACAS is intended to rapidly contiguate (align, order, orientate), visualize and design primers to close gaps on shotgun assembled contigs based on a reference sequence.
+
+  abaqus: abaqus/6.14.2, abaqus/2019, abaqus/2021
+    Abaqus is a software suite for finite element analysis and computer-aided engineering.
+
+  abayesqr: abayesqr/1.0
+    aBayesQR is a viral quasispecies reconstruction algorithm that employs a maximum-likelihood framework to infer individual sequences in a mixture from high-throughput sequencing data.
+
+  abinit: abinit/9.6
+    ABINIT is an atomic-scale simulation software suite.
+
+  abricate: abricate/0.8, abricate/1.0
+    Mass screening of contigs for antibiotic resistance genes
+
+  adfr-suite: adfr-suite/1.0
+    AutoDockFR (or ADFR in short) is a protein-ligand docking program developed in the Sanner laboratory at Scripps Research under the AutoDock umbrella
+
+  admixtools: admixtools/7.0
+    ADMIXTOOLS (Patterson et al. 2012) is a software package that supports formal tests of whether admixture occurred, and makes it possible to infer admixture proportions and dates.
+
+  afni: afni/18.2, afni/21.1, afni/22.0, afni/23.1
+    AFNI is a suite of programs for looking at and analyzing 3D brain images.
+
+  afq: afq/a42e157, afq/c59f21b
+    Automated Fiber Quantification.
+
+  afterqc: afterqc/0.9
+    Automatic Filtering, Trimming, Error Removing and Quality Control for fastq data. AfterQC can simply go through all fastq files in a folder and then output three folders: good, bad and QC folders,
+    which contains good reads, bad reads and the QC results of each fastq file/pair. Currently it supports processing data from HiSeq 2000/2500/3000/4000, Nextseq 500/550, MiniSeq...and other Illumina
+    1.8 or newer formats.
+
+  agat: agat/0.9
+    Another Gff Analysis Toolkit (AGAT). Suite of tools to handle gene annotations in any GTF/GFF format.
+
+  agfusion: agfusion/1.0, agfusion/1.251
+    AGFusion is a python package for annotating gene fusions from the human or mouse genomes.
+
+  aligngraph: aligngraph/1.0
+
+  allinea: allinea/4.2, allinea/5.0, allinea/5.1, allinea/6.0, allinea/6.1, allinea/7.0, allinea/18.0, allinea/18.2, allinea/19.0, allinea/21.0, allinea/22.0, allinea/22.1
+
+  ambertools: ambertools/22
+
+  amorph: amorph/2021.05.10
+    AMORPH utilizes a new Bayesian statistical approach to interpreting X-ray diffraction results of samples with both crystalline and amorphous components.
+
+  amos: amos/3.1
+    A Modular, Open-Source whole genome assembler
+
+  anaconda: anaconda/2.7, anaconda/3.3, anaconda/3.4, anaconda/4.3, anaconda/4.6, anaconda/4.8, anaconda/4.9, anaconda/4.10, anaconda/4.12, anaconda/23.1, anaconda/23.7
+
+  angsd: angsd/0.935, angsd/0.937
+    ANGSD: Analysis of next generation Sequencing Data
+
+  ansys: ansys/19.2, ansys/2021
+    ANSYS offers a comprehensive software suite that spans the entire range of physics, providing access to virtually any field of engineering simulation that a design process requires.
+
+  ant: ant/1.9, ant/1.10
+    Java build tool
+
+  antismash: antismash/6.1
+    antiSMASH - the antibiotics and Secondary Metabolite Analysis SHell
+
+  anvio: anvio/6.1, anvio/6.2, anvio/7, anvio/7.1
+    An interactive analysis and visualization platform for omics data
+
+  apkid: apkid/1.0
+    APKiD is Android Application Identifier for Packers, Protectors, Obfuscators and Oddities - PEiD for Android.
+
+  apptainer: apptainer/1.1
+    Application containers enabling mobility of compute.
+
+  aria2: aria2/1.23, aria2/1.34, aria2/1.36
+    aria2 is a lightweight multi-protocol & multi-source command-line download utility. 
+
+  art: art/2.6
+    ART is a set of simulation tools to generate synthetic next-generation sequencing reads.
+
+  ase: ase/3.18
+    ASE is a python package providing an open source Atomic Simulation Environment in the Python language.
+
+  ashs: ashs/1.0, ashs/2.0
+    ASHS is software for automatic segmentation of the medial temporal lobe (MTL) substructures from brain MRI scans.
+
+  aspera-cli: aspera-cli/3.7
+    IBM Aspera Command-Line Interface (the Aspera CLI) is a collection of Aspera tools for performing high-speed, secure data transfers from the command line.
+
+  asreml: asreml/3.0, asreml/4.1, asreml/4.2
+    ASReml
+
+  atk: atk/2016.3
+
+  atomate2: atomate2/py38/0.0.10, atomate2/py39/0.0.10, atomate2/py310/0.0.10
+    atomate2 is a library of materials science workflows
+
+  augur: augur/12.0
+    Process pathogen genome data for the Nextstrain platform
+
+  augustus: augustus/3.0, augustus/3.2, augustus/3.3, augustus/3.4, augustus/3.5
+    AUGUSTUS is a gene prediction program for eukaryotes written by Mario Stanke and Oliver Keller. It can be used as an ab initio program, which means it bases its prediction purely on the sequence.
+    AUGUSTUS may also incorporate hints on the gene structure coming from extrinsic sources such as EST, MS/MS, protein alignments and synthenic genomic alignments.
+
+  autoconf: autoconf/2.69
+    The autotools collection is a set of tools that make it easy to build and install programs from a source distribution.
+
+  autodock: autodock/4.2
+    AutoDock is a suite of automated docking tools. It is designed to predict how small molecules, such as substrates or drug candidates, bind to a receptor of known 3D structure.
+
+  autodock-gpu: autodock-gpu/1.2, autodock-gpu/1.3, autodock-gpu/1.4, autodock-gpu/1.5, autodock-gpu/4.2
+    AutoDock for GPUs using OpenCL.
+
+  autodock-vina: autodock-vina/1.1
+    AutoDock Vina is an open-source program for doing molecular docking
+
+  automake: automake/1.16
+    The autotools collection is a set of tools that make it easy to build and install programs from a source distribution.
+
+  autotools: autotools/1.0
+    The autotools collection is a set of tools that make it easy to build and install programs from a source distribution.
+
+  awscli: awscli/1.11, awscli/1.19, awscli/1.23
+    The AWS CLI is an open source tool built on top of the AWS SDK for Python (Boto) that provides commands for interacting with AWS services.
+
+  azcopy: azcopy/7.2
+    AzCopy is a command-line utility designed for copying data to/from Microsoft Azure Blob and File storage, using simple commands designed for optimal performance.
+
+  ballgown: ballgown/2.2
+    Ballgown is a software package designed to facilitate flexible differential expression analysis of RNA-Seq data. It also provides functions to organize, visualize, and analyze the expression
+    measurements for your transcriptome assembly.
+
+  bam-readcount: bam-readcount/0.6, bam-readcount/0.8
+    The purpose of this program is to generate metrics at single nucleotide positions.
+
+  bamm: bamm/1.7
+    Metagenomics-focused BAM file manipulation
+
+  bamscale: bamscale/0.0.5
+    BAMscale is a one-step tool for either 1) quantifying and normalizing the coverage of peaks
+
+  bamtools: bamtools/2.3, bamtools/2.4, bamtools/2.5
+    C++ API & command-line toolkit for working with BAM data
+
+  basespace-cli: basespace-cli/1.1
+    Toolkit to perform regulatory genomics data analysis
+
+  basetools/gapfiller: basetools/gapfiller/1.10
+    GapFiller is a stand-alone program for closing gaps within pre-assembled scaffolds.
+
+  basetools/sspace-standard: basetools/sspace-standard/3.0
+    SSPACE-standard is a stand-alone program for scaffolding pre-assembled contigs using NGS paired-read data.
+
+  bayespeak: bayespeak/1.24.0
+    This package is an implementation of the BayesPeak algorithm for peak-calling in ChIP-seq data.
+
+  bbmap: bbmap/37.17, bbmap/38.06, bbmap/38.84
+    BBMap is a splice-aware global aligner for DNA and RNA sequencing reads.
+
+  bc: bc/1.07
+    bc is an arbitrary precision numeric processing language.
+
+  bcftools: bcftools/1.2, bcftools/1.3, bcftools/1.8, bcftools/1.9, bcftools/1.10, bcftools/1.17
+    BCFtools is a set of utilities that manipulate variant calls in the Variant Call Format (VCF) and its binary counterpart BCF. All commands work transparently with both VCFs and BCFs, both
+    uncompressed and BGZF-compressed. Most commands accept VCF, bgzipped VCF and BCF with filetype detected automatically even when streaming from a pipe. Indexed VCF and BCF will work in all situations.
+    Un-indexed VCF and BCF and streams will work in most, but not all situations.
+
+  bcl2fastq: bcl2fastq/1.8
+    bcl2fastq can be used to demultiplex data and convert BCL files to FASTQ file formats for downstream analysis
+
+  bcl2fastq2: bcl2fastq2/2.20
+    The Illumina bcl2fastq2 Conversion Software v2.20 demultiplexes sequencing data and converts base call (BCL) files into FASTQ files.
+
+  beagle: beagle/4.1, beagle/5.1, beagle/5.2
+    Beagle is a software package that performs genotype calling, genotype phasing, imputation of ungenotyped markers, and identity-by-descent segment detection.
+
+  beagle-lib: beagle-lib/4.0
+    general purpose library for evaluating the likelihood of sequence evolution on trees
+
+  beast: beast/1.8, beast/1.10
+    BEAST is a cross-platform program for Bayesian analysis of molecular sequences using MCMC.
+
+  beast2: beast2/2.4, beast2/2.6, beast2/2.7
+    BEAST 2 is a cross-platform program for Bayesian phylogenetic analysis of molecular sequences.
+
+  bedops: bedops/2.4
+    BEDOPS is an open-source command-line toolkit that performs highly efficient and scalable Boolean and other set operations, statistical calculations, archiving, conversion and other management of
+    genomic data of arbitrary scale.
+
+  bedtools: bedtools/2.24, bedtools/2.27
+    A powerful toolset for genome arithmetic
+
+  bertopic: bertopic/0.13
+    BERTopic performs topic Modeling with state-of-the-art transformer models.
+
+  beta: beta/1.0
+    Binding and Expression Target Analysis (BETA) is a software package that integrates ChIP-seq of transcription factors or chromatin regulators with differential gene expression data to infer direct
+    target genes.
+
+  bfc: bfc/r181
+    BFC is a standalone high-performance tool for correcting sequencing errors from Illumina sequencing data.
+
+  BICseq: BICseq/1.1
+    BIC-seq can accurately and efficiently identify CNVs via minimizing the Bayesian information criterion.
+
+  bicseq2-norm: bicseq2-norm/0.2
+    BICseq2-norm is for normalizing potential biases in the sequencing data.
+
+  bicseq2-seg: bicseq2-seg/0.7
+    BICseq2-seg is for detecting CNVs based on the normalized data given by BICseq2-norm.
+
+  bidscoin: bidscoin/py38/4.0
+    Converts and organises raw MRI data-sets according to the Brain Imaging Data Structure (BIDS).
+
+  binutils: binutils/2.30, binutils/2.35, binutils/2.38
+    The GNU Binutils are a collection of binary tools.
+
+  bioawk: bioawk/1.0
+    BWK awk modified for biological data
+
+  bioconductor: bioconductor/r34/3.6, bioconductor/r35/3.8, bioconductor/r40/3.11, bioconductor/r41/3.13, bioconductor/r41/3.14, bioconductor/r42/3.16, bioconductor/r43/3.17
+    Bioconductor provides tools for the analysis and comprehension of high-throughput genomic data.
+
+  bioconductor-ballgown: bioconductor-ballgown/2.2
+    Tools for statistical analysis of assembled transcriptomes, including flexible differential expression analysis, visualization of transcript structures, and matching of assembled transcripts to
+    annotation.
+
+  bioconductor-jmosaics: bioconductor-jmosaics/1.10
+    Joint analysis of multiple ChIP-Seq data sets.
+
+  biodata: biodata/1.0
+    Static data resources for bioinformatics/computational biology.
+
+  biom-format: biom-format/2.1
+    The BIOM file format (canonically pronounced biome) is designed to be a general-use format for representing biological sample by observation contingency tables. BIOM is a recognized standard for the
+    Earth Microbiome Project and is a Genomics Standards Consortium supported project.
+
+  bioperl: bioperl/1.6, bioperl/1.7
+    BioPerl is a collection of Perl modules that facilitate the development of Perl scripts for bioinformatics applications.
+
+  biopython: biopython/py27/1.70, biopython/py27/1.71, biopython/py27/1.74, biopython/py27/1.76, biopython/py35/1.70, biopython/py35/1.71, biopython/py36/1.70, biopython/py36/1.71, biopython/py36/1.79, ...
+    Biopython is a set of freely available tools for biological computation written in Python by an international team of developers.
+
+  biosamtools: biosamtools/1.38
+
+  bismark: bismark/0.14, bismark/0.19, bismark/0.24
+    Bismark is a program to map bisulfite treated sequencing reads to a genome of interest and perform methylation calls in a single step.
+
+  bison: bison/3.7
+    General purpose parser generator converting annotated context-free grammar to a deterministic LR/GLR parser.
+
+  blast: blast/2.2, blast/2.2.29, blast/2.4, blast/2.6, blast/2.7, blast/2.10, blast/2.12, blast/2.13, blast/2.14
+    NCBI BLAST+ sequence alignment package. The program compares nucleotide or protein sequences to sequence databases and calculates the statistical significance of matches.
+
+  blast-legacy: blast-legacy/2.2.26
+    NCBI BLAST sequence alignment package. The program compares nucleotide or protein sequences to sequence databases and calculates the statistical significance of matches.
+
+  blat: blat/35x1, blat/35, blat/36
+    BLAT is a bioinformatics software tool which performs rapid mRNA/DNA and cross-species protein alignments.
+
+  blobtoolkit: blobtoolkit/py39/4.1, blobtoolkit/py310/4.1
+    Interactive quality assessment of genome assemblies.
+
+  blobtools: blobtools/1.1
+    Modular command-line solution for visualisation, quality control and taxonomic partitioning of genome datasets
+
+  boost: boost/1.44, boost/1.55.0, boost/1.66, boost/1.69, boost/1.75
+    Boost provides free peer-reviewed portable C++ source libraries.
+
+  boris2: boris2/3.0
+    Boris Computational Spintronics.
+
+  bowtie: bowtie/1.0, bowtie/1.1, bowtie/1.3, bowtie/2.2, bowtie/2.3, bowtie/2.4, bowtie/2.5
+    An ultrafast memory-efficient short read aligner
+
+  boxnotes2html: boxnotes2html/0.1
+    Converting from Box Notes to HTML or other formats
+
+  bracken: bracken/2.6
+    Bracken (Bayesian Reestimation of Abundance with KrakEN) is a highly accurate statistical method that computes the abundance of species in DNA sequences from a metagenomics sample.
+
+  braker2: braker2/2.1
+    BRAKER2 is an extension of BRAKER1 which allows for fully automated training of the gene prediction tools GeneMark-EX and AUGUSTUS from RNA-Seq and/or protein homology information, and that
+    integrates the extrinsic evidence from RNA-Seq and protein homology information into the prediction.
+
+  breakdancer: breakdancer/1.4
+    BreakDancer is a Perl/C++ package that provides genome-wide detection of structural variants from next generation paired-end sequencing reads.
+
+  breakseq2: breakseq2/2.2
+    BreakSeq2: Ultrafast and accurate nucleotide-resolution analysis of structural variants.
+
+  bsmap: bsmap/2.90
+    BSMAP is a short reads mapping software for bisulfite sequencing reads.
+
+  busco: busco/py27/3.0, busco/py35/3.0, busco/py36/3.0, busco/py36/4.0, busco/py39/5.4
+    BUSCO provides measures for quantitative assessment of genome assembly, gene set, and transcriptome completeness based on evolutionarily informed expectations of gene content from near-universal
+    single-copy orthologs selected from OrthoDB.
+
+  bwa: bwa/0.6, bwa/0.7
+    Burrow-Wheeler Aligner for short-read alignment.
+
+  bx-python: bx-python/py27/0.8, bx-python/py35/0.8, bx-python/py36/0.8
+    Tools for manipulating biological data, particularly multiple sequence alignments
+
+  bzip2: bzip2/1.0
+
+  caffe: caffe/1.0
+    It is developed by the Berkeley Vision and Learning Center (BVLC) and by community contributors. Yangqing Jia created the project during his PhD at UC Berkeley. Caffe is released under the BSD
+    2-Clause license.
+
+  caffe-gpu: caffe-gpu/1.0
+    It is developed by the Berkeley Vision and Learning Center (BVLC) and by community contributors. Yangqing Jia created the project during his PhD at UC Berkeley. Caffe is released under the BSD
+    2-Clause license.
+
+  cairo: cairo/1.16
+
+  canu: canu/1.7, canu/1.8, canu/2.1, canu/2.2
+    Canu is a fork of the Celera Assembler, designed for high-noise single-molecule sequencing (such as the PacBio RS II/Sequel or Oxford Nanopore MinION).
+
+  cap3: cap3/122107
+    CAP3: A DNA Sequence Assembly Program
+
+  carlsim: carlsim/3.1, carlsim/4.0
+    CARLsim is an efficient, easy-to-use, GPU-accelerated software framework for simulating large-scale spiking neural network (SNN) models with a high degree of biological detail.
+
+  carnac-lr: carnac-lr/1.0
+    Clustering coefficient-based Acquisition of RNA Communities in Long Read
+
+  carveme: carveme/1.5
+    CarveMe is a python-based tool for genome-scale metabolic model reconstruction.
+
+  cas-offinder: cas-offinder/2.4
+    Cas-OFFinder is OpenCL based, ultrafast and versatile program that searches for potential off-target sites of CRISPR/Cas-derived RNA-guided endonucleases (RGEN).
+
+  cblaster: cblaster/1.3
+    Find clustered hits from a BLAST search.
+
+  ccat: ccat/3.0
+    A software package for the analysis of ChIP-seq data with negative control.
+
+  ccp4: ccp4/7.0
+
+  cd-hit: cd-hit/4.8
+    CD-HIT is a very widely used program for clustering and comparing protein or nucleotide sequences.
+
+  cd-hit-auxtools: cd-hit-auxtools/4.6
+    CD-HIT is a very widely used program for clustering and comparing protein or nucleotide sequences. This module specifically loads the auxillary tools.
+
+  cdna-cupcake-tofu2: cdna-cupcake-tofu2/5.2
+    cDNA_Cupcake is a miscellaneous collection of Python and R scripts used for analyzing sequencing data.
+
+  cdo: cdo/1.9
+    CLI tools to manipulate and analyse Climate and NWP model Data
+
+  cdsapi: cdsapi/py39/0.6, cdsapi/py310/0.6, cdsapi/py311/0.6
+    API to access the Copernicus Climate Data Store at ECMWF
+
+  cenote-taker2: cenote-taker2/2.1, cenote-taker2/2020.04.01
+    Cenote-Taker2 is a pipeline for divergent virus discovery and annotation.
+
+  cexor: cexor/1.10
+    An R package to uncover high-resolution protein-DNA interactions in ChIP-exo replicates.
+
+  cgmaptools: cgmaptools/0.1
+    Command-line Toolset for Bisulfite Sequencing Data Analysis
+
+  checkm-genome: checkm-genome/1.0, checkm-genome/1.1
+    Assess the quality of microbial genomes recovered from isolates, single cells, and metagenomes.
+
+  checkv: checkv/0.7, checkv/0.8
+    Assess the quality of metagenome-assembled viral genomes.
+
+  chemdata: chemdata/1.0
+    Static data resources for computational chemistry (docking, etc.).
+
+  chewbbaca: chewbbaca/2.8
+    A complete suite for gene-by-gene schema creation and strain identification.
+
+  chromosomer: chromosomer/0.1.4a
+    A reference-assisted assembly tool for producing draft chromosome sequences.
+
+  circleator: circleator/1.0
+    Flexible circular visualization of genome-associated data with BioPerl and SVG.
+
+  cite-seq-count: cite-seq-count/1.4
+    A python package to map reads from CITE-seq or hashing data for single cell experiments
+
+  clark: clark/1.2
+
+  clearcut: clearcut/1.0
+    Clearcut - The reference implementation for Relaxed Neighbor Joining (RNJ)
+
+  clove: clove/0.17
+    CLOVE: Classification of genomic fusions into structural variation events.
+
+  clustal-omega: clustal-omega/1.2
+    Clustal Omega is the latest addition to the Clustal family. It offers a significant increase in scalability over previous versions, allowing hundreds of thousands of sequences to be aligned in only a
+    few hours
+
+  clustalw: clustalw/2.1
+    ClustalW2 is a multiple sequence alignment tool for the alignment of DNA or protein sequences.
+
+  cmake: cmake/2.8, cmake/3.5, cmake/3.7, cmake/3.10, cmake/3.11, cmake/3.14, cmake/3.17, cmake/3.20
+    CMake is an extensible, open-source system that manages the build process
+
+  cnvkit: cnvkit/0.9
+    Copy number variant detection from high-throughput sequencing
+
+  CNVnator: CNVnator/0.4
+    CNVnator: an approach to discover, genotype, and characterize typical and atypical CNVs from family and population genome sequencing.
+
+  cobra: cobra/py36/0.17, cobra/py37/0.17, cobra/py38/0.26, cobra/py39/0.26, cobra/py310/0.26
+    COBRApy is a package for constraints-based modeling of metabolic networks.
+
+  codonw: codonw/1.4
+    CodonW is a programme designed to simplify the Multivariate analysis (correspondence analysis) of codon and amino acid usage.
+
+  cogent: cogent/3.1
+    Cogent is a tool for reconstructing the coding genome using high-quality full-length transcriptome sequences.
+
+  coin-or: coin-or/1.8
+
+  compiler/clang: compiler/clang/13
+
+  compiler/gcc: compiler/gcc/9, compiler/gcc/10, compiler/gcc/11, compiler/gcc/12
+
+  compiler/intel: compiler/intel/18, compiler/intel/19, compiler/intel/20, compiler/intel/2021
+
+  compiler/nvhpc: compiler/nvhpc/21.9
+    NVIDIA HPC SDK for Linux.
+
+  compiler/pgi: compiler/pgi/18, compiler/pgi/19, compiler/pgi/20
+
+  comsol: comsol/5.4, comsol/5.5, comsol/5.6, comsol/6.0
+    COMSOL Multiphysics
+
+  concoct: concoct/1.1
+    Clustering cONtigs with COverage and ComposiTion
+
+  conn: conn/18b
+    CONN is a Matlab-based cross-platform software for the computation, display, and analysis of functional connectivity in fMRI (fcMRI).
+
+  connectome-workbench: connectome-workbench/1.3
+    Connectome Workbench is an open source, freely available visualization and discovery tool used to map neuroimaging data, especially data generated by the Human Connectome Project
+
+  conterminator: conterminator/1.c74b5
+    Efficient method for detecting incorrectly labeled sequences across kingdoms
+
+  coreutils: coreutils/8.31
+    The GNU Core Utilities are the basic file, shell and text manipulation utilities of the GNU operating system.
+
+  cosmomvpa: cosmomvpa/d43b0e7
+    A multi-modal, multi-variate pattern analysis (MVPA) toolbox in Matlab and GNU Octave for cognitive neuroscientists.
+
+  coverm: coverm/0.6
+    CoverM aims to be a configurable, easy to use and fast DNA read coverage and relative abundance calculator focused on metagenomics applications
+
+  cp2k: cp2k/8.2, cp2k/9.1, cp2k/2023.1
+    Quantum chemistry and solid state physics software package
+
+  crest: crest/1.0
+
+  csaw: csaw/1.4
+    Detection of differentially bound regions in ChIP-seq data with sliding windows, with methods for normalization and proper FDR control.
+
+  cuda: cuda/6.0, cuda/6.5, cuda/7.5, cuda/8.0, cuda/9.0, cuda/9.1, cuda/9.2, cuda/10.0, cuda/10.2, cuda/11.0, cuda/11.2, cuda/11.4, cuda/11.6, cuda/11.8
+    NVIDIA CUDA Toolkit for Linux.
+
+  cudnn: cudnn/v5
+    NVIDIA cuDNN Toolkit for Linux.
+
+  cufflinks: cufflinks/2.1, cufflinks/2.2
+    Transcriptome assembly and differential expression analysis for RNA-Seq.
+
+  curl: curl/7.50, curl/7.76
+
+  cutadapt: cutadapt/1.4, cutadapt/1.13, cutadapt/2.8, cutadapt/2.9
+    Cutadapt finds and removes adapter sequences, primers, poly-A tails and other types of unwanted sequence from your high-throughput sequencing reads.
+
+  cutruntools: cutruntools/2020.07.10
+    CUT&RUNTools is a flexible pipeline for CUT&RUN processing and footprint analysis.
+
+  cytoscape: cytoscape/3.6
+    Cytoscape is an open source software platform for visualizing complex networks and integrating these with any type of attribute data.
+
+  das_tool: das_tool/1.1
+    Recovery of genomes from metagenomes via a dereplication,aggregation and scoring strategy.
+
+  dastk: dastk/1.0
+    Differential ATAC-seq toolkit
+
+  dcm2niix: dcm2niix/1.0
+    dcm2niix is a designed to convert neuroimaging data from the DICOM format to the NIfTI format.
+
+  deap: deap/1.0
+    DEAP is a novel evolutionary computation framework for rapid prototyping and testing of ideas.
+
+  dedalus: dedalus/py37/2.1905, dedalus/py37/2.2006
+    A flexible framework for solving differential equations using spectral methods.
+
+  deepmd-kit: deepmd-kit/py39/2.2, deepmd-kit/py310/2.2, deepmd-kit/2.0
+    Deep learning package for many-body potential energy representation and molecular dynamics.
+
+  deepmd-kit-gpu: deepmd-kit-gpu/py39/2.2, deepmd-kit-gpu/py310/2.2, deepmd-kit-gpu/2.0
+    Deep learning package for many-body potential energy representation and molecular dynamics.
+
+  deeptools: deeptools/2.5, deeptools/3.0, deeptools/3.5
+
+  deepvirfinder: deepvirfinder/2020.11.21
+    Identifying viruses from metagenomic data by deep learning.
+
+  defiant: defiant/2019.03.02
+    Differential methylation, Easy, Fast, Identification and ANnoTation.
+
+  delly: delly/0.8, delly/0.9
+    Structural variant discovery by integrated paired-end and split-read analysis
+
+  delly-omp: delly-omp/0.8
+    Structural variant discovery by integrated paired-end and split-read analysis.
+
+  demultiplex: demultiplex/1.2
+    Demultiplex any number of FASTA or a FASTQ files based on a list of barcodes
+
+  desman: desman/2.1
+    De novo Extraction of Strains from MetAgeNomes
+
+  detectron: detectron/py27/2018.09.11
+    FAIR's research platform for object detection research, implementing popular algorithms like Mask R-CNN and RetinaNet.
+
+  detectron2: detectron2/py37/0.2
+    Detectron2 is FAIR's next-generation platform for object detection and segmentation.
+
+  dftd4: dftd4/3.3
+
+  diamond: diamond/0.9, diamond/2.0
+    Accelerated BLAST compatible local sequence aligner
+
+  diffsplice: diffsplice/0.1
+    DiffSplice: the Genome-Wide Detection of Differential Splicing Events with RNA-seq
+
+  dmtcp: dmtcp/2.0, dmtcp/2.3, dmtcp/2.4, dmtcp/2.5, dmtcp/2.6
+
+  dram: dram/1.0, dram/1.2
+    Distilled and Refined Annotation of Metabolism: A tool for the annotation and curation of function for microbial and viral genomes
+
+  drep: drep/2.3
+    De-replication of microbial genomes assembled from multiple samples
+
+  dsk: dsk/2.3
+    DSK is a k-mer counter for reads or genomes.
+
+  dtiprep: dtiprep/1.2
+    DTIPrep is a neuroimaging tool that performs a Study-specific Protocol based automatic pipeline for DWI/DTI quality control and preparation.
+
+  ea-utils: ea-utils/1.0
+    EA Utils is a collection of command line tools for processing NextGen sequencing data. Included are fastq-stats and sam-stats which are lightweight tools that display a variety of statistics on fastq
+    and sam files.
+
+  eccodes: eccodes/2.24
+
+  effector-p: effector-p/2.0
+    EffectorP is a machine learning method for fungal effector prediction in secretomes.
+
+  eggnog-mapper: eggnog-mapper/2.1
+    Fast genome-wide functional annotation through orthology assignment.
+
+  eigen: eigen/3.3, eigen/3.4
+    C++ template library for linear algebra
+
+  eigensoft: eigensoft/8.0
+    The EIGENSOFT package implements methods for analzing population structure and performing stratification correction
+
+  elk: elk/8.7
+
+  emacs: emacs/26.2, emacs/27.2, emacs/28.2
+    GNU Emacs is an extensible, customizable text editor.
+
+  eman2: eman2/2022.11.06
+    A scientific image processing software suite with a focus on CryoEM and CryoET.
+
+  emboss: emboss/6.5, emboss/6.6
+    EMBOSS is a free Open Source software analysis package specially developed for the needs of the molecular biology (e.g. EMBnet) user community.
+
+  emirge: emirge/0.61
+    EMIRGE reconstructs full length ribosomal genes from short read sequencing data.
+
+  ensembl-vep: ensembl-vep/96.0, ensembl-vep/99.2, ensembl-vep/104.3
+    The VEP determines the effect of your variants (SNPs, insertions, deletions, CNVs or structural variants) on genes, transcripts, and protein sequence, as well as regulatory regions.
+
+  entrez-direct: entrez-direct/10.0, entrez-direct/11.0, entrez-direct/13.3, entrez-direct/16.2
+    Entrez Direct (EDirect) is an advanced method for accessing the NCBI's set of interconnected databases (publication, sequence, structure, gene, variation, expression, etc.) from a UNIX terminal
+    window.
+
+  epic2: epic2/0.0.50
+    Ultraperformant Chip-Seq broad domain finder based on SICER.
+
+  epivia: epivia/1.1
+    Virial Integration Analysis with epigenetic data
+
+  epoch: epoch/4.17
+
+  eqtlbma: eqtlbma/1.3
+    Package to detect eQTLs jointly in multiple subgroups (e.g. tissues) via Bayesian Model Averaging.
+
+  erne: erne/2.1
+    ERNE is a short string alignment package whose goal is to provide an all-inclusive set of tools to handle short (NGS-like) reads.
+
+  esmf: esmf/8.2
+
+  espresso: espresso/6.8, espresso/7.0, espresso/7.1
+
+  espresso-gpu: espresso-gpu/7.1
+
+  espresso-plumed: espresso-plumed/6.2
+
+  ete3: ete3/3.1
+    Python package for building, comparing, annotating, manipulating and visualising trees. It provides a comprehensive API and a collection of command line tools, including utilities to work with the
+    NCBI taxonomy tree.
+
+  evidencemodeler: evidencemodeler/1.1
+    EVidence Modeler.
+
+  exomiser: exomiser/7.2
+    The Exomiser is a Java program that finds potential disease-causing variants from whole-exome or whole-genome sequencing data.
+
+  exonerate: exonerate/2.2, exonerate/2.4
+    Exonerate - A generic tool for pairwise sequence comparison / alignment
+
+  expansionhunterdenovo: expansionhunterdenovo/0.9
+    ExpansionHunter Denovo (EHdn) is a suite of tools for detecting novel expansions of short tandem repeats (STRs).
+
+  expat: expat/2.2
+
+  export2graphlan: export2graphlan/0.20
+    export2graphlan is a conversion software tool for producing both annotation and tree file for GraPhlAn.
+
+  express: express/1.5
+    express - Streaming quantification for high-throughput sequencing
+
+  fargene: fargene/0.1
+    Fragmented Antibiotic Resistance Gene iENntifiEr takes either fragmented metagenomic data or longer sequences as input and predicts and delivers full-length antiobiotic resistance genes as output
+
+  fastani: fastani/1.32
+    FastANI is developed for fast alignment-free computation of whole-genome Average Nucleotide Identity (ANI).
+
+  fastcluster: fastcluster/py39/1.2, fastcluster/py310/1.2
+    Fast hierarchical clustering routines for R and Python.
+
+  fastp: fastp/0.23
+    A ultra-fast FASTQ preprocessor with full features (QC/adapters/trimming/filtering/splitting...)
+
+  fastq_utils: fastq_utils/0.25
+    Validation and manipulation of FASTQ files, scRNA-seq barcode pre-processing and UMI quantification.
+
+  fastqc: fastqc/0.10, fastqc/0.11
+    fastqc - A Quality Control application for FastQ files
+
+  fastspar: fastspar/0.0.10
+    Rapid and scalable correlation estimation for compositional data
+
+  faststructure: faststructure/1.0
+    A variational framework for inferring population structure from SNP genotype data.
+
+  fasttree: fasttree/2.1
+    FastTree infers approximately-maximum-likelihood phylogenetic trees from alignments of nucleotide or protein sequences.
+
+  fastx_toolkit: fastx_toolkit/0.0.14
+    FASTX Toolkit is a collection of command line tools for Short-Reads FASTA/FASTQ files preprocessing.
+
+  fegenie: fegenie/1.0
+    HMM-based identification and categorization of iron genes and iron gene operons in genomes and metagenomes.
+
+  feh: feh/3.3, feh/3.9
+    feh is an X11 image viewer aimed mostly at console users.
+
+  fenics: fenics/2018.1
+    FEniCS is a collection of free software for automated, efficient solution of differential equations
+
+  ffmpeg: ffmpeg/4.3, ffmpeg/4.4
+    Cross-platform solution to record, convert and stream audio and video.
+
+  fftw3: fftw3/3.3
+
+  fgbio: fgbio/0.8
+    A set of tools for working with genomic and high throughput sequencing data, including UMIs
+
+  figtree: figtree/1.4
+    FigTree is designed as a graphical viewer of phylogenetic trees and as a program for producing publication-ready figures.
+
+  fiji: fiji/20220414
+    Fiji is an image processing package—a 'batteries-included' distribution of ImageJ, bundling a lot of plugins which facilitate scientific image analysis.
+
+  flash: flash/1.2
+    Merge paired sequencing reads into single longer sequences
+
+  flash2: flash2/2.2
+    Merge paired-end reads from fragments that are shorter than twice the read length
+
+  fleur: fleur/6.2
+    A feature-full, freely available FLAPW (full-potential linearized augmented planewave) code, based on density-functional theory.
+
+  flex: flex/2.6
+    General purpose parser generator converting annotated context-free grammar to a deterministic LR/GLR parser.
+
+  flye: flye/2.8, flye/2.9
+    Fast and accurate de novo assembler for single molecule sequencing reads
+
+  fonduer: fonduer/py37/0.8
+    Fonduer is a Python package and framework for building knowledge base construction (KBC) applications from richly formatted data.
+
+  fortrangis: fortrangis/2.5
+
+  fqtrim: fqtrim/0.9
+    fqtrim: trimming & filtering of NGS reads.
+
+  freebayes: freebayes/1.2, freebayes/1.3
+    Bayesian haplotype-based polymorphism discovery and genotyping
+
+  freecad: freecad/0.20
+    FreeCAD is a parametric 3D modeler made primarily to design real-life objects of any size.
+
+  freesurfer: freesurfer/5.3, freesurfer/6.0, freesurfer/7.1, freesurfer/7.2, freesurfer/7.4
+    An open source software suite for processing and analyzing (human) brain MRI images.
+
+  freetype: freetype/2.10
+
+  fusioncatcher: fusioncatcher/1.33
+    Finder of Somatic Fusion Genes in RNA-seq data.
+
+  gamess: gamess/20210930R2
+
+  gamess-omp: gamess-omp/20210930R2
+
+  gap: gap/4.11
+    GAP - Groups, Algorithms, Programming, a System for Computational Discrete Algebra
+
+  gapfiller: gapfiller/2.1
+    GapFiller is a seed-and-extend local assembler to fill the gap within paired reads.
+
+  gat: gat/1.3
+    Genomic Association Tester
+
+  gatk: gatk/3.4, gatk/3.7
+    The Genome Analysis Toolkit or GATK is a software package developed at the Broad Institute to analyze high-throughput sequencing data. The toolkit offers a wide variety of tools, with a primary focus
+    on variant discovery and genotyping as well as strong emphasis on data quality assurance. Its robust architecture, powerful processing engine and high-performance computing features make it capable
+    of taking on projects of any size.
+
+  gatk4: gatk4/4.0, gatk4/4.1, gatk4/4.2, gatk4/4.3, gatk4/4.4
+    GATK4: This toolkit offers a wide variety of tools with a primary focus on variant discovery and genotyping.
+
+  gaussian: gaussian/09/RevD, gaussian/09/RevE, gaussian/16/RevA
+
+  gbmunge: gbmunge/2018.07.06
+    Munge GenBank files into FASTA and tab-separated metadata.
+
+  gcprofile: gcprofile/1.0
+    GC-Profile is a web-based tool for visualizing and analyzing the variation of GC content in genomic sequences
+
+  gdal: gdal/3.4
+
+  gdcclient: gdcclient/1.3, gdcclient/1.4, gdcclient/1.6
+    GDC provides a standard client-based mechanism in support of high performance data downloads and submission.
+
+  gem: gem/2.7
+    GEM: High resolution peak calling and motif discovery for ChIP-seq and ChIP-exo data.
+
+  gemma: gemma/0.98
+    Linear mixed models (LMMs) for genome-wide association (GWA)
+
+  genemark-es: genemark-es/2.3f
+    GeneMark-ES.
+
+  genemarks: genemarks/2.5p, genemarks/4.3
+    GeneMarkS: a self-training method for prediction of gene starts in microbial genomes. Implications for finding sequence motifs in regulatory regions
+
+  genodiver: genodiver/2018.11.12
+    Geno-Diver is a complex animal genetic simulation tool that is able to simulate quantitative and/or fitness characters.
+
+  genometester4: genometester4/4.0
+    A toolkit for performing set operations - union, intersection and complement - on k-mer lists.
+
+  genometools/py27: genometools/py27/1.5
+    GenomeTools genome analysis system.
+
+  genometools/py35: genometools/py35/1.5
+    GenomeTools genome analysis system.
+
+  genometools/py36: genometools/py36/1.5
+    GenomeTools genome analysis system.
+
+  genozip: genozip/14.0
+    Compressor for genomic files (FASTQ, BAM, VCF, FASTA and more), up to 5x better than gzip and faster too
+
+  gensim: gensim/py27/3.8, gensim/py36/3.8, gensim/py37/3.8
+    Topic Modelling for Humans
+
+  geodata: geodata/1.0
+    Static data resources for geo data.
+
+  geoparse: geoparse/1.0
+    Python library to access Gene Expression Omnibus Database (GEO)
+
+  geos: geos/3.8
+
+  gffcompare: gffcompare/0.10
+    GffCompare by Geo Pertea
+
+  gffread: gffread/0.12
+    GFF/GTF utility providing format conversions, region filtering, FASTA sequence extraction and more.
+
+  gflags: gflags/2.1
+    Online documentation available at: https://gflags.github.io/gflags/
+
+  ghostscript: ghostscript/9.20, ghostscript/9.22
+    An interpreter for the PostScript language and for PDF.
+
+  gistic2: gistic2/2.0
+    GISTIC2.0 facilitates sensitive and confident localization of the targets of focal somatic copy-number alteration in human cancers.
+
+  git: git/2.17, git/2.22, git/2.29, git/2.30, git/2.35, git/2.39, git/2.40
+    distributed version control system
+
+  globalarrays: globalarrays/5.8
+
+  globus-cli: globus-cli/1.2, globus-cli/1.10, globus-cli/1.13, globus-cli/2.0
+    Command line clients provide an interface to Globus services from the shell, and are suited for both interactive use and simple scripting use cases.
+
+  glog: glog/0.3
+
+  glpk: glpk/4.61
+    The GLPK (GNU Linear Programming Kit) package is intended for solving large-scale linear programming (LP), mixed integer programming (MIP), and other related problems. It is a set of routines written
+    in ANSI C and organized in the form of a callable library.
+
+  gmap: gmap/2015.12.31, gmap/2017.05.08, gmap/2018.03.25, gmap/2020.04.08, gmap/2021.08.25
+    GMAP: A Genomic Mapping and Alignment Program for mRNA and EST Sequences, and GSNAP: Genomic Short-read Nucleotide Alignment Program.
+
+  gmcloser: gmcloser/1.6
+    GMcloser fills and closes the gaps present in scaffold assemblies, especially those generated by the de novo assembly of whole genomes with next-generation sequencing (NGS) reads.
+
+  gmp: gmp/6.2
+    GNU MP is a library for arbitrary precision arithmetic, operating on signed integers, rational numbers, and floating point numbers.
+
+  gnu-parallel: gnu-parallel/20180522, gnu-parallel/20220722
+    GNU parallel is a shell tool for executing jobs in parallel using one or more computers.
+
+  gnuplot: gnuplot/4.6, gnuplot/5.2, gnuplot/5.4
+    Gnuplot, plotting from command line
+
+  google-cloud-sdk: google-cloud-sdk/350, google-cloud-sdk/440
+    Command-line interface for Google Cloud Platform products and services
+
+  gradle: gradle/3.3, gradle/5.6, gradle/7.1
+    Gradle is an open-source build automation tool focused on flexibility and performance.
+
+  gramalign: gramalign/3.0
+    GramAlign is a time-efficient progressive Multiple Sequence Alignment (MSA) algorithm.
+
+  gramcluster: gramcluster/1.3
+    GramCluster is a fast and accurate progressive clustering algorithm that relies on a grammar-based sequence distance and is particularly useful in clustering large datasets.
+
+  gramdist: gramdist/1.0
+    GramDist is a utility for generating dissimilarity matrices using the relative complexity measure, a computationally efficient and alignment free evolutionary distance metric.
+
+  graphlan: graphlan/1.0, graphlan/1.1
+    GraPhlAn is a software tool for producing high-quality circular representations of taxonomic and phylogenetic trees. It focuses on concise, integrative, informative, and publication-ready
+    representations of phylogenetically- and taxonomically-driven investigation.
+
+  graphviz: graphviz/2.38, graphviz/2.40, graphviz/4.0
+    Open Source graph visualization software.
+
+  grib-api: grib-api/1.21
+
+  gromacs: gromacs/2022.3, gromacs/2023
+    GROMACS is a versatile package to perform molecular dynamics, i.e. simulate the Newtonian equations of motion for systems with hundreds to millions of particles.
+
+  gromacs-gpu: gromacs-gpu/2021.1, gromacs-gpu/2022.3, gromacs-gpu/2023
+    GROMACS is a versatile package to perform molecular dynamics, i.e. simulate the Newtonian equations of motion for systems with hundreds to millions of particles.
+
+  groopm: groopm/0.3
+    Metagenomic binning suite
+
+  GSL: GSL/2.6
+
+  gstreamer: gstreamer/1.20, gstreamer/1.22
+    Library for constructing graphs of media-handling components
+
+  gsutil: gsutil/4.65, gsutil/5.25
+    Command-line interface for Google Cloud Platform products and services
+
+  gtdbtk: gtdbtk/0.1, gtdbtk/1.3, gtdbtk/1.5
+    A toolkit for assigning objective taxonomic classifications to bacterial and archaeal genomes.
+
+  gubbins: gubbins/2.3, gubbins/3.1
+    Rapid phylogenetic analysis of large samples of recombinant bacterial whole genome sequences using Gubbins.
+
+  guppy: guppy/6.2, guppy/6.3, guppy/6.5
+    Guppy is a data processing toolkit that contains the Oxford Nanopore Technologies’ basecalling algorithms, and several bioinformatic post-processing features.
+
+  guppy-gpu: guppy-gpu/6.2, guppy-gpu/6.3, guppy-gpu/6.5
+    Guppy is a data processing toolkit that contains the Oxford Nanopore Technologies’ basecalling algorithms, and several bioinformatic post-processing features.
+
+  gurobi: gurobi/py36/9.0, gurobi/py37/9.0, gurobi/py38/9.5, gurobi/py39/9.5, gurobi/py39/10.0, gurobi/py310/10.0
+    The Gurobi Optimizer is the state-of-the-art math programming solver able to handle all major problem types.
+
+  gurobi-python: gurobi-python/py27/8.1, gurobi-python/py35/8.1, gurobi-python/py36/8.1
+    The Gurobi Optimizer is the state-of-the-art math programming solver able to handle all major problem types.
+
+  halla: halla/0.8
+    HAllA: Hierarchically All-against-All Association Testing.
+
+  hapflk: hapflk/1.3
+    hapflk is a software implementing the hapFLK [1] and FLK [2] tests for the detection of selection signatures based on multiple population genotyping data.
+
+  hapsolo: hapsolo/2021.10.09
+    An optimization approach for removing secondary haplotigs during diploid genome assembly and scaffolding.
+
+  haskell-platform: haskell-platform/8.2.1
+    The Haskell Platform is a collection of software packages, tools and libraries that create a common platform for using and developing applications in Haskell..
+
+  haslr: haslr/0.8a1
+    A fast tool for hybrid genome assembly of long and short reads
+
+  hdf-eos2: hdf-eos2/2.20
+
+  hdf4: hdf4/4.2
+
+  hdf5: hdf5/1.8, hdf5/1.12
+
+  hiddendomains: hiddendomains/2.3
+    hiddenDomains is a suite of programs used to identify significant enrichment of ChIP-seq reads that span large domains.
+
+  hisat2: hisat2/2.0, hisat2/2.1, hisat2/2.2
+    graph-based alignment of next generation sequencing reads to a population of genomes
+
+  hmmer: hmmer/3.3
+    HMMER biosequence analysis using profile hidden Markov models
+
+  homer: homer/4.11
+    Software for motif discovery and next generation sequencing analysis
+
+  hotspot3d: hotspot3d/0.6
+    This 3D proximity tool can be used to identify mutation hotspots from linear protein sequence and correlate the hotspots with known or potentially interacting domains, mutations, or drugs.
+    Mutation-mutation and mutation-drug clusters can also be identified and viewed.
+
+  htseq: htseq/py27/0.11, htseq/py36/0.11, htseq/py36/0.13, htseq/py37/0.11, htseq/py39/0.13, htseq/py39/2.0, htseq/py310/2.0, htseq/0.5.4p5, htseq/0.6.1p1, htseq/0.9
+    HTSeq - Analysing high-throughput sequencing data with Python
+
+  htslib: htslib/1.3, htslib/1.7, htslib/1.12
+    HTSlib is an implementation of a unified C library for accessing common file formats.
+
+  htstream: htstream/e919d21
+    A toolset for high throughput sequence analysis using a streaming approach facilitated by Linux pipes.
+
+  humann: humann/3.0, humann/3.1, humann/3.6
+    HUMAnN 3 is the next iteration of HUMAnN, the HMP Unified Metabolic Analysis Network.
+
+  humann2: humann2/0.11, humann2/2.8
+    HUMAnN2 is the HMP Unified Metabolic Analysis Network 2
+
+  i-pi: i-pi/py39/2.4
+    i-PI: a universal force engine
+
+  ibm-ilog-cplex: ibm-ilog-cplex/12.10, ibm-ilog-cplex/20.10, ibm-ilog-cplex/22.1.0
+
+  icount: icount/py36/2.0, icount/py37/2.0
+    Computational pipeline for analysis of iCLIP data
+
+  idba: idba/1.1
+    IDBA is a practical iterative De Bruijn Graph De Novo Assembler for sequence assembly in bioinfomatics.
+
+  idr: idr/2.0
+    The IDR (Irreproducible Discovery Rate) framework is a uniﬁed approach to measure the reproducibility of ﬁndings identiﬁed from replicate experiments and provide highly stable thresholds based
+    on reproducibility.
+
+  igs-portal-client: igs-portal-client/1.4
+    Python-based client for downloading data made available through portals powered by the GDC-based portal system.
+
+  igvtools: igvtools/2.5, igvtools/2.14, igvtools/2.16
+    Command line tools for IGV
+
+  ilastik: ilastik/1.3
+    ilastik is a gui driven open source interactive image classification, segmentation and analysis tool that uses machine learning.
+
+  ima3: ima3/1.0
+    IMa3 provides for estimation of the posterior probability of the population phylogenetic topology by using a new kind of data augmentation called a 'hidden genealogy'.
+
+  imagemagick: imagemagick/7.0, imagemagick/7.1
+    Software suite to create, edit, compose, or convert bitmap images.
+
+  imbalanced-learn-gpu: imbalanced-learn-gpu/py36/0.4, imbalanced-learn-gpu/py37/0.4
+    Python module to balance data set using under- and over-sampling
+
+  impute2: impute2/2.3
+    IMPUTE2 is a computer program for phasing observed genotypes and imputing missing genotypes.
+
+  instrain: instrain/1.3
+    Calculation of strain-level metrics
+
+  intel-mkl: intel-mkl/12, intel-mkl/13, intel-mkl/15, intel-mkl/16, intel-mkl/18, intel-mkl/19, intel-mkl/20, intel-mkl/2021.1, intel-mkl/2022.0
+    Numerical library, contains blas/lapack
+
+  intel-mpi: intel-mpi/18, intel-mpi/19, intel-mpi/2021
+
+  intel-tbb: intel-tbb/2021.2, intel-tbb/2021.5
+
+  interproscan: interproscan/5.8, interproscan/5.52, interproscan/5.63
+    Scans a range of protein signatures against your sequences and provides protein functional analysis.
+
+  ipr-support: ipr-support/1.0
+    Support environment containing a few small libraries for InterProScan. Not useful as a stand-alone environment.
+
+  iqtree: iqtree/1.6, iqtree/2.2
+    IQ-TREE creates phylogenetic trees under maximum likelihood with emphasis on speed and accuracy.
+
+  irods: irods/4.1, irods/4.2
+    The integrated Rule-Oriented Data System (iRODS) is open source data management software used by research organizations and government agencies worldwide. This module includes the icommands client
+    programs only.
+
+  itk: itk/py37/5.2, itk/py38/5.2, itk/py39/5.2
+    ITK is an open-source toolkit for multidimensional image analysis
+
+  jags: jags/4.3
+    JAGS is Just Another Gibbs Sampler.
+
+  jamm: jamm/1.0.7r2
+    JAMM is a peak finder for NGS datasets (ChIP-Seq, ATAC-Seq, DNase-Seq..etc.) that can integrate replicates and assign peak boundaries accurately.
+
+  jasper: jasper/1.9, jasper/1.900.22, jasper/2.0, jasper/4.0
+    A reference implementation of the codec specified in the JPEG-2000 Part-1 standard.
+
+  java: java/1.6, java/1.7, java/1.8, java/11, java/12, java/17, java/19
+    Java JDK.
+
+  jellyfish: jellyfish/2.2, jellyfish/2.3
+    Jellyfish is a tool for fast, memory-efficient counting of k-mers in DNA. A k-mer is a substring of length k, and counting the occurrences of all such substrings is a central step in many analyses of
+    DNA sequence
+
+  jmosaics: jmosaics/1.10
+    Joint analysis of multiple ChIP-Seq data sets.
+
+  jpeg: jpeg/9e
+
+  jq: jq/1.6
+    A command-line JSON processor.
+
+  julia: julia/0.6, julia/1.0, julia/1.1, julia/1.6, julia/1.7, julia/1.9
+    Julia is a high-level, high-performance dynamic programming language for numerical computing.
+
+  jupyter-book: jupyter-book/0.15
+    Jupyter Book: Create an online book with Jupyter Notebooks
+
+  justorthologs: justorthologs/0.0.20190308
+    JustOrthologs: a fast, accurate and user-friendly ortholog identification algorithm.
+
+  jvarkit-msa2vcf: jvarkit-msa2vcf/1.0
+    Getting a VCF file from a CLUSTAW or a FASTA alignment.
+
+  jvarkit-sam2tsv: jvarkit-sam2tsv/1.0
+    Prints the SAM alignments as a TAB delimited file.
+
+  jvarkit-vcf2bam: jvarkit-vcf2bam/2018.04.05
+    Converts VCF to BAM files
+
+  jwt-cli: jwt-cli/3.3
+    A super fast CLI tool to decode and encode JWTs built in Rust.
+
+  kaiju: kaiju/1.7, kaiju/1.8
+    Fast and sensitive taxonomic classification for metagenomics
+
+  kalign: kalign/2.0, kalign/2.03
+    Kalign is a fast and accurate multiple sequence alignment algorithm designed to align large numbers of protein sequences.
+
+  kallisto: kallisto/0.46
+    Kallisto is a program for quantifying abundances of transcripts from bulk and single-cell RNA-Seq data, or more generally of target sequences using high-throughput sequencing reads. It is based on
+    the novel idea of pseudoalignment for rapidly determining the compatibility of reads with targets, without the need for alignment.
+
+  kat: kat/2.4
+    KAT is a suite of tools that analyse jellyfish hashes or sequence files (fasta or fastq) using kmer counts
+
+  keras: keras/py27/2.2, keras/py27/2.3, keras/py36/2.2, keras/py36/2.3, keras/py37/2.4, keras/py38/2.4, keras/py38/2.6, keras/py39/2.6
+    Deep Learning Library for Theano and TensorFlow
+
+  keras-gpu: keras-gpu/py27/2.2, keras-gpu/py27/2.3, keras-gpu/py36/2.2, keras-gpu/py36/2.3, keras-gpu/py37/2.4, keras-gpu/py38/2.4, keras-gpu/py38/2.6, keras-gpu/py39/2.6
+    Deep Learning Library for Theano and TensorFlow
+
+  khmer: khmer/2.0
+    Khmer is tools for in-memory nucleotide sequence k-mer counting, filtering, graph traversal and more.
+
+  kmc: kmc/3.1
+    Tools for efficient k-mer counting and filtering of reads based on k-mer content
+
+  kneaddata: kneaddata/0.7, kneaddata/0.10, kneaddata/0.12
+    KneadData is a tool designed to perform quality control on metagenomic and metatranscriptomic sequencing data, especially data from microbiome experiments.
+
+  kraken: kraken/1.0
+    Kraken is a system for assigning taxonomic labels to short DNA sequences, usually obtained through metagenomic studies.
+
+  kraken2: kraken2/2.0.8-beta
+    Kraken is a system for assigning taxonomic labels to short DNA sequences, usually obtained through metagenomic studies.
+
+  krona: krona/2.7
+    Krona Tools is a set of scripts to create Krona charts from several Bioinformatics tools as well as from text and XML files.
+
+  kronos: kronos/2.3
+    Kronos is a highly flexible Python-based software tool that mainly enables bioinformatics developers, i.e. bioinformaticians who develop workflows for analyzing genomic data, to quickly make a
+    workflow.
+
+  ksnp: ksnp/3.1
+    kSNP identifies the pan-genome SNPs in a set of genome sequences, and estimates phylogenetic trees based upon those SNPs.
+
+  lammps: lammps/07Aug2019, lammps/23June2022, lammps/29Sep2021
+
+  lapack: lapack/3.9
+    LAPACK is written in Fortran 90 and provides routines for solving systems of simultaneous linear equations, least-squares solutions of linear systems of equations, eigenvalue problems, and singular
+    value problems.
+
+  lasagne: lasagne/py27/0.1, lasagne/py36/0.1
+    A lightweight library to build and train neural networks in Theano
+
+  lastools: lastools/2.0
+    LASlib and LASzip libraries plus open source utilities from LAStools for manipulating LiDAR data in LAS format
+
+  lastz: lastz/1.04
+    LASTZ is a program for aligning DNA sequences, a pairwise aligner.
+
+  lcms2: lcms2/2.13
+
+  lefse: lefse/1.0, lefse/1.1
+    LEfSe (Linear discriminant analysis Effect Size) determines the features (organisms, clades, operational taxonomic units, genes, or functions) most likely to explain differences between classes by
+    coupling standard tests for statistical significance with additional tests encoding biological consistency and effect relevance.
+
+  lftp: lftp/4.8, lftp/4.9
+    LFTP is a sophisticated file transfer program supporting a number of network protocols (ftp, http, sftp, fish, torrent).
+
+  libbeef: libbeef/0.1
+
+  libgeotiff: libgeotiff/1.6
+
+  libidn: libidn/1.36
+
+  libint: libint/2.6
+
+  libjpeg: libjpeg/2.0
+
+  libpng: libpng/1.6
+
+  libtiff: libtiff/4.1
+
+  libwebp: libwebp/1.1
+
+  libxc: libxc/5.1, libxc/5.2
+
+  libxml2: libxml2/2.9
+
+  libxsmm: libxsmm/1.17
+
+  LIS: LIS/7.3
+
+  lmdb: lmdb/0.9
+    Lightning memory-mapped database library.
+
+  lmod: lmod/lmod, lmod
+    Lmod: An Environment Module System
+
+  lofreq: lofreq/2.1
+    LoFreq is a fast and sensitive variant-caller for inferring SNVs and indels from next-generation sequencing data.
+
+  logomaker: logomaker/py27/0.8, logomaker/py36/0.8
+    Package for making Sequence Logos
+
+  ls-bsr: ls-bsr/2022.11.15
+    Large scale Blast Score Ratio (BSR) analysis.
+
+  lsdyna: lsdyna/12, lsdyna/13.1, lsdyna/14.0
+
+  lynx: lynx/2.8
+    Lynx is a text browser for the World Wide Web.
+
+  lyve-set: lyve-set/2.0
+    LYVE version of the Snp Extraction Tool (SET), a method of using hqSNPs to create a phylogeny.
+
+  m4: m4/1.4
+    The autotools collection is a set of tools that make it easy to build and install programs from a source distribution.
+
+  maaslin: maaslin/0.05
+    MaAsLin is a multivariate statistical framework that finds associations between clinical metadata and microbial community abundance or function.
+
+  maaslin2: maaslin2/0.3, maaslin2/0.99
+    MaAsLin2 is comprehensive R package for efficiently determining multivariable association between microbial meta'omic features and clinical metadata.
+
+  macs2: macs2/2.1
+    MACS -- Model-based Analysis of ChIP-Seq
+
+  mafft: mafft/7.149, mafft/7.407, mafft/7.520
+    Multiple alignment program for amino acid or nucleotide sequences based on fast Fourier transform
+
+  make: make/4.3
+    The autotools collection is a set of tools that make it easy to build and install programs from a source distribution.
+
+  maker: maker/2.31, maker/3.01
+    MAKER is a genome annotation pipeline for prokaryotic and smaller eukaryotic organisms.
+
+  mamba: mamba/0.5.1, mamba/0.7, mamba/0.13, mamba/0.15, mamba/0.24, mamba/1.3, mamba/1.4
+    Mamba is a reimplementation of the conda package manager in C++.
+
+  manta: manta/1.6
+    Structural variant and indel caller for mapped sequencing data
+
+  mapping-iterative-assembler: mapping-iterative-assembler/1.0
+    Consensus calling or `reference assisted assembly`, chiefly of ancient mitochondria.
+
+  mapsplice: mapsplice/2.2
+    MapSplice is a software for mapping RNA-seq data to reference genome for splice junction discovery that depends only on reference genome, and not on any further annotations.
+
+  maq: maq/0.7
+    maq - Mapping and Assembly with Quality.
+
+  mash: mash/2.2
+    Fast sequence distance estimator that uses MinHash
+
+  mashmap: mashmap/2.0, mashmap/3.1
+    A fast approximate aligner for long DNA sequences
+
+  masurca: masurca/3.3, masurca/4.0, masurca/4.1
+    MaSuRCA (Maryland Super-Read Celera Assembler) genome assembly software. MaSuRCA requires Illumina data, and supports third-generation PacBio/Nanopore MinION reads for hybrid assembly.
+
+  mathematica: mathematica/11.0, mathematica/11.3, mathematica/12.0, mathematica/12.3, mathematica/13.1, mathematica/13.2
+
+  matio: matio/1.5
+
+  matlab: matlab/r2012b, matlab/r2013b, matlab/r2014b, matlab/r2015b, matlab/r2016a, matlab/r2016b, matlab/r2017a, matlab/r2017b, matlab/r2018a, matlab/r2018b, matlab/r2019a, matlab/r2019b, matlab/r2020a, ...
+
+  mauve: mauve/2.4
+    mauve - Multiple Genome Alignment.
+
+  maven: maven/3.2, maven/3.5
+    Apache Maven is a software project management and comprehension tool.
+
+  maxbin2: maxbin2/2.2
+    MaxBin is software for binning assembled metagenomic sequences based on an Expectation-Maximization algorithm.
+
+  maxquant: maxquant/1.6, maxquant/2.0
+    MaxQuant is a quantitative proteomics software package designed for analyzing large mass-spectrometric data sets.
+
+  mbuffer: mbuffer/20171011
+    Mbuffer is a tool for buffering data streams with a large set of unique features.
+
+  mcl: mcl/14.137
+    MCL
+
+  medaka: medaka/py38/1.7
+    Neural network sequence error correction.
+
+  medaka-gpu: medaka-gpu/py38/1.7
+    Neural network sequence error correction.
+
+  meep: meep/1.3
+
+  meerkat: meerkat/0.1
+    Meerkat is designed to identify structural variations 
+
+  megahit: megahit/1.1, megahit/1.2
+    MEGAHIT: An ultra-fast single-node solution for large and complex metagenomics assembly via succinct de Bruijn graph.
+
+  megahit-gpu: megahit-gpu/1.1
+    MEGAHIT: An ultra-fast single-node solution for large and complex metagenomics assembly via succinct de Bruijn graph.
+
+  megalodon: megalodon/2.4
+    Nanopore modified base and sequence variant detection.
+
+  megan: megan/6.12
+    A tool for studying the taxonomic content of a set of DNA reads
+
+  melonnpan: melonnpan/2019.03.22
+    MelonnPan is a computational method for predicting metabolite compositions from shotgun metagenomic sequencing data.
+
+  MEME: MEME/4.11
+    The MEME suite is a collection of tools for the discovery and analysis of sequence motifs. It is hosted at http://meme-suite.org/.
+
+  meson: meson/0.61
+    The Meson Build System
+
+  metabat2: metabat2/2.15
+    Metagenome binning
+
+  metabolic: metabolic/20210303
+    A scalable high-throughput metabolic and biogeochemical functional trait profiler.
+
+  metacv: metacv/2.3
+    Composition based classification for short metagenomic sequences
+
+  metaphlan: metaphlan/1.7, metaphlan/3.0, metaphlan/3.1, metaphlan/4.0
+    MetaPhlAn is a computational tool for profiling the composition of microbial communities from metagenomic shotgun sequencing data.
+
+  metaphlan2: metaphlan2/2.6, metaphlan2/2.7, metaphlan2/2.96
+    MetaPhlAn is a computational tool for profiling the composition of microbial communities from metagenomic shotgun sequencing data.
+
+  metasnv: metasnv/2.0
+    SNV calling software
+
+  metasv: metasv/0.5
+    An accurate and integrative structural-variant caller for next generation sequencing.
+
+  metavelvet: metavelvet/1.2
+    MetaVelvet is an extension of Velvet assembler to de novo metagenome assembly from short sequence reads.
+
+  metawrap: metawrap/1.1, metawrap/1.2, metawrap/1.3
+    MetaWRAP is a pipeline for genome-resolved metagenomic data analysis
+
+  metaxa2: metaxa2/2.2
+    Improved Identification and Taxonomic Classification of Small and Large Subunit rRNA in Metagenomic Data.
+
+  methylpy: methylpy/py27/1.4, methylpy/py36/1.4, methylpy/py37/1.4
+    Bisulfite sequencing data processing and differential methylation analysis
+
+  metis: metis/4.0, metis/5.1
+
+  mfold: mfold/3.6
+    Mfold web server for nucleic acid folding and hybridization prediction.
+
+  mgblast: mgblast/2.2
+    fast all-vs-all DNA alignment tool, modification of megablast from a 2006 version of NCBI C Toolkit
+
+  mgltools: mgltools/1.5
+    MGLTools is an program for visualization and analisys of molecular structures.
+
+  micropita: micropita/1.1
+    microPITA is a computational tool enabling sample selection in two-stage (tiered) studies.
+
+  midas: midas/1.3
+    An integrated pipeline for estimating strain-level genomic variation from metagenomic data
+
+  midnight-commander: midnight-commander/4.8
+    GNU Midnight Commander is a visual file manager, licensed under GNU General Public License and therefore qualifies as Free Software. It's a feature rich full-screen text mode application that allows
+    you to copy, move and delete files and whole directory trees, search for files and run commands in the subshell. Internal viewer and editor are included.
+
+  minibusco: minibusco/0.2
+    minibusco: a faster and more accurate reimplementation of BUSCO
+
+  minimap2: minimap2/2.16
+    A versatile pairwise aligner for genomic and spliced nucleotide sequences.
+
+  minpack: minpack/19961126
+    Minpack includes software for solving nonlinear equations and nonlinear least squares problems.
+
+  miranda: miranda/3.3a
+    An algorithm for finding genomic targets for microRNAs
+
+  miRDeep: miRDeep/2.0
+    miRDeep2 is a completely overhauled tool which discovers microRNA genes by analyzing sequenced RNAs.
+
+  misis: misis/1.0
+
+  mitosalt: mitosalt/1.1
+    Identification of mitochondrial structural alterations.
+
+  mitoz: mitoz/3.6
+    MitoZ: A toolkit for assembly, annotation, and visualization of animal mitochondrial genomes
+
+  mldata: mldata/1.0
+    Static data resources for machine-learning/AI.
+
+  mlpack: mlpack/2.2, mlpack/3.0
+    mlpack a fast, flexible machine learning library
+
+  mlst: mlst/2.16, mlst/2.19, mlst/2.22
+    Scan contig files against PubMLST typing schemes
+
+  mmseqs2: mmseqs2/13.45111
+    MMseqs2: ultra fast and sensitive search and clustering suite.
+
+  modeller: modeller/9.19
+
+  mongodb-client: mongodb-client/3.2, mongodb-client/3.4, mongodb-client/4.2
+    Client programs for MongoDB.
+
+  mono: mono/4.6, mono/5.10, mono/5.14
+    Mono is a software platform designed to allow developers to easily create cross platform applications.
+
+  morgan: morgan/3.4
+    MORGAN is part of our software for Markov chain Monte Carlo in Genetic Analysis.
+
+  mosaik: mosaik/2.2
+    MOSAIK is a reference-guided aligner for next-generation sequencing technologies.
+
+  mosdepth: mosdepth/0.2
+    Fast BAM/CRAM depth calculation for WGS, exome, or targetted sequencing.
+
+  mothur: mothur/1.41, mothur/1.45, mothur/1.46
+    This project seeks to develop a single piece of open-source, expandable software to fill the bioinformatics needs of the microbial ecology community.
+
+  mpfr: mpfr/4.1
+    The MPFR library is a C library for multiple-precision floating-point computations with correct rounding.
+
+  mpich: mpich/3.4, mpich/4.0
+
+  mpich2: mpich2/1.5
+
+  mplus: mplus/6.12, mplus/7.0
+    Mplus is a latent variable modeling program with a wide variety of analysis capabilities.
+
+  mrbayes: mrbayes/3.2
+    Bayesian Inference of Phylogeny
+
+  mridata: mridata/1.0
+    Static data resources for MRI/NeuroImaging.
+
+  mrtrix3: mrtrix3/3.0
+    Advanced tools for the analysis of diffusion MRI data.
+
+  msgf_plus: msgf_plus/2020.06.22
+    MS-GF+ is a new MS/MS database search tool that is sensitive (it identifies more peptides than other database search tools and as many peptides as spectral library search tools) and universal (works
+    well for diverse types of spectra, different configurations of MS instruments and different experimental protocols).
+
+  mspkmercounter: mspkmercounter/0.10
+    MSPKmerCounter is a k-mer counter based on the minimum substring partitioning technique.
+
+  mugsy: mugsy/1.2
+    Mugsy is a multiple whole genome aligner.
+
+  mujoco: mujoco/2.1, mujoco/200
+    MuJoCo | advanced physics simulation.
+
+  multigps: multigps/0.74
+    MultiGPS is a framework for analyzing collections of multi-condition ChIP-seq datasets and characterizing differential binding events between conditions.
+
+  multiqc: multiqc/py27/0.8, multiqc/py27/1.6, multiqc/py27/1.8, multiqc/py35/0.8, multiqc/py35/1.6, multiqc/py36/1.6, multiqc/py37/1.8
+    MultiQC is a tool to create a single report with interactive plots for multiple bioinformatics analyses across many samples.
+
+  mumax3: mumax3/3.9, mumax3/3.10
+    GPU-accelerated micromagnetic simulator
+
+  mummer: mummer/3.23
+    MUMmer is a system for rapidly aligning entire genomes
+
+  mummer4: mummer4/4.0
+    MUMmer is a system for rapidly aligning entire genomes
+
+  muscle: muscle/3.8, muscle/5.1
+    MUSCLE: multiple sequence alignment with high accuracy and high throughput
+
+  music: music/1.0
+    MUSIC is an algorithm for identification of enriched regions at multiple scales in the read depth signals from ChIP-Seq experiments.
+
+  mutect: mutect/1.1
+    MuTect is a method developed at the Broad Institute for the reliable and accurate identification of somatic point mutations in next generation sequencing data of cancer genomes.
+
+  mxnet: mxnet/0.9.3, mxnet/1.5
+    MXNet is an open-source deep learning framework that allows you to define, train, and deploy deep neural networks on a wide array of devices, from cloud infrastructure to mobile devices.
+
+  mysql-client: mysql-client/8.0
+    MySQL client applications and tools
+
+  mytaxa: mytaxa/1.0
+    MyTaxa - Assign taxonomy to metagenomic fragments.
+
+  nano: nano/2.9, nano/5.5, nano/5.7
+    Nano's ANOther editor, an enhanced free Pico clone
+
+  nanofilt: nanofilt/2.8
+    Filtering and trimming of Oxford Nanopore Sequencing data
+
+  nanoplot: nanoplot/1.40
+    Plotting suite for long read sequencing data and alignments
+
+  nanopolish: nanopolish/0.14
+    Signal-level algorithms for MinION data.
+
+  ncbi-amrfinderplus: ncbi-amrfinderplus/3.8
+    AMRFinderPlus finds antimicrobial resistance and other genes in protein or nucleotide sequences.
+
+  ncbi-download: ncbi-download/0.2
+    Python scriopt for downloading bacterial and fungal genomes from NCBI.
+
+  ncdu: ncdu/1.15
+    NCurses Disk Usage
+
+  NCL: NCL/6.1, NCL/6.3, NCL/6.4, NCL/6.6
+    A library of graphics utilites from the Natl. Center for Atmospheric Research.
+
+  ncl: ncl/6.6
+    NCAR Command Language
+
+  NCO: NCO/4.9
+
+  nco: nco/4.8
+    Suite of programs for manipulating NetCDF/HDF4 files.
+
+  ncview: ncview/2.1
+    Ncview is a visual browser for netCDF format files.
+
+  nda-tools: nda-tools/0.2
+    Python package for interacting with NDA web services.
+
+  neper: neper/3.3, neper/3.5
+    Neper is a software package for polycrystal generation and meshing.
+
+  neptune: neptune/1.2
+    Neptune locates genomic signatures using an exact k-mer matching strategy while accommodating k-mer mismatches.
+
+  netcdf: netcdf/4.2, netcdf/4.4, netcdf/4.5, netcdf/4.7
+
+  netica-c: netica-c/5.04
+
+  netlogo: netlogo/6.2
+    NetLogo is a multi-agent programmable modeling environment
+
+  netsurfp: netsurfp/1.0
+    NetSurfP predicts the surface accessibility and secondary structure of amino acids in an amino acid sequence. The method also simultaneously predicts the reliability for each prediction, in the form
+    of a Z-score. The Z-score is related to the surface prediction, and not the secondary structure.
+
+  nextdenovo: nextdenovo/2.5
+    String graph-based de novo assembler for long reads (CLR, HiFi and ONT)
+
+  nextflow: nextflow/20.04, nextflow/21.04, nextflow/21.10, nextflow/22.10, nextflow/23.04
+    A DSL for data-driven computational pipelines http://nextflow.io
+
+  nextstrain-cli: nextstrain-cli/1.16, nextstrain-cli/3.0, nextstrain-cli/3.2, nextstrain-cli/4.2
+    Nextstrain: analysis and visualization of pathogen sequence data.
+
+  ngmlr: ngmlr/0.2
+    ngmlr is a long-read mapper designed to align PacBio or Oxford Nanopore reads to a reference genome and optimized for structural variation detection
+
+  ninja: ninja/1.10
+    A small build system with a focus on speed
+
+  nlopt: nlopt/py39/2.7
+    nonlinear optimization library
+
+  nodejs: nodejs/16.6
+    a platform for easily building fast, scalable network applications
+
+  nofold: nofold/1.0
+    NoFold is an approach for characterizing and clustering RNA secondary structures without computational folding or alignment.
+
+  nomad: nomad/2.0
+    NOMAD is an unsupervised and reference-free unifying framework to discover regulated sequence variation through statistical analysis of k-mer composition in both DNA and RNA sequence.
+
+  nquire: nquire/2018.04.05
+    A statistical framework for ploidy estimation using NGS short-read data.
+
+  nucdiff: nucdiff/2.0
+    NucDiff locates and categorizes differences between two closely related nucleotide sequences.
+
+  NUWRF: NUWRF/intel/v9
+
+  nwchem: nwchem/7.0
+
+  oases: oases/0.2
+    Oases is de novo transcriptome assembler based on the Velvet genome assembler core.
+
+  octave: octave/4.2, octave/6.1, octave/6.2, octave/7.2
+    GNU Octave is a high-level language, primarily intended for numerical computations. It provides a convenient command line interface for solving linear and nonlinear problems numerically, and for
+    performing other numerical experiments using a language that is mostly compatible with Matlab.
+
+  oma: oma/2.4
+    OMA standalone is a standalone package that can infer orthologs using the OMA algorithm on custom genomes.
+
+  oncodriveclustl: oncodriveclustl/1.1
+    OncodriveCLUSTL is a clustering method to identify cancer drivers
+
+  oncotator: oncotator/1.9
+    Oncotator is a tool for annotating human genomic point mutations and indels with data relevant to cancer researchers.
+
+  openbabel: openbabel/py37/3.1, openbabel/py38/3.1
+    A chemical toolbox designed to speak the many languages of chemical data
+
+  openblas: openblas/0.3
+    Numerical library, contains blas/lapack
+
+  openbugs: openbugs/3.2
+    BUGS is a software package for performing Bayesian inference Using Gibbs Sampling.
+
+  opencl: opencl/1.2
+    This runtime software package adds OpenCL CPU device support on systems with Intel Core and Intel Xeon processors.
+
+  opencv: opencv/py27/3.4, opencv/py27/4.2, opencv/py36/3.4, opencv/py37/4.2, opencv/py38/4.2, opencv/2.4, opencv/3.1
+    OpenCV is a computer vision and machine learning software library.
+
+  openfoam: openfoam/9.0
+
+  openjdk: openjdk/17
+    An open-source implementation of the JDK.
+
+  openjpeg: openjpeg/2.3, openjpeg/2.4
+
+  openmolcas: openmolcas/23.06
+    OpenMolcas is a quantum chemistry software package developed by scientists and intended to be used by scientists. It includes programs to apply many different electronic structure methods to chemical
+    systems, but its key feature is the multiconfigurational approach, with methods like CASSCF and CASPT2.
+
+  openmpi: openmpi/3.1, openmpi/4.0, openmpi/4.1
+
+  openmx: openmx/3.9
+
+  openslide: openslide/3.4
+    OpenSlide is a C library that provides a simple interface to read whole-slide images (also known as virtual slides).
+
+  optuna: optuna/py37/2.8, optuna/py38/2.8, optuna/py39/2.8
+    A hyperparameter optimization framework
+
+  orca: orca/5.0
+    ORCA is an ab initio, DFT, and semi-empirical SCF-MO package.
+
+  orthofinder: orthofinder/1.1, orthofinder/2.2, orthofinder/2.5
+    OrthoFinder is a fast, accurate and comprehensive analysis tool for comparative genomics.
+
+  orthomcl: orthomcl/2.0
+    Ortholog groups of protein sequences
+
+  p7zip: p7zip/16.02
+    p7zip is a quick port of 7z.exe and 7za.exe (command line version of 7zip, see www.7-zip.org ) for Unix.
+
+  paml: paml/4.9
+    Phylogenetic Analysis by Maximum Likelihood (PAML)
+
+  pandaseq: pandaseq/2.11
+    PANDASEQ is a program to align Illumina reads, optionally with PCR primers embedded in the sequence, and reconstruct an overlapping sequence.
+
+  panphlan: panphlan/1.3, panphlan/3.0
+    PanPhlAn is a strain-level metagenomic profiling tool for identifying the gene composition and in-vivo transcriptional activity of individual strains in metagenomic samples.
+
+  parallel-fastq-dump: parallel-fastq-dump/0.6
+    parallel fastq-dump wrapper
+
+  paraview: paraview/py37/5.9, paraview/py37/5.10, paraview/py38/5.9, paraview/py38/5.10, paraview/py39/5.9, paraview/py39/5.10, paraview/py39/5.11, paraview/py310/5.11, paraview/py311/5.11
+    ParaView is an open-source, multi-platform data analysis and visualization application based on Visualization Toolkit (VTK).
+
+  paraview-headless: paraview-headless/5.10
+
+  parmetis: parmetis/4.0
+
+  parsinsert: parsinsert/1.04
+    ParsInsert efficiently produces both a phylogenetic tree and taxonomic classification for sequences for microbial community sequence analysis. This is a C++ implementation of the Parsimonious
+    Insertion algorithm
+
+  pasa: pasa/2.3
+    PASA
+
+  pb-assembly: pb-assembly/0.0.8
+    Meta-package for Falcon/Unzip tool-suite (originally by Jason Chin)
+
+  pbh5tools: pbh5tools/0.8
+    pbh5tools -- tools for manipulating HDF5 files produced by Pacific Biosciences. Specifically, this package provides functionality for manipulating and extracting data from "cmp.h5" and "bas.h5"
+    files.
+
+  pblat: pblat/2.0
+
+  peakranger: peakranger/1.18
+    PeakRanger is a multi-purporse software suite for analyzing next-generation sequencing (NGS) data.
+
+  peakzilla: peakzilla/1.0
+    Peakzilla identifies sites of enrichment and transcription factor binding sites from transcription factor ChIP-seq and ChIP-exo experiments at hight accuracy and resolution.
+
+  pegasus-wms: pegasus-wms/5.0
+    Pegasus Workflow Management System
+
+  pepr: pepr/1.1
+    Peak-calling and Prioritization pipeline for replicated ChIP-Seq data.
+
+  perl: perl/5.22, perl/5.26
+    The Perl Programming Language
+
+  perl-mongodb: perl-mongodb/1.2
+    This is the official Perl driver for MongoDB.
+
+  petsc: petsc/3.15
+
+  phdf5: phdf5/1.12
+
+  phenix: phenix/1.18, phenix/1.19
+
+  phist: phist/1.0
+    Phage-Host Interaction Search Tool.
+
+  phobius: phobius/1.01
+    Phobius is a combined transmembrane topology and signal peptide predictor.
+
+  phono3py: phono3py/py27/1.18, phono3py/py36/1.18, phono3py/py37/1.18, phono3py/py38/2.1, phono3py/py39/2.1
+    A simulation package of phonon-phonon interaction related properties
+
+  phonopy: phonopy/py37/2.11, phonopy/py39/2.11, phonopy/1.11
+    Phonopy is an open source package for phonon calculations at harmonic and quasi-harmonic levels.
+
+  phylip: phylip/3.6
+
+  phyloflash: phyloflash/3.4
+
+  phylogenetics: phylogenetics/0.5
+    Python API for managing a phylogenetics projects.
+
+  phylophlan: phylophlan/1.0, phylophlan/3.0
+    PhyloPhlAn is a computational pipeline for reconstructing highly accurate and resolved phylogenetic trees based on whole-genome sequence information.
+
+  phylosnp: phylosnp/1.0
+    PhyloSNP is designed to take SNP data files (.csv and .vcf) and generate phylogenetic trees from the provided data.
+
+  phyml: phyml/3.3
+    Phylogenetic estimation using (Maximum) Likelihood
+
+  picard: picard/1.1, picard/2.9, picard/2.13, picard/2.18, picard/2.22, picard/3.0
+    A set of Java command line tools for manipulating high-throughput sequencing data (HTS) data and formats. 
+
+  picrust: picrust/1.1
+    The PICRUSt project aims to support prediction of the unobserved character states in a community of organisms from phylogenetic information about the organisms in that community.
+
+  picrust2: picrust2/2.2, picrust2/2.4
+    PICRUSt: Phylogenetic Investigation of Communities by Reconstruction of Unobserved States
+
+  pilon: pilon/1.23, pilon/1.24
+    Pilon is an automated genome assembly improvement and variant detection tool.
+
+  pindel: pindel/0.2
+
+  pirs: pirs/2.0
+
+  plasmidfinder: plasmidfinder/2.0, plasmidfinder/2.1
+    PlasmidFinder allows identification of plasmids in total or partial sequenced isolates of bacteria.
+
+  plink: plink/1.90
+    PLINK is a free, open-source whole genome association analysis toolset, designed to perform a range of basic, large-scale analyses in a computationally efficient manner.
+
+  plink2: plink2/2.0a1
+    This is a comprehensive update to Shaun Purcell's PLINK command-line program, developed by Christopher Chang with support from the NIH-NIDDK's Laboratory of Biological Modeling, the Purcell Lab at
+    Mount Sinai School of Medicine, and others.
+
+  plinkseq: plinkseq/0.10
+    PLINK/SEQ is an open-source C/C++ library for working with human genetic variation data.
+
+  plumed: plumed/2.8
+    The community-developed PLUgin for MolEcular Dynamics.
+
+  pmlst: pmlst/2.0
+    Plasmid Multi-Locus Sequence Typing
+
+  pomoxis: pomoxis/0.1, pomoxis/0.3
+    Pomoxis comprises APIs and command line tools for interacting and analysing Oxford Nanopore Technologies’ data in real time.
+
+  popoolation2: popoolation2/1.201
+    PoPoolation2 allows to compare allele frequencies for SNPs between two or more populations and to identify significant differences.
+
+  poppunk: poppunk/1.1
+    PopPUNK (POPulation Partitioning Using Nucleotide Kmers)
+
+  postgresql: postgresql/15.2
+    PostgreSQL is a powerful, open source object-relational database system.
+
+  povray: povray/3.7
+    The Persistence of Vision Raytracer.
+
+  pplacer: pplacer/1.1
+    Pplacer places query sequences on a fixed reference phylogenetic tree to maximize phylogenetic likelihood or posterior probability according to a reference alignment.
+
+  prank: prank/170427
+    PRANK is a probabilistic multiple alignment program for DNA, codon and amino-acid sequences.
+
+  primer3: primer3/2.3
+    Primer3 picks primers for PCR reactions
+
+  prinseq-lite: prinseq-lite/0.20
+    PRINSEQ can be used to filter, reformat, or trim your genomic and metagenomic sequence data
+
+  prodigal: prodigal/2.6, prodigal/2.60
+    Prodigal (Prokaryotic Dynamic Programming Genefinding Algorithm) is a microbial (bacterial and archaeal) gene finding program
+
+  prohlatype: prohlatype/0.9
+    This project provides a set of tools to calculate the full posterior distribution of HLA types given read data.
+
+  proj: proj/7.1
+
+  prokka: prokka/1.12, prokka/1.13, prokka/1.14
+    Prokka is a software tool for the rapid annotation of prokaryotic genomes.
+
+  proteowizard: proteowizard/3.0
+    ProteoWizard provides a modular and extensible set of open-source, cross-platform tools and libraries.
+
+  provean: provean/1.1
+    PROVEAN (Protein Variation Effect Analyzer) is a software tool which predicts whether an amino acid substitution or indel has an impact on the biological function of a protein.
+
+  pullseq: pullseq/1.0
+    pullseq - Software to extract sequence from a fasta or fastq. Also filter sequences by a minimum length or maximum length.
+
+  purge_dups: purge_dups/1.2
+    Purge_dups is a package used to purge haplotigs and overlaps in an assembly based on read depth
+
+  pwtools: pwtools/py37/1.2, pwtools/py39/1.2
+    pwtools is a Python package for pre- and postprocessing of atomistic calculations, mostly targeted to Quantum Espresso, CPMD, CP2K and LAMMPS.
+
+  pyani: pyani/py39/0.2
+    pyani provides a package and script for calculation of genome-scale average nucleotide identity.
+
+  pyclone: pyclone/0.13
+    PyClone is statistical model and software tool designed to infer the prevalence of point mutations in heterogeneous cancer samples.
+
+  pyfasta: pyfasta/0.5
+    Pyfasta - fast, memory-efficient, pythonic (and command-line) access to fasta sequence files.
+
+  pygenometracks: pygenometracks/2.0
+    Standalone program and library to plot beautiful genome browser tracks.
+
+  pyicoteo: pyicoteo/2.0
+    Analysis and manipulation of mapped reads coming from High Throughput Sequencing tool and library.
+
+  pymagic: pymagic/0.1
+    MAGIC: A diffusion-based imputation method reveals gene-gene interactions in single-cell RNA-sequencing data.
+
+  pymatgen: pymatgen/py39/2023.6.28, pymatgen/py310/2023.6.28, pymatgen/py311/2023.6.28
+    Python Materials Genomics is an analysis code for materials science.
+
+  pymeteo: pymeteo/0.5
+    General meteorological routines, skew-T/log-p plotting and working with CM1 model data.
+
+  pymlst: pymlst/2020.06.19
+    python Mlst Local Search Tool
+
+  pymol-open-source: pymol-open-source/py37/2.4, pymol-open-source/py38/2.4, pymol-open-source/py39/2.4, pymol-open-source/py39/2.5, pymol-open-source/py310/2.5, pymol-open-source/py311/2.5
+    A user-sponsored molecular visualization system
+
+  pymongo: pymongo/3.0, pymongo/3.3, pymongo/3.7
+    PyMongo is a Python distribution containing tools for working with MongoDB, and is the recommended way to work with MongoDB from Python.
+
+  pysam: pysam/py37/0.16, pysam/py38/0.16
+    Pysam is a python module for reading and manipulating Samfiles.
+
+  pyseer: pyseer/1.2, pyseer/1.3
+    Sequence Elements Enrichment Analysis (SEER), python implementation
+
+  python: python/2.7, python/3.3, python/3.4, python/3.5, python/3.6, python/3.7, python/3.8, python/3.9, python/3.10
+
+  python-openstackclient: python-openstackclient/2.1, python-openstackclient/6.0
+    OpenStackClient (aka OSC) is a command-line client for OpenStack that brings the command set for Compute, Identity, Image, Object Store and Block Storage APIs together in a single shell with a
+    uniform command structure.
+
+  pytorch: pytorch/py27/0.4, pytorch/py27/1.2, pytorch/py35/0.4, pytorch/py36/0.4, pytorch/py36/1.2, pytorch/py37/1.2, pytorch/py37/1.5, pytorch/py37/1.6, pytorch/py37/1.7, pytorch/py37/1.8, ...
+    PyTorch is an optimized tensor library for deep learning using GPUs and CPUs.
+
+  pytorch-gpu: pytorch-gpu/py38/1.8, pytorch-gpu/py38/1.9, pytorch-gpu/py38/1.10, pytorch-gpu/py38/1.12, pytorch-gpu/py39/1.10, pytorch-gpu/py39/1.12, pytorch-gpu/py39/1.13, pytorch-gpu/py310/1.13
+    Tensors and Dynamic neural networks in Python with strong GPU acceleration
+
+  qctool: qctool/1.4
+    QCTOOL is a command-line utility program for basic quality control of gwas datasets.
+
+  qgis: qgis/3.18, qgis/3.30
+    A free and open source Geographic Information System (GIS).
+
+  qgrs-cpp: qgrs-cpp/2017.08.25
+    C++ implementation of QGRS mapping.
+
+  qiime: qiime/1.9, qiime/2.0
+    QIIME is an open source software package for comparison and analysis of microbial communities, primarily based on high-throughput amplicon sequencing data (such as SSU rRNA) generated on a variety of
+    platforms, but also supporting analysis of other types of data (such as shotgun metagenomic data).
+
+  qiime2: qiime2/2017.9, qiime2/2018.2, qiime2/2018.4, qiime2/2019.1, qiime2/2019.10, qiime2/2020.2, qiime2/2021.2, qiime2/2021.4, qiime2/2021.11, qiime2/2022.2
+    QIIME 2 is a powerful, extensible, and decentralized microbiome analysis package with a focus on data and analysis transparency.
+
+  qmpy: qmpy/py36/1.4, qmpy/py37/1.4, qmpy/py38/1.4
+    A suite of computational materials science tools.
+
+  quake: quake/0.3
+    Quake is a package to correct substitution sequencing errors in experiments with deep coverage.
+
+  quasr: quasr/6.09
+    QUASR is lightweight pipeline for processing and analysis of high-throughput sequencing data.
+
+  quast: quast/4.1, quast/4.4, quast/4.5, quast/5.0
+    QUAST evaluates genome assemblies by computing various metrics.
+
+  R: R/3.4, R/3.5, R/3.6, R/4.0, R/4.1, R/4.2, R/4.3
+    Microsoft R Open is the enhanced distribution of R from Microsoft Corporation.
+
+  r-fastbaps: r-fastbaps/r36/1.0, r-fastbaps/r41/1.0
+    A fast approximation to a Dirichlet Process Mixture model (DPM) for clustering genetic data
+
+  r-genometricorr: r-genometricorr/r33/1.1
+    Genometric Correlation (GenometriCorr) is an R package for spatial correlation of genome-wide interval datasets.
+
+  r-ggfortify: r-ggfortify/r33/0.4
+    ggfortify is a package of unified plotting tools for statistics commonly used, such as GLM, time series, PCA families, clustering and survival analysis.
+
+  r-hmisc: r-hmisc/4.6
+    Contains many functions useful for data analysis, high-level graphics, utility operations, functions for computing sample size and power, importing and annotating datasets, imputing missing values,
+    advanced table making, variable clustering, character string manipulation, conversion of R objects to LaTeX and html code, and recoding variables.
+
+  r-inla: r-inla/r36/20.03.17
+    Full Bayesian Analysis of Latent Gaussian Models using Integrated Nested Laplace Approximations
+
+  r-keras: r-keras/r35/2.2
+    Interface to 'Keras' <https://keras.io>, a high-level neural networks 'API'.
+
+  r-markdown: r-markdown/r34/0.8
+    Markdown is a plain-text formatting syntax that can be converted to XHTML or other formats.
+
+  r-matlib: r-matlib/r36/0.9
+    A collection of matrix functions for teaching and learning matrix linear algebra as used in multivariate statistical methods.
+
+  r-regresshaplo: r-regresshaplo/r34/1.0
+    This package reconstructs haplotypes from a BAM file using a penalized regression approach.
+
+  r-rhierbaps: r-rhierbaps/r35/1.1
+    rhierbaps is R implementation of hierBAPS.
+
+  r-rrblup: r-rrblup/r41/4.6
+    Software for genomic prediction with the RR-BLUP mixed model.
+
+  r-scimpute: r-scimpute/r34/0.0.6, r-scimpute/0.0.5
+    scImpute is accurate and robust imputation of single-cell RNA sequencing data.
+
+  r-seqminer: r-seqminer/r34/6.0
+    SEQMINER is for sequencing variant annotation, data integration and query in R.
+
+  r-seurat: r-seurat/r41/4.1
+    A toolkit for quality control, analysis, and exploration of single cell RNA sequencing data.
+
+  r-vcfr: r-vcfr/r34/1.5
+    A package to manipulate and visualize VCF data in R.
+
+  racon: racon/1.5
+    Ultrafast consensus module for raw de novo genome assembly of long uncorrected reads.
+
+  RAPSearch2: RAPSearch2/2.19
+    RAPSearch2 is a tool for fast protein similarity searches.
+
+  rarefactionanalyzer: rarefactionanalyzer/2018.09.06
+    Rarefaction analyzer is a simple program that can be used to perform rarefaction analysis.
+
+  raxml: raxml/8.2
+    Phylogenetics - Randomized Axelerated Maximum Likelihood.
+
+  ray: ray/2.3
+    Ray is a parallel software that computes de novo genome assemblies with next-generation sequencing data.
+
+  rclone: rclone/1.44, rclone/1.50, rclone/1.51, rclone/1.59
+    Rclone ("rsync for cloud storage") is a command line program to sync files and directories to and from different cloud storage providers.
+
+  read2tree: read2tree/py39/0.1, read2tree/py310/0.1
+    Building phylogenetic trees directly from sequencing reads
+
+  readosm: readosm/1.1
+
+  reago: reago/1.1
+    Reconstructing 16S rRNA genes in metagenomic data.
+
+  red: red/2015.05.22
+    Red (RepeatsDetector): an intelligent, rapid, accurate tool for detecting repeats de-novo on the genomic scale.
+
+  regtools: regtools/0.5
+    Tools that integrate DNA-seq and RNA-seq data to help interpret mutations in a regulatory and splicing context.
+
+  relion: relion/4.0
+
+  relion-gpu: relion-gpu/4.0
+
+  repeatmasker: repeatmasker/4.0
+    RepeatMasker is a program that screens DNA sequences for interspersed repeats and low complexity DNA sequences.
+
+  repenrich: repenrich/1.2
+    RepEnrich is a method to estimate repetitive element enrichment using high-throughput sequencing data.
+
+  resfinder: resfinder/4.1
+    ResFinder identifies acquired antimicrobial resistance genes in total or partial sequenced isolates of bacteria.
+
+  resistomeanalyzer: resistomeanalyzer/2018.09.06
+    Resistome Analyzer is a simple tool for analyzing the resistome of large metagenomic datasets.
+
+  retroseq: retroseq/1.5
+    RetroSeq is a bioinformatics tool that searches for mobile element insertions from aligned reads in a BAM file and a library of reference transposable elements.
+
+  revtrans: revtrans/1.4
+    RevTrans - performs a reverse translation of a peptide alignment.
+
+  rgi: rgi/5.1, rgi/5.2, rgi/6.0
+    Resistance gene identifier.
+
+  rgt: rgt/0.11
+    Toolkit to perform regulatory genomics data analysis
+
+  ripgrep: ripgrep/13.0
+    ripgrep recursively searches directories for a regex pattern
+
+  ripser: ripser/1.0
+    Ripser: efficient computation of Vietoris–Rips persistence barcodes.
+
+  rmats: rmats/4.1
+    MATS is a computational tool to detect differential alternative splicing events from RNA-Seq data.
+
+  rnaclust: rnaclust/1.3
+    A tool for clustering of RNAs based on their secondary structures using LocARNA
+
+  rnahybrid: rnahybrid/2.1
+    RNAhybrid is a tool for finding the minimum free energy hybridization of a long and a short RNA.
+
+  rnammer: rnammer/1.2
+    RNAmmer predicts 5s/8s, 16s/18s, and 23s/28s ribosomal RNA in full genome sequences.
+
+  rnaquast: rnaquast/1.5
+    rnaQUAST is a tool for evaluating RNA-Seq assemblies using reference genome and gene database. In addition, rnaQUAST is also capable of estimating gene database coverage by raw reads and de novo
+    quality assessment using third-party software.
+
+  rnasnp: rnasnp/1.2
+    Efficient detection of local RNA secondary structure changes induced by SNPs.
+
+  rnastructure: rnastructure/6.1
+    RNAstructure is a complete package for RNA and DNA secondary structure prediction and analysis. It includes algorithms for secondary structure prediction, including facility to predict base pairing
+    probabilities. It also can be used to predict bimolecular structures and can predict the equilibrium binding affinity of an oligonucleotide to a structured RNA target. This is useful for siRNA
+    design. It can also predict secondary structures common to two, unaligned sequences, which is much more accurate than single sequence secondary structure prediction. Finally, RNAstructure can take a
+    number of different types of experiment mapping data to constrain or restrain structure prediction. These include chemical mapping, enzymatic mapping, NMR, and SHAPE data.
+
+  roary: roary/3.12, roary/3.13
+    Rapid large-scale prokaryote pan genome analysis
+
+  rosetta: rosetta/3.12, rosetta/3.13
+    The Rosetta software suite includes algorithms for computational modeling and analysis of protein structures. It has enabled notable scientific advances in computational biology, including de novo
+    protein design, enzyme design, ligand docking, and structure prediction of biological macromolecules and macromolecular complexes. 
+
+  rosettafold: rosettafold/1.0
+    RoseTTAFold - Accurate prediction of protein structures and interactions using a 3-track network.
+
+  rsem: rsem/1.2, rsem/1.3
+    RSEM is a software package for estimating gene and isoform expression levels from RNA-Seq data.
+
+  rsync: rsync/3.1, rsync/3.2
+    Tool for fast incremental file transfer
+
+  ruby: ruby/2.1
+
+  rucs: rucs/1.0
+    RUCS is a bioinformatics tool developed to ease the task of designing new primers.
+
+  rust: rust/1.41
+    Rust is a systems programming language that runs blazingly fast, prevents segfaults, and guarantees thread safety. This package provides the compiler (rustc) and the documentation utilities rustdoc.
+
+  saga-gis: saga-gis/py27/2.3, saga-gis/py37/8.3, saga-gis/py38/8.3, saga-gis/py39/8.3
+    SAGA - System for Automated Geoscience Analysis.
+
+  sage: sage/6.3
+    'Sage is a free open-source mathematics software system licensed under the GPL. It builds on top of many existing open-source packages: NumPy, SciPy, matplotlib, Sympy, Maxima, GAP, FLINT, R and many
+    more.' Mission: 'Creating a viable free open source alternative to Magma, Maple, Mathematica and Matlab.'
+
+  salmon: salmon/0.6, salmon/0.8, salmon/0.9, salmon/1.4
+    Highly-accurate & wicked fast transcript-level quantification from RNA-seq reads using lightweight alignments.
+
+  sambamba: sambamba/0.8
+    Tools for working with SAM/BAM data
+
+  samtools: samtools/0.1, samtools/1.3, samtools/1.5, samtools/1.6, samtools/1.9, samtools/1.15, samtools/1.17
+    SAM Tools provide various utilities for manipulating alignments in the SAM format, including sorting, merging, indexing and generating alignments in a per-position format.
+
+  sas: sas/9.4
+    SAS is a software suite developed by SAS Institute for advanced analytics, business intelligence, data management, and predictive analytics.
+
+  scaffold_builder: scaffold_builder/2.2
+    Scaffold_builder: Combining de novo and reference-guided assembly with Scaffold_builder.
+
+  scan-for-matches: scan-for-matches/1.0
+    scan_for_matches is a utility written in C for locating patterns in DNA or protein FASTA files.
+
+  schrodinger: schrodinger/2020.1, schrodinger/2020.4, schrodinger/2021.1, schrodinger/2022.1
+    Schrödinger is the scientific leader in developing state-of-the-art chemical simulation software for use in pharmaceutical, biotechnology, and materials research.
+
+  scip: scip/4.0
+    SCIP is currently one of the fastest non-commercial solvers for mixed integer programming (MIP) and mixed integer nonlinear programming (MINLP).
+
+  scoary: scoary/py27/1.6, scoary/py35/1.6, scoary/py36/1.6
+    Microbial pan-GWAS using the output from Roary
+
+  scons: scons/py27/3.1, scons/py37/4.2, scons/py37/4.3, scons/py38/3.1, scons/py38/4.2, scons/py38/4.3, scons/py39/3.1, scons/py39/4.2, scons/py39/4.3, scons/2.5, scons/3.0
+    SCons: A software construction tool.
+
+  scythe: scythe/0.991
+    A 3'-end adapter contaminant trimmer.
+
+  seedme: seedme/1.2
+    Client program for SeedMe.org.
+
+  selecton: selecton/2.4
+    Selecton 2007: advanced models for detecting positive and purifying selection using a Bayesian inference approach.
+
+  sepp: sepp/1.0
+
+  seqkit: seqkit/0.10
+    Cross-platform and ultrafast toolkit for FASTA/Q file manipulation
+
+  seqtk: seqtk/1.2
+    Seqtk is a fast and lightweight tool for processing sequences in the FASTA or FASTQ format.
+
+  seqyclean: seqyclean/1.10
+    Main purpose of this software is to pre-process NGS data in order to prepare for downstream analysis.
+
+  settarg: settarg/settarg, settarg
+
+  sff2fastq: sff2fastq/0.9
+    The program sff2fastq extracts read information from a SFF file, produced by the 454 genome sequencer, and outputs the sequences and quality scores in a FASTQ format.
+
+  shapeit: shapeit/2.0
+    SHAPEIT is a fast and accurate method for estimation of haplotypes (aka phasing) from genotype or sequencing data.
+
+  shapelib: shapelib/1.5
+    The Shapefile C Library provides the ability to write simple C programs for reading, writing and updating (to a limited extent) ESRI Shapefiles, and the associated attribute file (.dbf).
+
+  shasta: shasta/0.8, shasta/0.11
+    De novo assembly from Oxford Nanopore reads.
+
+  shortbred: shortbred/0.9
+    ShortBRED is a system for profiling protein families of interest at very high specificity in shotgun metagenomic sequencing data.
+
+  shortstack: shortstack/3.8
+    ShortStack: Comprehensive annotation and quantification of small RNA genes
+
+  shovill: shovill/1.0
+    Microbial assembly pipeline for Illumina paired-end reads
+
+  shrimp: shrimp/2.2
+    SHRiMP is a software package for aligning genomic reads against a target genome.
+
+  shtns: shtns/py36/2.6, shtns/py36/3.6, shtns/py310/2.6, shtns/py310/3.6
+    SHTns is a high performance library for Spherical Harmonic Transform written in C, aimed at numerical simulation (fluid flows, mhd, ...) in spherical geometries.
+
+  sicerpy: sicerpy/0.1
+    Python wrapper around the popular ChIP-Seq peak caller SICER.
+
+  sickle: sickle/1.33, sickle/1.210
+    Windowed Adaptive Trimming for fastq files using quality
+
+  sift4g: sift4g/2.0
+    SIFT 4G is a faster version of SIFT that enables us to scale up and provide SIFT predictions for more organisms.
+
+  signalp: signalp/4.1, signalp/5.0b
+    signalp predicts the presence and location of signal peptide cleavage sites in amino acid sequences from different organisms: Gram-positive bacteria, Gram-negative bacteria, and eukaryotes.
+
+  simrna: simrna/3.20
+    SimRNA is a tool for simulations of RNA conformational dynamics
+
+  singularity: singularity/2.2, singularity/2.3, singularity/2.4, singularity/2.6, singularity/3.2, singularity/3.8
+    Application containers enabling mobility of compute.
+
+  sistr_cmd: sistr_cmd/1.0, sistr_cmd/1.1
+    Salmonella In Silico Typing Resource command-line tool
+
+  smetana: smetana/py36/1.2
+    Species METabolic interaction ANAlysis (SMETANA) is a python-based command line tool to analyse microbial communities.
+
+  smrtlink: smrtlink/5.0, smrtlink/5.1, smrtlink/7.0, smrtlink/10.1
+    PacBio's open-source SMRT Analysis software suite is designed for use with Single Molecule, Real-Time (SMRT) Sequencing data.
+
+  snakemake: snakemake/5.18, snakemake/6.4
+    A popular workflow management system aiming at full in-silico reproducibility.
+
+  snap: snap/2013-11-29
+    SNAP - (Semi-HMM-based Nucleic Acid Parser) gene prediction tool.
+
+  sniffles: sniffles/1.0
+    Sniffles is a structural variation caller using third generation sequencing (PacBio or Oxford Nanopore)
+
+  snippy: snippy/4.3, snippy/4.6
+    Rapid bacterial SNP calling and core genome alignments
+
+  snp-dists: snp-dists/0.6, snp-dists/0.7
+    Convert a FASTA alignment to SNP distance matrix
+
+  snp-pipeline: snp-pipeline/0.6, snp-pipeline/0.7, snp-pipeline/1.0, snp-pipeline/2.0
+    SNP Pipeline is a pipeline for the production of SNP matrices from sequence data used in the phylogenetic analysis of pathogenic organisms sequenced from samples of interest to food safety.
+
+  snp-sites: snp-sites/2.3, snp-sites/2.4, snp-sites/2.5
+    SNP-sites rapidly extracts SNPs from a multi-FASTA alignment.
+
+  snpeff: snpeff/4.3, snpeff/5.1
+    Genetic variant annotation and effect prediction toolbox.
+
+  snpfinder: snpfinder/1.0
+    SNPFinder is a simple alignment-based haplotype variant caller that can be used with metagenomic sequence data.
+
+  snptest: snptest/2.5
+    SNPTEST is a program for the analysis of single SNP association in genome-wide studies.
+
+  soapdenovo-trans: soapdenovo-trans/1.04
+    SOAPdenovo-Trans is a de novo transcriptome assembler basing on the SOAPdenovo framework, adapt to alternative splicing and different expression level among transcripts.
+
+  soapdenovo2: soapdenovo2/r240
+    soapdenovo2 - novel short-read assembly method that can build a de novo draft assembly for the human-sized genomes
+
+  sonnet: sonnet/py27/1.19, sonnet/py27/1.23, sonnet/py27/1.27, sonnet/py35/1.19, sonnet/py35/1.23, sonnet/py36/1.19, sonnet/py36/1.23, sonnet/py36/1.27, sonnet/py38/2.0, sonnet/py39/2.0
+    Sonnet is a library built on top of TensorFlow for building complex neural networks.
+
+  sonnet-gpu: sonnet-gpu/py27/1.19, sonnet-gpu/py27/1.23, sonnet-gpu/py27/1.27, sonnet-gpu/py35/1.19, sonnet-gpu/py35/1.23, sonnet-gpu/py36/1.19, sonnet-gpu/py36/1.23, sonnet-gpu/py36/1.27
+    Sonnet is a library built on top of TensorFlow for building complex neural networks.
+
+  sortmerna: sortmerna/4.3.2
+    SortMeRNA is a biological sequence analysis tool for filtering, mapping and OTU-picking NGS reads.
+
+  spacy: spacy/py36/2.2, spacy/py37/2.2
+    Industrial-strength Natural Language Processing
+
+  spacy-gpu: spacy-gpu/py36/2.2, spacy-gpu/py37/2.2
+    Industrial-strength Natural Language Processing
+
+  spades: spades/py27/3.13, spades/py35/3.13, spades/py36/3.13, spades/3.8, spades/3.10, spades/3.11, spades/3.12, spades/3.14, spades/3.15
+    SPAdes - St. Petersburg genome assembler - is intended for both standard isolates and single-cell MDA bacteria assemblies.
+
+  sparcc: sparcc/py27/0.1
+    SparCC is a python module for computing correlations in compositional data (16S, metagenomics, etc).
+
+  sparta: sparta/18Jul2022
+    Stochastic PArallel Rarefied-gas Time-accurate Analyzer.
+
+  spglib: spglib/2.0
+
+  spider: spider/2.0
+    Sequence-based Prediction of Local and Nonlocal Structural Features for Proteins.
+
+  spirit: spirit/py36/2.1, spirit/py37/2.1, spirit/py38/2.1
+    Optimizations and Dynamics Framework for atomistic Spin systems
+
+  spirit-gpu: spirit-gpu/py36/2.1, spirit-gpu/py37/2.1, spirit-gpu/py38/2.1
+    Optimizations and Dynamics Framework for atomistic Spin systems
+
+  spm: spm/12
+    Statistical Parametric Mapping refers to the construction and assessment of spatially extended statistical processes used to test hypotheses about functional imaging data.
+
+  spp: spp/1.11, spp/1.13
+    ChIP-seq peak caller
+
+  spython: spython/0.0.69
+    Command line python tool for working with singularity.
+
+  sqlite: sqlite/3.33
+
+  SRAtoolkit: SRAtoolkit/2.8, SRAtoolkit/2.9, SRAtoolkit/2.10, SRAtoolkit/2.11
+    SRA Toolkit and SDK from NCBI
+
+  ssake: ssake/4.0
+    SSAKE is a genomics application for de novo assembly of millions of very short DNA sequences.
+
+  stacks: stacks/2.4
+    Stacks is a software pipeline for building loci from RAD-seq
+
+  stamp: stamp/2.1
+    A graphical software package for analyzing taxonomic and functional profiles.
+
+  staphb-toolkit: staphb-toolkit/1.3, staphb-toolkit/20200304
+    A ToolKit of commonly used Public Health Bioinformatics Tools
+
+  star: star/2.7, star/2.7.9a
+    An RNA-seq read aligner.
+
+  star-fusion: star-fusion/1.9
+    STAR-Fusion fusion variant caller.
+
+  starccm: starccm/9.06, starccm/10.06
+
+  stereogene: stereogene/2.20
+    StereoGene: Rapid Estimation of Genomewide Correlation of Continuous or Interval Feature Data
+
+  strainest: strainest/1.2
+    Abundance estimation of strains
+
+  strelka: strelka/2.9
+    Strelka calls somatic and germline small variants from mapped sequencing reads
+
+  stringmlst: stringmlst/0.6
+    Fast k-mer based tool for multi locus sequence typing (MLST) directly from genome sequencing reads
+
+  StringTie: StringTie/1.3, StringTie/2.1, StringTie/2.2
+    StringTie is a fast and highly efficient assembler of RNA-Seq alignments into potential transcripts.
+
+  structure: structure/2.3
+    The program structure is a free software package for using multi-locus genotype data to investigate population structure. Its uses include inferring the presence of distinct populations, assigning
+    individuals to populations, studying hybrid zones, identifying migrants and admixed individuals, and estimating population allele frequencies in situations where many individuals are migrants or
+    admixed. It can be applied to most of the commonly-used genetic markers, including SNPS, microsatellites, RFLPs and AFLPs.
+
+  subread: subread/1.4, subread/2.0
+    The Subread package is developed in The Walter and Eliza Hall Institute of Medical Research, Melbourne, Australia. It consists of a suite of programs for processing next-gen sequencing data.
+
+  subversion: subversion/1.10, subversion/1.14
+    Enterprise-class centralized version control for the masses
+
+  suitesparse: suitesparse/5.10
+    SuiteSparse: A Suite of Sparse matrix packages.
+
+  svn: svn/1.10, svn/1.14
+    Enterprise-class centralized version control for the masses
+
+  svsolver: svsolver/2022.07.20
+    The svSolver includes three executable programs: Presolver(svpre), Flowsolver(svsolver), Postsolver(svpost).
+
+  swan: swan
+
+  sweepfinder2: sweepfinder2/1.0
+    The BWA read mapper.
+
+  szip: szip/2.1
+
+  t-coffee: t-coffee/13.39, t-coffee/13.45
+    A collection of tools for Multiple Alignments of DNA, RNA, Protein Sequence
+
+  tabix: tabix/0.2
+    A set of tools written in Perl and C++ for working with VCF files.
+
+  tagcleaner: tagcleaner/0.16
+    The TagCleaner tool can be used to automatically detect and efficiently remove tag sequences (e.g. WTA tags) from genomic and metagenomic datasets. It is easily configurable and provides a
+    user-friendly interface.
+
+  targetfinder: targetfinder/1.7
+    Plant small RNA target prediction tool.
+
+  tassel: tassel/3.0, tassel/4.0, tassel/5.1, tassel/5.2
+    TASSEL is a software package to evaluate traits associations, evolutionary patterns, and linkage disequilibrium.
+
+  tax2tree: tax2tree/1.0
+    tax2tree - Tools for decorating taxonomy information on to a phylogenetic tree.
+
+  taxypro: taxypro/1.0
+
+  taxytoolbox: taxytoolbox/1.0
+
+  tciaclient: tciaclient/py38/0.0.3
+    TCIA (The Cancer Imaging Archive) Download Client for Python
+
+  tensorflow: tensorflow/py27/0.12, tensorflow/py27/1.0, tensorflow/py27/1.3, tensorflow/py27/1.4, tensorflow/py27/1.5, tensorflow/py27/1.7, tensorflow/py27/1.11, tensorflow/py27/1.12, ...
+    TensorFlow is an open source software library for numerical computation using data flow graphs.
+
+  tensorflow-gpu: tensorflow-gpu/py27/1.5, tensorflow-gpu/py27/1.7, tensorflow-gpu/py27/1.12, tensorflow-gpu/py27/1.13, tensorflow-gpu/py27/1.14, tensorflow-gpu/py35/1.5, tensorflow-gpu/py35/1.7, ...
+    TensorFlow is an open source software library for numerical computation using data flow graphs.
+
+  tf-comb: tf-comb/py38/1.0, tf-comb/py39/1.0, tf-comb/py310/1.0
+    Transcription Factor Co-Occurrence using Market Basket analysis
+
+  theano: theano/py27/0.9, theano/py27/1.0, theano/py35/0.9, theano/py35/1.0, theano/py36/0.9, theano/py36/1.0
+    Theano is a Python library that allows you to define, optimize, and evaluate mathematical expressions involving multi-dimensional arrays efficiently.
+
+  tmhmm: tmhmm/2.0c
+    TMHMM 2.0 predicts transmembrane helices in proteins.
+
+  tobias: tobias/py37/0.13
+    Transcription factor Occupancy prediction By Investigation of ATAC-seq Signal
+
+  tophat: tophat/2.0, tophat/2.1
+    TopHat2 is a fast splice junction mapper for RNA-Seq reads. It aligns RNA-Seq reads to mammalian-sized genomes using the ultra high-throughput short read aligner Bowtie, and then analyzes the mapping
+    results to identify splice junctions between exons.
+
+  tpmcalculator: tpmcalculator/0.0.4
+    TPMCalculator quantifies mRNA abundance directly from the alignments by parsing BAM files.
+
+  transcriptm: transcriptm/0.2
+    Metagenomics analyses.
+
+  transdecoder: transdecoder/2.0, transdecoder/3.0
+    TransDecoder identifies candidate coding regions within transcript sequences, such as those generated by de novo RNA-Seq transcript assembly using Trinity, or constructed based on RNA-Seq alignments
+    to the genome using Tophat and Cufflinks.
+
+  transformers: transformers/py39/4.31, transformers/py310/4.31
+    State-of-the-art Natural Language Processing for TensorFlow 2.0 and PyTorch
+
+  transformers-gpu: transformers-gpu/py39/4.31, transformers-gpu/py310/4.31
+    State-of-the-art Natural Language Processing for TensorFlow 2.0 and PyTorch
+
+  transrate: transrate/0.1
+    transrate - Quality assessment and comparison of transcriptome assemblies
+
+  treemix: treemix/1.12, treemix/1.13
+    TreeMix is a method for inferring the patterns of population splits and mixtures in the history of a set of populations.
+
+  trf: trf/4.0
+    Tandem Repeats Finder is a program to locate and display tandem repeats in DNA sequences.
+
+  triform2: triform2/0.0.5
+    Improved sensitivity, specificity and control of false discovery rates in ChIP-Seq peak finding.
+
+  trim_galore: trim_galore/0.4, trim_galore/0.6
+    Trim Galore! is a wrapper script to automate quality and adapter trimming as well as quality control
+
+  TrimGalore: TrimGalore/0.4
+
+  trimmomatic: trimmomatic/0.33, trimmomatic/0.36, trimmomatic/0.38, trimmomatic/0.39
+    Trimmomatic: A flexible read trimming tool for Illumina NGS data.
+
+  trinity: trinity/r2013-11-10, trinity/r2014-04-13p1, trinity/2.4, trinity/2.6, trinity/2.8, trinity/2.9, trinity/2.11, trinity/2.12, trinity/2.13
+    Trinity RNA-Seq de novo transcriptome assembly
+
+  trinotate: trinotate/r2013-11-10, trinotate/2.0, trinotate/3.2
+    Trinotate is a comprehensive annotation suite designed for automatic functional annotation of transcriptomes, particularly de novo assembled transcriptomes, from model or non-model organisms.
+    Trinotate makes use of a number of different well referenced methods for functional annotation including homology search to known sequence data (BLAST+/SwissProt), protein domain identification
+    (HMMER/PFAM), protein signal peptide and transmembrane domain prediction (signalP/tmHMM), and leveraging various annotation databases (eggNOG/GO/Kegg databases). All functional annotation data
+    derived from the analysis of transcripts is integrated into a SQLite database which allows fast efficient searching for terms with specific qualities related to a desired scientific hypothesis or a
+    means to create a whole annotation report for a transcriptome.
+
+  twincons: twincons/0.6
+    This projects provides several packages for analysis of MSAs comprised of two sequence groups.
+
+  twobittofa: twobittofa/1.0
+    This is a bioinformatics, freely downloadable command-line software (linux.x86_64) provided by the UCSC
+
+  ucsc-bigwigaverageoverbed: ucsc-bigwigaverageoverbed/377
+    Compute average score of big wig over each bed, which may have introns.
+
+  ucsc-fatotwobit: ucsc-fatotwobit/377
+    Convert DNA from fasta to 2bit format
+
+  ucsc-liftover: ucsc-liftover/366
+    The Batch Coordinate Conversion (liftOver) utility converts genome coordinates and genome annotation files between assemblies.
+
+  ucsc-twobittofa: ucsc-twobittofa/357, ucsc-twobittofa/377
+    Convert all or part of .2bit file to fasta
+
+  udunits2: udunits2/2.2
+
+  umap-learn: umap-learn/py36/0.2, umap-learn/py37/0.3
+    Uniform Manifold Approximation and Projection
+
+  umi_tools: umi_tools/1.0
+    Tools for dealing with Unique Molecular Identifiers (UMIs) / Random Molecular Tags (RMTs)
+
+  unicycler: unicycler/0.4
+    Hybrid assembly pipeline for bacterial genomes
+
+  unikmer: unikmer/0.18
+    unikmer: toolkit for nucleic acid k-mer analysis, including set operations on k-mers (sketch) optional with TaxIDs but without count information.
+
+  uropa: uropa/4.0
+    UROPA (Universal RObust Peak Annotator) is a command line based tool, intended for genomic region annotation from e.g. peak calling. It detects the most appropriate annotation by taking parameters
+    such as feature type, anchor, direction and strand into account. Furthermore, it allows filtering for GTF attribute values, e.g. protein_coding.
+
+  usearch: usearch/5.2, usearch/6.1, usearch/7.0, usearch/10.0, usearch/11.0
+    USEARCH is a unique sequence analysis tool with thousands of users world-wide.
+
+  varscan: varscan/2.3, varscan/2.4
+    Variant calling and somatic mutation/CNV detection for next-generation sequencing data
+
+  vasp: vasp/6.2vtst, vasp/6.2, vasp/6.3sol, vasp/6.3vtst, vasp/6.3, vasp/6.4sol, vasp/6.4vtst, vasp/6.4
+
+  vasp-acc: vasp-acc/6.2, vasp-acc/6.3, vasp-acc/6.4
+
+  vcf-kit: vcf-kit/0.1
+    Assorted utilities for the variant call format
+
+  vcf2maf: vcf2maf/1.6
+    Convert a VCF into a MAF where each variant is annotated to only one of all possible gene isoforms
+
+  vcflib: vcflib/1.0
+    Command-line tools for manipulating VCF files
+
+  vcftools: vcftools/0.1
+    A set of tools written in Perl and C++ for working with VCF files.
+
+  vcontact2: vcontact2/0.9
+    Viral Contig Automatic Clustering and Taxonomy
+
+  velvet: velvet/1.2
+    Velvet - Sequence assembler for very short reads
+
+  velvetoptimiser: velvetoptimiser/2.2
+    Automatically optimise three of Velvet's assembly parameters.
+
+  vflp: vflp/2020.04.19
+    VFLP is VirtualFlow for Ligand Preparation
+
+  vftools: vftools/2020.05.17
+    VFTools is a a loose collection of additional tools and scripts which can be useful when using VirtualFlow.
+
+  vfvs: vfvs/2020.04.23, vfvs/2022.07.21
+    VFVS is VirtualFlow for Ligand Screenings
+
+  vgas: vgas/2020.07.22
+    VGAS (viral genome annotation system) is a system combing ab initio method and similarity-based method, which can perform the functions of virus gene finding and function annotating merely depending
+    on the gene sequence itself.
+
+  vibrant: vibrant/1.0, vibrant/1.2
+    Virus Identification By iteRative ANnoTation
+
+  viennarna: viennarna/2.3
+    The ViennaRNA Package consists of a C code library and several stand-alone programs for the prediction and comparison of RNA secondary structures.
+
+  vigor4: vigor4/2020.07.02
+    VIGOR4 (Viral Genome ORF Reader) is a Java application to predict protein sequences encoded in viral genomes.
+
+  vim: vim/8.1
+    Vim is a greatly improved version of the good old UNIX editor Vi
+
+  virema: virema/0.6
+    ViReMa (Viral Recombination Mapper) detects and reports recombination or fusion events in virus genomes using deep sequencing datasets.
+
+  virhostmatcher: virhostmatcher/1.0
+    VirHostMatcher, matching hosts of viruses based on oligonucleotide frequency (ONF) comparison.
+
+  virhostmatcher-net: virhostmatcher-net/2021.08.29
+    VirHostMatcher-Net: A network-based computational tool for predicting virus-host interactions.
+
+  virsorter: virsorter/1.0, virsorter/2.1
+    Mining viral signal from microbial genomic data.
+
+  visit: visit/2.10
+    VisIt is an Open Source, interactive, scalable, visualization, animation and analysis tool.
+
+  vistasoft: vistasoft/0fa6c4a
+    VISTASOFT contains Matlab code to perform a variety of analysis on MRI data, including functional MRI and diffusion MRI.
+
+  vmd: vmd/1.9
+    VMD is designed for modeling, visualization, and analysis of biological systems such as proteins, nucleic acids, lipid bilayer assemblies, etc. It may be used to view more general molecules, as VMD
+    can read standard Protein Data Bank (PDB) files and display the contained structure. VMD provides a wide variety of methods for rendering and coloring a molecule: simple points and lines, CPK spheres
+    and cylinders, licorice bonds, backbone tubes and ribbons, cartoon drawings, and others. VMD can be used to animate and analyze the trajectory of a molecular dynamics (MD) simulation. In particular,
+    VMD can act as a graphical front end for an external MD program by displaying and animating a molecule undergoing simulation on a remote computer.
+
+  vrhyme: vrhyme/1.1
+    vRhyme functions by utilizing coverage variance comparisons and supervised machine learning classification of sequence features to construct viral metagenome-assembled genomes (vMAGs).
+
+  vsearch: vsearch/2.10, vsearch/2.18
+    A versatile open source tool for metagenomics (USEARCH alternative)
+
+  wannier90: wannier90/3.1
+
+  wannierberri: wannierberri/py38/0.11, wannierberri/py39/0.11
+    Advanced tool for Wannier interpolation and integration of k-space integrals
+
+  weblogo: weblogo/3.7
+    WebLogo3 : Sequence Logos Redrawn
+
+  wevote: wevote/1.8
+
+  wgddetector: wgddetector/1.1
+    WGDdetector: a pipeline for whole genome duplication (WGD) detecting with the genome or transcriptome annotations.
+
+  wgrib: wgrib/1.8
+    WGRIB is a program to manipulate, inventory and decode GRIB files.
+
+  wgrib2: wgrib2/2.0
+    wgrib2 is more like four drawers of kitchen utensils as well as the microwave and blender.
+
+  WRF: WRF/v3, WRF/v4
+
+  wtdbg: wtdbg/2.5
+    Wtdbg2: A fuzzy Bruijn graph approach to long noisy reads assembly
+
+  xcrysden: xcrysden/1.5
+    XCrySDen is a crystalline and molecular structure visualisation program aiming at display of isosurfaces and contours, which can be superimposed on crystalline structures and interactively rotated
+    and manipulated.
+
+  xpclr: xpclr/1.1
+    Code to compute xp-clr values to detect selection as per Chen, Patterson & Reich 2010.
+
+  xzutils: xzutils/5.2
+
+  yaml-cpp: yaml-cpp/0.7
+
+  zerone: zerone/1.0
+    Zerone discretizes several ChIP-seq replicates simultaneously and resolves conflicts between them. After the job is done, Zerone checks the results and tells you whether it passes the quality
+    control.
+
+  zlib: zlib/1.2
+
+  zorro: zorro/2011.12.01
+    ZORRO is a probabilistic masking program that assigns confidence scores to each column in a multiple sequence alignment.
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+To learn more about a package execute:
+
+   $ module spider Foo
+
+where "Foo" is the name of a module.
+
+To find detailed information about a particular package you
+must specify the version if there is more than one version:
+
+   $ module spider Foo/11.1
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+ 
+

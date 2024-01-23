@@ -102,17 +102,19 @@ def temporal_quant(cfg, model_name, files, use_gpu):
     dropout_rec = cfg['dropout_rec']
     dropout_pred = cfg['dropout_pred']
     temp_win = int(TEMPORAL_WINDOW/2)
+    model_name = cfg['model_name']
+    softplus = cfg['softplus']
 
     if use_gpu:
         torch.cuda.manual_seed(SEED)
         model = RNN_VAE(TEMPORAL_WINDOW,ZDIMS,NUM_FEATURES,FUTURE_DECODER,FUTURE_STEPS, hidden_size_layer_1,
                         hidden_size_layer_2, hidden_size_rec, hidden_size_pred, dropout_encoder,
-                        dropout_rec, dropout_pred).cuda()
+                        dropout_rec, dropout_pred, softplus).cuda()
     else:
         torch.cuda.manual_seed(SEED)
         model = RNN_VAE(TEMPORAL_WINDOW,ZDIMS,NUM_FEATURES,FUTURE_DECODER,FUTURE_STEPS, hidden_size_layer_1,
                         hidden_size_layer_2, hidden_size_rec, hidden_size_pred, dropout_encoder,
-                        dropout_rec, dropout_pred).to()
+                        dropout_rec, dropout_pred, softplus).to()
 
     if cfg['snapshot'] == 'yes':
         if use_gpu:
@@ -175,6 +177,8 @@ def temporal_quant(cfg, model_name, files, use_gpu):
 
 def cluster_latent_space(cfg, files, z_data, z_logger, cluster_method, n_cluster, model_name):
 
+    load_data = cfg['load_data']
+
     for cluster in n_cluster:
         if cluster_method == 'kmeans':
             print('Behavior segmentation via k-Means for %d cluster.' %cluster)
@@ -188,10 +192,10 @@ def cluster_latent_space(cfg, files, z_data, z_logger, cluster_method, n_cluster
 
         for idx, file in enumerate(files):
             print("Segmentation for file %s..." %file )
-            if not os.path.exists(os.path.join(cfg['project_path'],"results",file,"",model_name,"",cluster_method+'-'+str(cluster))):
+            if not os.path.exists(os.path.join(cfg['project_path'],"results",file,"",model_name,load_data,cluster_method+'-'+str(cluster))):
                 os.mkdir(os.path.join(cfg['project_path'],"results",file,"",model_name,"",cluster_method+'-'+str(cluster)))
 
-            save_data = os.path.join(cfg['project_path'],"results",file,"",model_name,"")
+            save_data = os.path.join(cfg['project_path'],"results",file,"",model_name,load_data)
             z_latent = z_data[z_logger[idx]:z_logger[idx+1],:]
             labels = data_labels[z_logger[idx]:z_logger[idx+1]]
 

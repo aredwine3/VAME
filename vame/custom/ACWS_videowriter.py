@@ -36,6 +36,7 @@ from tqdm import trange
 from vame.util import auxiliary as aux
 import re
 import csv
+from icecream import ic
 
 #%%
 def consecutive(data, stepsize=1):
@@ -99,6 +100,7 @@ def get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag, fps=30,
     elif cluster_method == 'GMM':
         labels = np.load(glob.glob(path_to_file+'/'+str(n_cluster)+'_gmm_label_'+'*.npy')[0])
     elif cluster_method == 'hmm':
+        ic(path_to_file)
         labels = np.load(glob.glob(path_to_file+'/'+str(n_cluster)+'_km_label_'+'*.npy')[0])
 
 
@@ -137,9 +139,7 @@ def get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag, fps=30,
             height = capture.get(cv.CAP_PROP_FRAME_HEIGHT)
         else:
             print("Video capture failed")  # Debug print 3
-        """
-
-    
+            
     if extractData:
         if not os.path.exists(os.path.join(path_to_file, 'dlcPoseData')):
             os.mkdir(os.path.join(path_to_file, 'dlcPoseData'))
@@ -262,8 +262,13 @@ def motif_videos(config, model_name, videoType='.mp4', fps=30, bins=6, cluster_m
     cfg = read_config(config_file)
     model_name = cfg['model_name']
     n_cluster = cfg['n_cluster']
+    load_data = cfg['load_data']
+    
     symlinks = symlinks
     flag = 'motif'
+
+    if cluster_method == 'hmm':
+        hmm_iters = cfg['hmm_iters']
     
     files = []
     if cfg['all_data'] == 'No':
@@ -288,10 +293,14 @@ def motif_videos(config, model_name, videoType='.mp4', fps=30, bins=6, cluster_m
         files.append(all_flag)
         
     for file in files:
-        path_to_file=os.path.join(cfg['project_path'], 'results/',file,model_name,cluster_method+'-'+str(n_cluster),'')
         
-        if not os.path.exists(path_to_file+'/cluster_videos/'):
-            os.mkdir(path_to_file+'/cluster_videos/')
+        if cluster_method == 'hmm':
+            path_to_file=os.path.join(cfg['project_path'], 'results/',file,model_name,load_data,cluster_method+'-'+str(n_cluster)+'-'+str(hmm_iters),'')
+        else:
+            path_to_file=os.path.join(cfg['project_path'], 'results/',file,model_name,load_data,cluster_method+'-'+str(n_cluster),'')
+        
+        if not os.path.exists(path_to_file+'cluster_videos/'):
+            os.mkdir(path_to_file+'cluster_videos/')
 
         get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag, fps=fps, bins=bins, cluster_method=cluster_method, extractData=extractData, symlinks=symlinks)
 

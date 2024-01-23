@@ -18,4 +18,3 @@ from vame.analysis.umap_visualization import visualization
 from vame.analysis.generative_functions import generative_model
 from vame.analysis.gif_creator import gif
 from vame.analysis import behavior_structure
-

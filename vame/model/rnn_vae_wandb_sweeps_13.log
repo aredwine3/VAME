@@ -1,0 +1,28 @@
+INFO:wandb.agents.pyagent:Starting sweep agent: entity=None, project=None, count=10
+INFO:root:Train Variational Autoencoder - model name: VAME_15prcnt_sweep 
+
+INFO:root:Using CUDA
+INFO:root:GPU active: True
+INFO:root:GPU used: Tesla V100-PCIE-32GB
+INFO:root:Latent Dimensions: 23, Time window: 45, Batch Size: 256, Beta: 1, lr: 0.0005
+
+INFO:root:Train Variational Autoencoder - model name: VAME_15prcnt_sweep 
+
+INFO:root:Latent Dimensions: 43, Time window: 37, Batch Size: 256, Beta: 1, lr: 0.0005
+
+INFO:root:Train Variational Autoencoder - model name: VAME_15prcnt_sweep 
+
+INFO:root:Latent Dimensions: 26, Time window: 36, Batch Size: 256, Beta: 1, lr: 0.0005
+
+INFO:root:Train Variational Autoencoder - model name: VAME_15prcnt_sweep 
+
+INFO:root:Latent Dimensions: 42, Time window: 53, Batch Size: 256, Beta: 1, lr: 0.0005
+
+INFO:root:Train Variational Autoencoder - model name: VAME_15prcnt_sweep 
+
+INFO:root:Latent Dimensions: 40, Time window: 30, Batch Size: 256, Beta: 1, lr: 0.0005
+
+INFO:root:Train Variational Autoencoder - model name: VAME_15prcnt_sweep 
+
+INFO:root:Latent Dimensions: 11, Time window: 52, Batch Size: 256, Beta: 1, lr: 0.0005
+

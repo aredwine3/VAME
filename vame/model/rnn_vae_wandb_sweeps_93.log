@@ -1,0 +1,1741 @@
+INFO:wandb.agents.pyagent:Starting sweep agent: entity=aredwine3, project=VAME, count=10
+INFO:root:Train Variational Autoencoder - model name: VAME_15prcnt_sweep 
+
+INFO:root:Using CUDA
+INFO:root:GPU active: True
+INFO:root:GPU used: Tesla V100-PCIE-32GB
+INFO:root:Latent Dimensions: 45, Time window: 90, Batch Size: 512, Beta: 1, lr: 0.0050
+
+INFO:root:Scheduler step size: 100, Scheduler gamma: 0.20, Scheduler Threshold: 0.01000
+
+INFO:root:Start training... 
+INFO:root:Epoch: 1, Epochs on convergence counter: 0
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 1
+INFO:root:Train Variational Autoencoder - model name: VAME_15prcnt_sweep 
+
+INFO:root:Latent Dimensions: 20, Time window: 45, Batch Size: 512, Beta: 1, lr: 0.0001
+
+INFO:root:Scheduler step size: 100, Scheduler gamma: 0.20, Scheduler Threshold: 0.01000
+
+INFO:root:Start training... 
+INFO:root:Epoch: 1, Epochs on convergence counter: 0
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 1
+INFO:wandb.agents.pyagent:Starting sweep agent: entity=aredwine3, project=VAME, count=20
+INFO:root:Train Variational Autoencoder - model name: VAME_15prcnt_sweep 
+
+INFO:root:Using CUDA
+INFO:root:GPU active: True
+INFO:root:GPU used: Tesla V100-PCIE-32GB
+INFO:root:Latent Dimensions: 10, Time window: 90, Batch Size: 256, Beta: 1, lr: 0.0010
+
+INFO:root:Scheduler step size: 100, Scheduler gamma: 0.20, Scheduler Threshold: 0.01000
+
+INFO:root:Start training... 
+INFO:root:Epoch: 1, Epochs on convergence counter: 0
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 1
+INFO:root:14:55:56
+INFO:root:Train loss: 34725.435, MSE-Loss: 20963.382, MSE-Future-Loss 13762.095, KL-Loss: 0.000, Kmeans-Loss: 0.000, weight: 0.00
+INFO:root:Test loss: 5531.898, MSE-Loss: 5531.898, KL-Loss: 0.000, Kmeans-Loss: 0.000
+INFO:root:
+
+INFO:root:Epoch: 2, Epochs on convergence counter: 1
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 2
+INFO:root:15:04:34
+INFO:root:Train loss: 29078.114, MSE-Loss: 16395.114, MSE-Future-Loss 12682.993, KL-Loss: 0.000, Kmeans-Loss: 0.000, weight: 0.00
+INFO:root:Test loss: 5271.679, MSE-Loss: 5271.679, KL-Loss: 0.000, Kmeans-Loss: 0.000
+INFO:root:
+
+INFO:root:Epoch: 3, Epochs on convergence counter: 2
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 3
+INFO:root:15:13:16
+INFO:root:Train loss: 28083.469, MSE-Loss: 15788.080, MSE-Future-Loss 12292.717, KL-Loss: 2.216, Kmeans-Loss: 0.455, weight: 0.29
+INFO:root:Test loss: 5476.467, MSE-Loss: 5473.740, KL-Loss: 2.267, Kmeans-Loss: 0.460
+INFO:root:
+
+INFO:root:Epoch: 4, Epochs on convergence counter: 3
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 4
+INFO:root:15:25:43
+INFO:root:Train loss: 27497.763, MSE-Loss: 15485.705, MSE-Future-Loss 12007.547, KL-Loss: 3.730, Kmeans-Loss: 0.785, weight: 0.50
+INFO:root:Test loss: 5429.926, MSE-Loss: 5425.234, KL-Loss: 3.913, Kmeans-Loss: 0.778
+INFO:root:
+
+INFO:root:Epoch: 5, Epochs on convergence counter: 4
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 5
+INFO:root:15:34:53
+INFO:root:Train loss: 26602.071, MSE-Loss: 14956.370, MSE-Future-Loss 11639.363, KL-Loss: 5.217, Kmeans-Loss: 1.114, weight: 0.71
+INFO:root:Test loss: 5201.682, MSE-Loss: 5195.345, KL-Loss: 5.219, Kmeans-Loss: 1.117
+INFO:root:
+
+INFO:root:Epoch: 6, Epochs on convergence counter: 5
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 6
+INFO:root:15:44:17
+INFO:root:Train loss: 26056.028, MSE-Loss: 14728.852, MSE-Future-Loss 11319.707, KL-Loss: 6.128, Kmeans-Loss: 1.335, weight: 0.86
+INFO:root:Test loss: 5215.672, MSE-Loss: 5208.189, KL-Loss: 6.139, Kmeans-Loss: 1.344
+INFO:root:
+
+INFO:root:Epoch: 7, Epochs on convergence counter: 6
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 7
+INFO:root:15:53:29
+INFO:root:Train loss: 25645.206, MSE-Loss: 14616.374, MSE-Future-Loss 11020.758, KL-Loss: 6.626, Kmeans-Loss: 1.442, weight: 0.94
+INFO:root:Test loss: 5215.756, MSE-Loss: 5207.663, KL-Loss: 6.656, Kmeans-Loss: 1.437
+INFO:root:
+
+INFO:root:Epoch: 8, Epochs on convergence counter: 7
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 8
+INFO:root:16:02:17
+INFO:root:Train loss: 25317.358, MSE-Loss: 14547.553, MSE-Future-Loss 10761.503, KL-Loss: 6.824, Kmeans-Loss: 1.491, weight: 0.97
+INFO:root:Test loss: 5207.731, MSE-Loss: 5199.448, KL-Loss: 6.780, Kmeans-Loss: 1.504
+INFO:root:
+
+INFO:root:Epoch: 9, Epochs on convergence counter: 8
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 9
+INFO:root:16:11:05
+INFO:root:Train loss: 24683.494, MSE-Loss: 14289.230, MSE-Future-Loss 10385.871, KL-Loss: 6.886, Kmeans-Loss: 1.505, weight: 0.99
+INFO:root:Test loss: 5317.485, MSE-Loss: 5309.062, KL-Loss: 6.919, Kmeans-Loss: 1.504
+INFO:root:
+
+INFO:root:Epoch: 10, Epochs on convergence counter: 9
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 10
+INFO:root:Train Variational Autoencoder - model name: VAME_15prcnt_sweep 
+
+INFO:root:Latent Dimensions: 10, Time window: 60, Batch Size: 512, Beta: 1, lr: 0.0050
+
+INFO:root:Scheduler step size: 100, Scheduler gamma: 0.20, Scheduler Threshold: 0.10000
+
+INFO:root:Start training... 
+INFO:root:Epoch: 1, Epochs on convergence counter: 0
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 1
+INFO:root:16:19:55
+INFO:root:Train loss: 58527.335, MSE-Loss: 29871.700, MSE-Future-Loss 28655.633, KL-Loss: 0.000, Kmeans-Loss: 0.000, weight: 0.00
+INFO:root:Test loss: 6592.678, MSE-Loss: 6592.678, KL-Loss: 0.000, Kmeans-Loss: 0.000
+INFO:root:
+
+INFO:root:Epoch: 2, Epochs on convergence counter: 1
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 2
+INFO:root:16:26:14
+INFO:root:Train loss: 45402.365, MSE-Loss: 19908.099, MSE-Future-Loss 25494.289, KL-Loss: 0.000, Kmeans-Loss: 0.000, weight: 0.00
+INFO:root:Test loss: 6325.661, MSE-Loss: 6325.661, KL-Loss: 0.000, Kmeans-Loss: 0.000
+INFO:root:
+
+INFO:root:Epoch: 3, Epochs on convergence counter: 2
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 3
+INFO:root:16:32:33
+INFO:root:Train loss: 44978.423, MSE-Loss: 19565.888, MSE-Future-Loss 25392.961, KL-Loss: 16.936, Kmeans-Loss: 2.644, weight: 0.25
+INFO:root:Test loss: 6170.094, MSE-Loss: 6148.999, KL-Loss: 18.339, Kmeans-Loss: 2.756
+INFO:root:
+
+INFO:root:Epoch: 4, Epochs on convergence counter: 3
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 4
+INFO:root:Train Variational Autoencoder - model name: VAME_15prcnt_sweep 
+
+INFO:root:Latent Dimensions: 10, Time window: 120, Batch Size: 1024, Beta: 1, lr: 0.0050
+
+INFO:root:Scheduler step size: 100, Scheduler gamma: 0.20, Scheduler Threshold: 0.05000
+
+INFO:root:Start training... 
+INFO:root:Epoch: 1, Epochs on convergence counter: 0
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 1
+INFO:root:16:52:54
+INFO:root:Train loss: 264590.397, MSE-Loss: 229963.747, MSE-Future-Loss 34626.672, KL-Loss: 0.000, Kmeans-Loss: 0.000, weight: 0.00
+INFO:root:Test loss: 52610.389, MSE-Loss: 52610.389, KL-Loss: 0.000, Kmeans-Loss: 0.000
+INFO:root:
+
+INFO:root:Epoch: 2, Epochs on convergence counter: 1
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 2
+INFO:root:17:13:30
+INFO:root:Train loss: 136570.513, MSE-Loss: 112854.495, MSE-Future-Loss 23716.035, KL-Loss: 0.000, Kmeans-Loss: 0.000, weight: 0.00
+INFO:root:Test loss: 44835.109, MSE-Loss: 44835.109, KL-Loss: 0.000, Kmeans-Loss: 0.000
+INFO:root:
+
+INFO:root:Epoch: 3, Epochs on convergence counter: 2
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 3
+INFO:root:17:34:13
+INFO:root:Train loss: 128350.629, MSE-Loss: 105792.566, MSE-Future-Loss 22555.623, KL-Loss: 2.015, Kmeans-Loss: 0.418, weight: 0.25
+INFO:root:Test loss: 46793.993, MSE-Loss: 46791.436, KL-Loss: 2.122, Kmeans-Loss: 0.435
+INFO:root:
+
+INFO:root:Epoch: 4, Epochs on convergence counter: 3
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 4
+INFO:root:Train Variational Autoencoder - model name: VAME_15prcnt_sweep 
+
+INFO:root:Latent Dimensions: 30, Time window: 75, Batch Size: 1024, Beta: 1, lr: 0.0001
+
+INFO:root:Scheduler step size: 100, Scheduler gamma: 0.20, Scheduler Threshold: 0.10000
+
+INFO:root:Start training... 
+INFO:root:Epoch: 1, Epochs on convergence counter: 0
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 1
+INFO:root:17:50:28
+INFO:root:Train loss: 190250.845, MSE-Loss: 138006.248, MSE-Future-Loss 52244.641, KL-Loss: 0.000, Kmeans-Loss: 0.000, weight: 0.00
+INFO:root:Test loss: 21028.396, MSE-Loss: 21028.396, KL-Loss: 0.000, Kmeans-Loss: 0.000
+INFO:root:
+
+INFO:root:Epoch: 2, Epochs on convergence counter: 1
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 2
+INFO:root:18:04:50
+INFO:root:Train loss: 88782.101, MSE-Loss: 52983.307, MSE-Future-Loss 35798.809, KL-Loss: 0.000, Kmeans-Loss: 0.000, weight: 0.00
+INFO:root:Test loss: 14221.306, MSE-Loss: 14221.306, KL-Loss: 0.000, Kmeans-Loss: 0.000
+INFO:root:
+
+INFO:root:Epoch: 3, Epochs on convergence counter: 2
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 3
+INFO:root:18:19:12
+INFO:root:Train loss: 74925.663, MSE-Loss: 40587.828, MSE-Future-Loss 34333.609, KL-Loss: 3.382, Kmeans-Loss: 0.852, weight: 0.29
+INFO:root:Test loss: 11680.190, MSE-Loss: 11675.824, KL-Loss: 3.476, Kmeans-Loss: 0.889
+INFO:root:
+
+INFO:root:Epoch: 4, Epochs on convergence counter: 3
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 4
+INFO:root:Train Variational Autoencoder - model name: VAME_15prcnt_sweep 
+
+INFO:root:Latent Dimensions: 40, Time window: 90, Batch Size: 512, Beta: 1, lr: 0.0001
+
+INFO:root:Scheduler step size: 100, Scheduler gamma: 0.20, Scheduler Threshold: 0.00100
+
+INFO:root:Start training... 
+INFO:root:Epoch: 1, Epochs on convergence counter: 0
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 1
+INFO:root:18:34:46
+INFO:root:Train loss: 131989.839, MSE-Loss: 77694.933, MSE-Future-Loss 54294.887, KL-Loss: 0.000, Kmeans-Loss: 0.000, weight: 0.00
+INFO:root:Test loss: 12041.860, MSE-Loss: 12041.860, KL-Loss: 0.000, Kmeans-Loss: 0.000
+INFO:root:
+
+INFO:root:Epoch: 2, Epochs on convergence counter: 1
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 2
+INFO:root:18:49:50
+INFO:root:Train loss: 79496.093, MSE-Loss: 36554.585, MSE-Future-Loss 42941.543, KL-Loss: 0.000, Kmeans-Loss: 0.000, weight: 0.00
+INFO:root:Test loss: 9541.700, MSE-Loss: 9541.700, KL-Loss: 0.000, Kmeans-Loss: 0.000
+INFO:root:
+
+INFO:root:Epoch: 3, Epochs on convergence counter: 2
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 3
+INFO:root:19:04:58
+INFO:root:Train loss: 70914.656, MSE-Loss: 29978.013, MSE-Future-Loss 40918.176, KL-Loss: 13.440, Kmeans-Loss: 5.014, weight: 0.29
+INFO:root:Test loss: 8015.897, MSE-Loss: 7996.575, KL-Loss: 14.253, Kmeans-Loss: 5.069
+INFO:root:
+
+INFO:root:Epoch: 4, Epochs on convergence counter: 3
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 4
+INFO:root:Train Variational Autoencoder - model name: VAME_15prcnt_sweep 
+
+INFO:root:Latent Dimensions: 10, Time window: 120, Batch Size: 256, Beta: 1, lr: 0.0010
+
+INFO:root:Scheduler step size: 100, Scheduler gamma: 0.20, Scheduler Threshold: 0.05000
+
+INFO:root:Start training... 
+INFO:root:Epoch: 1, Epochs on convergence counter: 0
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 1
+INFO:root:19:20:41
+INFO:root:Train loss: 51969.186, MSE-Loss: 40257.615, MSE-Future-Loss 11711.589, KL-Loss: 0.000, Kmeans-Loss: 0.000, weight: 0.00
+INFO:root:Test loss: 9454.737, MSE-Loss: 9454.737, KL-Loss: 0.000, Kmeans-Loss: 0.000
+INFO:root:
+
+INFO:root:Epoch: 2, Epochs on convergence counter: 1
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 2
+INFO:root:19:36:23
+INFO:root:Train loss: 37893.873, MSE-Loss: 27971.495, MSE-Future-Loss 9922.355, KL-Loss: 0.000, Kmeans-Loss: 0.000, weight: 0.00
+INFO:root:Test loss: 9298.770, MSE-Loss: 9298.770, KL-Loss: 0.000, Kmeans-Loss: 0.000
+INFO:root:
+
+INFO:root:Epoch: 3, Epochs on convergence counter: 2
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 3
+INFO:root:19:52:08
+INFO:root:Train loss: 36026.154, MSE-Loss: 26414.572, MSE-Future-Loss 9577.205, KL-Loss: 30.555, Kmeans-Loss: 3.811, weight: 0.29
+INFO:root:Test loss: 9006.477, MSE-Loss: 8970.694, KL-Loss: 31.875, Kmeans-Loss: 3.908
+INFO:root:
+
+INFO:root:Epoch: 4, Epochs on convergence counter: 3
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 4
+INFO:root:Train Variational Autoencoder - model name: VAME_15prcnt_sweep 
+
+INFO:root:Latent Dimensions: 50, Time window: 105, Batch Size: 1024, Beta: 1, lr: 0.0010
+
+INFO:root:Scheduler step size: 100, Scheduler gamma: 0.20, Scheduler Threshold: 0.10000
+
+INFO:root:Start training... 
+INFO:root:Epoch: 1, Epochs on convergence counter: 0
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 1
+INFO:root:20:07:19
+INFO:root:Train loss: 187440.760, MSE-Loss: 143069.673, MSE-Future-Loss 44371.078, KL-Loss: 0.000, Kmeans-Loss: 0.000, weight: 0.00
+INFO:root:Test loss: 22367.941, MSE-Loss: 22367.941, KL-Loss: 0.000, Kmeans-Loss: 0.000
+INFO:root:
+
+INFO:root:Epoch: 2, Epochs on convergence counter: 1
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 2
+INFO:root:20:20:37
+INFO:root:Train loss: 95249.848, MSE-Loss: 63820.324, MSE-Future-Loss 31429.520, KL-Loss: 0.000, Kmeans-Loss: 0.000, weight: 0.00
+INFO:root:Test loss: 17256.240, MSE-Loss: 17256.240, KL-Loss: 0.000, Kmeans-Loss: 0.000
+INFO:root:
+
+INFO:root:Epoch: 3, Epochs on convergence counter: 2
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 3
+INFO:root:20:34:00
+INFO:root:Train loss: 79844.956, MSE-Loss: 50836.214, MSE-Future-Loss 28995.480, KL-Loss: 7.233, Kmeans-Loss: 6.040, weight: 0.29
+INFO:root:Test loss: 14610.941, MSE-Loss: 14596.232, KL-Loss: 8.175, Kmeans-Loss: 6.534
+INFO:root:
+
+INFO:root:Epoch: 4, Epochs on convergence counter: 3
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 4
+INFO:root:Train Variational Autoencoder - model name: VAME_15prcnt_sweep 
+
+INFO:root:Latent Dimensions: 50, Time window: 120, Batch Size: 1024, Beta: 1, lr: 0.0005
+
+INFO:root:Scheduler step size: 100, Scheduler gamma: 0.20, Scheduler Threshold: 0.00100
+
+INFO:root:Start training... 
+INFO:root:Epoch: 1, Epochs on convergence counter: 0
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 1
+INFO:root:20:47:51
+INFO:root:Train loss: 245813.439, MSE-Loss: 181139.030, MSE-Future-Loss 64674.371, KL-Loss: 0.000, Kmeans-Loss: 0.000, weight: 0.00
+INFO:root:Test loss: 33839.373, MSE-Loss: 33839.373, KL-Loss: 0.000, Kmeans-Loss: 0.000
+INFO:root:
+
+INFO:root:Epoch: 2, Epochs on convergence counter: 1
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 2
+INFO:root:21:00:44
+INFO:root:Train loss: 127251.596, MSE-Loss: 76292.692, MSE-Future-Loss 50958.895, KL-Loss: 0.000, Kmeans-Loss: 0.000, weight: 0.00
+INFO:root:Test loss: 26499.774, MSE-Loss: 26499.774, KL-Loss: 0.000, Kmeans-Loss: 0.000
+INFO:root:
+
+INFO:root:Epoch: 3, Epochs on convergence counter: 2
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 3
+INFO:root:21:13:54
+INFO:root:Train loss: 109591.589, MSE-Loss: 60449.619, MSE-Future-Loss 49140.051, KL-Loss: 1.528, Kmeans-Loss: 0.435, weight: 0.25
+INFO:root:Test loss: 25508.404, MSE-Loss: 25506.450, KL-Loss: 1.505, Kmeans-Loss: 0.449
+INFO:root:
+
+INFO:root:Epoch: 4, Epochs on convergence counter: 3
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 4
+INFO:root:Train Variational Autoencoder - model name: VAME_15prcnt_sweep 
+
+INFO:root:Latent Dimensions: 45, Time window: 105, Batch Size: 1024, Beta: 1, lr: 0.0001
+
+INFO:root:Scheduler step size: 100, Scheduler gamma: 0.20, Scheduler Threshold: 0.00100
+
+INFO:root:Start training... 
+INFO:root:Epoch: 1, Epochs on convergence counter: 0
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 1
+INFO:root:21:32:28
+INFO:root:Train loss: 424720.952, MSE-Loss: 308885.896, MSE-Future-Loss 115835.133, KL-Loss: 0.000, Kmeans-Loss: 0.000, weight: 0.00
+INFO:root:Test loss: 62100.961, MSE-Loss: 62100.961, KL-Loss: 0.000, Kmeans-Loss: 0.000
+INFO:root:
+
+INFO:root:Epoch: 2, Epochs on convergence counter: 1
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 2
+INFO:root:21:49:54
+INFO:root:Train loss: 234390.367, MSE-Loss: 152399.713, MSE-Future-Loss 81990.578, KL-Loss: 0.000, Kmeans-Loss: 0.000, weight: 0.00
+INFO:root:Test loss: 54757.922, MSE-Loss: 54757.922, KL-Loss: 0.000, Kmeans-Loss: 0.000
+INFO:root:
+
+INFO:root:Epoch: 3, Epochs on convergence counter: 2
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 3
+INFO:root:22:07:20
+INFO:root:Train loss: 201641.233, MSE-Loss: 125698.159, MSE-Future-Loss 75932.117, KL-Loss: 7.498, Kmeans-Loss: 3.422, weight: 0.29
+INFO:root:Test loss: 59197.102, MSE-Loss: 59187.523, KL-Loss: 6.621, Kmeans-Loss: 2.958
+INFO:root:
+
+INFO:root:Epoch: 4, Epochs on convergence counter: 3
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 4
+INFO:root:Train Variational Autoencoder - model name: VAME_15prcnt_sweep 
+
+INFO:root:Latent Dimensions: 45, Time window: 75, Batch Size: 1024, Beta: 1, lr: 0.0010
+
+INFO:root:Scheduler step size: 100, Scheduler gamma: 0.20, Scheduler Threshold: 0.01000
+
+INFO:root:Start training... 
+INFO:root:Epoch: 1, Epochs on convergence counter: 0
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 1
+INFO:root:22:22:35
+INFO:root:Train loss: 94587.348, MSE-Loss: 70740.957, MSE-Future-Loss 23846.371, KL-Loss: 0.000, Kmeans-Loss: 0.000, weight: 0.00
+INFO:root:Test loss: 10565.289, MSE-Loss: 10565.289, KL-Loss: 0.000, Kmeans-Loss: 0.000
+INFO:root:
+
+INFO:root:Epoch: 2, Epochs on convergence counter: 1
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 2
+INFO:root:22:36:18
+INFO:root:Train loss: 40277.973, MSE-Loss: 24564.992, MSE-Future-Loss 15712.974, KL-Loss: 0.000, Kmeans-Loss: 0.000, weight: 0.00
+INFO:root:Test loss: 7693.592, MSE-Loss: 7693.592, KL-Loss: 0.000, Kmeans-Loss: 0.000
+INFO:root:
+
+INFO:root:Epoch: 3, Epochs on convergence counter: 2
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 3
+INFO:root:22:50:03
+INFO:root:Train loss: 33355.700, MSE-Loss: 18645.214, MSE-Future-Loss 14708.247, KL-Loss: 1.699, Kmeans-Loss: 0.549, weight: 0.29
+INFO:root:Test loss: 6707.501, MSE-Loss: 6705.208, KL-Loss: 1.730, Kmeans-Loss: 0.563
+INFO:root:
+
+INFO:root:Epoch: 4, Epochs on convergence counter: 3
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 4
+INFO:root:Train Variational Autoencoder - model name: VAME_15prcnt_sweep 
+
+INFO:root:Latent Dimensions: 20, Time window: 120, Batch Size: 256, Beta: 1, lr: 0.0001
+
+INFO:root:Scheduler step size: 100, Scheduler gamma: 0.20, Scheduler Threshold: 0.00010
+
+INFO:root:Start training... 
+INFO:root:Epoch: 1, Epochs on convergence counter: 0
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 1
+INFO:root:23:12:57
+INFO:root:Train loss: 53127.668, MSE-Loss: 37900.559, MSE-Future-Loss 15227.138, KL-Loss: 0.000, Kmeans-Loss: 0.000, weight: 0.00
+INFO:root:Test loss: 6727.383, MSE-Loss: 6727.383, KL-Loss: 0.000, Kmeans-Loss: 0.000
+INFO:root:
+
+INFO:root:Epoch: 2, Epochs on convergence counter: 1
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 2
+INFO:root:23:36:26
+INFO:root:Train loss: 32189.429, MSE-Loss: 19252.433, MSE-Future-Loss 12936.995, KL-Loss: 0.000, Kmeans-Loss: 0.000, weight: 0.00
+INFO:root:Test loss: 5813.497, MSE-Loss: 5813.497, KL-Loss: 0.000, Kmeans-Loss: 0.000
+INFO:root:
+
+INFO:root:Epoch: 3, Epochs on convergence counter: 2
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 3
+INFO:root:23:59:57
+INFO:root:Train loss: 30575.082, MSE-Loss: 17866.679, MSE-Future-Loss 12701.912, KL-Loss: 5.532, Kmeans-Loss: 0.946, weight: 0.29
+INFO:root:Test loss: 5644.219, MSE-Loss: 5637.820, KL-Loss: 5.451, Kmeans-Loss: 0.948
+INFO:root:
+
+INFO:root:Epoch: 4, Epochs on convergence counter: 3
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 4
+INFO:root:Train Variational Autoencoder - model name: VAME_15prcnt_sweep 
+
+INFO:root:Latent Dimensions: 35, Time window: 45, Batch Size: 256, Beta: 1, lr: 0.0001
+
+INFO:root:Scheduler step size: 100, Scheduler gamma: 0.20, Scheduler Threshold: 0.05000
+
+INFO:root:Start training... 
+INFO:root:Epoch: 1, Epochs on convergence counter: 0
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 1
+INFO:root:00:09:09
+INFO:root:Train loss: 18444.985, MSE-Loss: 11612.966, MSE-Future-Loss 6832.008, KL-Loss: 0.000, Kmeans-Loss: 0.000, weight: 0.00
+INFO:root:Test loss: 2184.890, MSE-Loss: 2184.890, KL-Loss: 0.000, Kmeans-Loss: 0.000
+INFO:root:
+
+INFO:root:Epoch: 2, Epochs on convergence counter: 1
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 2
+INFO:root:00:14:38
+INFO:root:Train loss: 9868.647, MSE-Loss: 4796.593, MSE-Future-Loss 5072.056, KL-Loss: 0.000, Kmeans-Loss: 0.000, weight: 0.00
+INFO:root:Test loss: 2248.038, MSE-Loss: 2248.038, KL-Loss: 0.000, Kmeans-Loss: 0.000
+INFO:root:
+
+INFO:root:Epoch: 3, Epochs on convergence counter: 2
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 3
+INFO:root:00:20:14
+INFO:root:Train loss: 8711.739, MSE-Loss: 3825.471, MSE-Future-Loss 4883.098, KL-Loss: 2.573, Kmeans-Loss: 0.602, weight: 0.29
+INFO:root:Test loss: 2537.816, MSE-Loss: 2534.885, KL-Loss: 2.354, Kmeans-Loss: 0.577
+INFO:root:
+
+INFO:root:Epoch: 4, Epochs on convergence counter: 3
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 4
+INFO:root:00:25:58
+INFO:root:Train loss: 8219.694, MSE-Loss: 3418.450, MSE-Future-Loss 4795.905, KL-Loss: 4.312, Kmeans-Loss: 1.028, weight: 0.50
+INFO:root:Test loss: 2531.701, MSE-Loss: 2526.677, KL-Loss: 4.024, Kmeans-Loss: 1.000
+INFO:root:
+
+INFO:root:Epoch: 5, Epochs on convergence counter: 4
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 5
+INFO:root:00:31:41
+INFO:root:Train loss: 7842.607, MSE-Loss: 3108.976, MSE-Future-Loss 4726.161, KL-Loss: 6.010, Kmeans-Loss: 1.455, weight: 0.71
+INFO:root:Test loss: 2176.905, MSE-Loss: 2169.783, KL-Loss: 5.698, Kmeans-Loss: 1.424
+INFO:root:
+
+INFO:root:Epoch: 6, Epochs on convergence counter: 5
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 6
+INFO:root:00:37:28
+INFO:root:Train loss: 7536.961, MSE-Loss: 2868.516, MSE-Future-Loss 4659.602, KL-Loss: 7.103, Kmeans-Loss: 1.737, weight: 0.86
+INFO:root:Test loss: 1918.455, MSE-Loss: 1909.934, KL-Loss: 6.817, Kmeans-Loss: 1.704
+INFO:root:
+
+INFO:root:Epoch: 7, Epochs on convergence counter: 6
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 7
+INFO:root:00:43:17
+INFO:root:Train loss: 7334.259, MSE-Loss: 2695.067, MSE-Future-Loss 4629.677, KL-Loss: 7.638, Kmeans-Loss: 1.874, weight: 0.94
+INFO:root:Test loss: 1795.613, MSE-Loss: 1786.385, KL-Loss: 7.383, Kmeans-Loss: 1.846
+INFO:root:
+
+INFO:root:Epoch: 8, Epochs on convergence counter: 7
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 8
+INFO:root:00:49:03
+INFO:root:Train loss: 7163.874, MSE-Loss: 2566.997, MSE-Future-Loss 4587.142, KL-Loss: 7.819, Kmeans-Loss: 1.919, weight: 0.97
+INFO:root:Test loss: 1687.412, MSE-Loss: 1677.865, KL-Loss: 7.646, Kmeans-Loss: 1.901
+INFO:root:
+
+INFO:root:Epoch: 9, Epochs on convergence counter: 8
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 9
+INFO:root:00:54:50
+INFO:root:Train loss: 7040.690, MSE-Loss: 2475.501, MSE-Future-Loss 4555.425, KL-Loss: 7.844, Kmeans-Loss: 1.923, weight: 0.99
+INFO:root:Test loss: 1666.234, MSE-Loss: 1656.663, KL-Loss: 7.662, Kmeans-Loss: 1.908
+INFO:root:
+
+INFO:root:Epoch: 10, Epochs on convergence counter: 9
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 10
+INFO:root:01:00:37
+INFO:root:Train loss: 6969.189, MSE-Loss: 2420.033, MSE-Future-Loss 4539.460, KL-Loss: 7.784, Kmeans-Loss: 1.906, weight: 1.00
+INFO:root:Test loss: 1601.792, MSE-Loss: 1592.254, KL-Loss: 7.647, Kmeans-Loss: 1.892
+INFO:root:Saving model!
+INFO:root:
+
+INFO:root:Epoch: 11, Epochs on convergence counter: 0
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 11
+INFO:root:01:06:26
+INFO:root:Train loss: 6887.297, MSE-Loss: 2363.830, MSE-Future-Loss 4513.882, KL-Loss: 7.711, Kmeans-Loss: 1.881, weight: 1.00
+INFO:root:Test loss: 1591.952, MSE-Loss: 1582.497, KL-Loss: 7.582, Kmeans-Loss: 1.873
+INFO:root:Saving model!
+INFO:root:
+
+INFO:root:Epoch: 12, Epochs on convergence counter: 0
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 12
+INFO:root:01:12:17
+INFO:root:Train loss: 6820.919, MSE-Loss: 2323.340, MSE-Future-Loss 4488.093, KL-Loss: 7.631, Kmeans-Loss: 1.856, weight: 1.00
+INFO:root:Test loss: 1648.550, MSE-Loss: 1639.148, KL-Loss: 7.546, Kmeans-Loss: 1.856
+INFO:root:
+
+INFO:root:Epoch: 13, Epochs on convergence counter: 1
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 13
+INFO:root:01:18:07
+INFO:root:Train loss: 6789.067, MSE-Loss: 2305.641, MSE-Future-Loss 4474.042, KL-Loss: 7.560, Kmeans-Loss: 1.833, weight: 1.00
+INFO:root:Test loss: 1618.078, MSE-Loss: 1608.759, KL-Loss: 7.484, Kmeans-Loss: 1.835
+INFO:root:
+
+INFO:root:Epoch: 14, Epochs on convergence counter: 2
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 14
+INFO:root:01:24:02
+INFO:root:Train loss: 6751.829, MSE-Loss: 2286.684, MSE-Future-Loss 4455.836, KL-Loss: 7.493, Kmeans-Loss: 1.813, weight: 1.00
+INFO:root:Test loss: 1604.192, MSE-Loss: 1594.932, KL-Loss: 7.440, Kmeans-Loss: 1.820
+INFO:root:
+
+INFO:root:Epoch: 15, Epochs on convergence counter: 3
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 15
+INFO:root:01:29:55
+INFO:root:Train loss: 6734.382, MSE-Loss: 2272.574, MSE-Future-Loss 4452.579, KL-Loss: 7.435, Kmeans-Loss: 1.796, weight: 1.00
+INFO:root:Test loss: 1617.120, MSE-Loss: 1607.916, KL-Loss: 7.399, Kmeans-Loss: 1.805
+INFO:root:Saving model snapshot!
+
+INFO:root:
+
+INFO:root:Epoch: 16, Epochs on convergence counter: 4
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 16
+INFO:root:01:35:52
+INFO:root:Train loss: 6677.401, MSE-Loss: 2254.093, MSE-Future-Loss 4414.140, KL-Loss: 7.383, Kmeans-Loss: 1.780, weight: 1.00
+INFO:root:Test loss: 1632.389, MSE-Loss: 1623.215, KL-Loss: 7.382, Kmeans-Loss: 1.793
+INFO:root:
+
+INFO:root:Epoch: 17, Epochs on convergence counter: 5
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 17
+INFO:root:01:41:49
+INFO:root:Train loss: 6671.019, MSE-Loss: 2245.017, MSE-Future-Loss 4416.896, KL-Loss: 7.337, Kmeans-Loss: 1.767, weight: 1.00
+INFO:root:Test loss: 1633.329, MSE-Loss: 1624.245, KL-Loss: 7.305, Kmeans-Loss: 1.779
+INFO:root:
+
+INFO:root:Epoch: 18, Epochs on convergence counter: 6
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 18
+INFO:root:01:47:45
+INFO:root:Train loss: 6657.778, MSE-Loss: 2236.684, MSE-Future-Loss 4412.053, KL-Loss: 7.283, Kmeans-Loss: 1.756, weight: 1.00
+INFO:root:Test loss: 1591.588, MSE-Loss: 1582.529, KL-Loss: 7.288, Kmeans-Loss: 1.771
+INFO:root:
+
+INFO:root:Epoch: 19, Epochs on convergence counter: 7
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 19
+INFO:root:01:53:42
+INFO:root:Train loss: 6646.528, MSE-Loss: 2229.366, MSE-Future-Loss 4408.150, KL-Loss: 7.253, Kmeans-Loss: 1.747, weight: 1.00
+INFO:root:Test loss: 1583.444, MSE-Loss: 1574.417, KL-Loss: 7.262, Kmeans-Loss: 1.765
+INFO:root:Saving model!
+INFO:root:
+
+INFO:root:Epoch: 20, Epochs on convergence counter: 0
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 20
+INFO:root:01:59:38
+INFO:root:Train loss: 6629.831, MSE-Loss: 2224.994, MSE-Future-Loss 4395.902, KL-Loss: 7.204, Kmeans-Loss: 1.739, weight: 1.00
+INFO:root:Test loss: 1565.052, MSE-Loss: 1556.056, KL-Loss: 7.235, Kmeans-Loss: 1.761
+INFO:root:Saving model!
+INFO:root:
+
+INFO:root:Epoch: 21, Epochs on convergence counter: 0
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 21
+INFO:root:02:05:35
+INFO:root:Train loss: 6614.873, MSE-Loss: 2214.415, MSE-Future-Loss 4391.569, KL-Loss: 7.156, Kmeans-Loss: 1.730, weight: 1.00
+INFO:root:Test loss: 1511.876, MSE-Loss: 1502.927, KL-Loss: 7.197, Kmeans-Loss: 1.752
+INFO:root:Saving model!
+INFO:root:
+
+INFO:root:Epoch: 22, Epochs on convergence counter: 0
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 22
+INFO:root:02:11:30
+INFO:root:Train loss: 6596.860, MSE-Loss: 2215.221, MSE-Future-Loss 4372.786, KL-Loss: 7.133, Kmeans-Loss: 1.724, weight: 1.00
+INFO:root:Test loss: 1518.694, MSE-Loss: 1509.765, KL-Loss: 7.180, Kmeans-Loss: 1.749
+INFO:root:
+
+INFO:root:Epoch: 23, Epochs on convergence counter: 1
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 23
+INFO:root:02:17:27
+INFO:root:Train loss: 6575.287, MSE-Loss: 2204.573, MSE-Future-Loss 4361.904, KL-Loss: 7.094, Kmeans-Loss: 1.719, weight: 1.00
+INFO:root:Test loss: 1513.079, MSE-Loss: 1504.203, KL-Loss: 7.132, Kmeans-Loss: 1.743
+INFO:root:
+
+INFO:root:Epoch: 24, Epochs on convergence counter: 2
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 24
+INFO:root:02:23:19
+INFO:root:Train loss: 6554.799, MSE-Loss: 2199.184, MSE-Future-Loss 4346.841, KL-Loss: 7.062, Kmeans-Loss: 1.715, weight: 1.00
+INFO:root:Test loss: 1458.869, MSE-Loss: 1450.018, KL-Loss: 7.110, Kmeans-Loss: 1.741
+INFO:root:Saving model!
+INFO:root:
+
+INFO:root:Epoch: 25, Epochs on convergence counter: 0
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 25
+INFO:root:02:29:10
+INFO:root:Train loss: 6531.344, MSE-Loss: 2191.304, MSE-Future-Loss 4331.303, KL-Loss: 7.025, Kmeans-Loss: 1.710, weight: 1.00
+INFO:root:Test loss: 1463.724, MSE-Loss: 1454.889, KL-Loss: 7.099, Kmeans-Loss: 1.737
+INFO:root:
+
+INFO:root:Epoch: 26, Epochs on convergence counter: 1
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 26
+INFO:root:02:35:05
+INFO:root:Train loss: 6508.951, MSE-Loss: 2184.279, MSE-Future-Loss 4315.966, KL-Loss: 6.996, Kmeans-Loss: 1.705, weight: 1.00
+INFO:root:Test loss: 1465.963, MSE-Loss: 1457.161, KL-Loss: 7.070, Kmeans-Loss: 1.732
+INFO:root:
+
+INFO:root:Epoch: 27, Epochs on convergence counter: 2
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 27
+INFO:root:02:40:56
+INFO:root:Train loss: 6515.065, MSE-Loss: 2184.729, MSE-Future-Loss 4321.649, KL-Loss: 6.981, Kmeans-Loss: 1.703, weight: 1.00
+INFO:root:Test loss: 1435.144, MSE-Loss: 1426.346, KL-Loss: 7.067, Kmeans-Loss: 1.731
+INFO:root:Saving model!
+INFO:root:
+
+INFO:root:Epoch: 28, Epochs on convergence counter: 0
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 28
+INFO:root:02:46:50
+INFO:root:Train loss: 6507.654, MSE-Loss: 2179.665, MSE-Future-Loss 4319.339, KL-Loss: 6.949, Kmeans-Loss: 1.701, weight: 1.00
+INFO:root:Test loss: 1441.620, MSE-Loss: 1432.872, KL-Loss: 7.018, Kmeans-Loss: 1.729
+INFO:root:
+
+INFO:root:Epoch: 29, Epochs on convergence counter: 1
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 29
+INFO:root:02:52:43
+INFO:root:Train loss: 6495.088, MSE-Loss: 2175.455, MSE-Future-Loss 4311.019, KL-Loss: 6.919, Kmeans-Loss: 1.699, weight: 1.00
+INFO:root:Test loss: 1412.208, MSE-Loss: 1403.464, KL-Loss: 7.018, Kmeans-Loss: 1.726
+INFO:root:Saving model!
+INFO:root:
+
+INFO:root:Epoch: 30, Epochs on convergence counter: 0
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 30
+INFO:root:02:58:35
+INFO:root:Train loss: 6470.099, MSE-Loss: 2168.330, MSE-Future-Loss 4293.182, KL-Loss: 6.887, Kmeans-Loss: 1.696, weight: 1.00
+INFO:root:Test loss: 1397.519, MSE-Loss: 1388.806, KL-Loss: 6.986, Kmeans-Loss: 1.727
+INFO:root:Saving model!
+INFO:root:Saving model snapshot!
+
+INFO:root:
+
+INFO:root:Epoch: 31, Epochs on convergence counter: 0
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 31
+INFO:root:03:04:29
+INFO:root:Train loss: 6454.419, MSE-Loss: 2165.025, MSE-Future-Loss 4280.821, KL-Loss: 6.871, Kmeans-Loss: 1.695, weight: 1.00
+INFO:root:Test loss: 1400.157, MSE-Loss: 1391.432, KL-Loss: 6.995, Kmeans-Loss: 1.730
+INFO:root:
+
+INFO:root:Epoch: 32, Epochs on convergence counter: 1
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 32
+INFO:root:03:10:23
+INFO:root:Train loss: 6440.730, MSE-Loss: 2161.754, MSE-Future-Loss 4270.426, KL-Loss: 6.853, Kmeans-Loss: 1.695, weight: 1.00
+INFO:root:Test loss: 1404.379, MSE-Loss: 1395.673, KL-Loss: 6.978, Kmeans-Loss: 1.728
+INFO:root:
+
+INFO:root:Epoch: 33, Epochs on convergence counter: 2
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 33
+INFO:root:03:16:16
+INFO:root:Train loss: 6438.447, MSE-Loss: 2158.517, MSE-Future-Loss 4271.404, KL-Loss: 6.829, Kmeans-Loss: 1.694, weight: 1.00
+INFO:root:Test loss: 1386.284, MSE-Loss: 1377.601, KL-Loss: 6.956, Kmeans-Loss: 1.727
+INFO:root:Saving model!
+INFO:root:
+
+INFO:root:Epoch: 34, Epochs on convergence counter: 0
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 34
+INFO:root:03:22:13
+INFO:root:Train loss: 6419.108, MSE-Loss: 2157.361, MSE-Future-Loss 4253.241, KL-Loss: 6.810, Kmeans-Loss: 1.692, weight: 1.00
+INFO:root:Test loss: 1417.924, MSE-Loss: 1409.253, KL-Loss: 6.944, Kmeans-Loss: 1.727
+INFO:root:
+
+INFO:root:Epoch: 35, Epochs on convergence counter: 1
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 35
+INFO:root:03:28:10
+INFO:root:Train loss: 6410.392, MSE-Loss: 2152.270, MSE-Future-Loss 4249.635, KL-Loss: 6.790, Kmeans-Loss: 1.692, weight: 1.00
+INFO:root:Test loss: 1391.481, MSE-Loss: 1382.827, KL-Loss: 6.925, Kmeans-Loss: 1.729
+INFO:root:
+
+INFO:root:Epoch: 36, Epochs on convergence counter: 2
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 36
+INFO:root:03:34:07
+INFO:root:Train loss: 6402.148, MSE-Loss: 2150.361, MSE-Future-Loss 4243.316, KL-Loss: 6.778, Kmeans-Loss: 1.693, weight: 1.00
+INFO:root:Test loss: 1386.550, MSE-Loss: 1377.893, KL-Loss: 6.928, Kmeans-Loss: 1.729
+INFO:root:
+
+INFO:root:Epoch: 37, Epochs on convergence counter: 3
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 37
+INFO:root:03:40:04
+INFO:root:Train loss: 6374.810, MSE-Loss: 2141.537, MSE-Future-Loss 4224.834, KL-Loss: 6.754, Kmeans-Loss: 1.691, weight: 1.00
+INFO:root:Test loss: 1406.773, MSE-Loss: 1398.107, KL-Loss: 6.935, Kmeans-Loss: 1.731
+INFO:root:
+
+INFO:root:Epoch: 38, Epochs on convergence counter: 4
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 38
+INFO:root:03:46:01
+INFO:root:Train loss: 6371.895, MSE-Loss: 2141.035, MSE-Future-Loss 4222.436, KL-Loss: 6.735, Kmeans-Loss: 1.692, weight: 1.00
+INFO:root:Test loss: 1365.134, MSE-Loss: 1356.504, KL-Loss: 6.902, Kmeans-Loss: 1.728
+INFO:root:Saving model!
+INFO:root:
+
+INFO:root:Epoch: 39, Epochs on convergence counter: 0
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 39
+INFO:root:03:51:57
+INFO:root:Train loss: 6362.335, MSE-Loss: 2140.144, MSE-Future-Loss 4213.781, KL-Loss: 6.714, Kmeans-Loss: 1.693, weight: 1.00
+INFO:root:Test loss: 1385.375, MSE-Loss: 1376.741, KL-Loss: 6.903, Kmeans-Loss: 1.730
+INFO:root:
+
+INFO:root:Epoch: 40, Epochs on convergence counter: 1
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 40
+INFO:root:03:57:54
+INFO:root:Train loss: 6342.265, MSE-Loss: 2136.558, MSE-Future-Loss 4197.309, KL-Loss: 6.702, Kmeans-Loss: 1.694, weight: 1.00
+INFO:root:Test loss: 1374.859, MSE-Loss: 1366.227, KL-Loss: 6.897, Kmeans-Loss: 1.735
+INFO:root:
+
+INFO:root:Epoch: 41, Epochs on convergence counter: 2
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 41
+INFO:root:04:03:53
+INFO:root:Train loss: 6345.703, MSE-Loss: 2132.768, MSE-Future-Loss 4204.563, KL-Loss: 6.676, Kmeans-Loss: 1.694, weight: 1.00
+INFO:root:Test loss: 1343.304, MSE-Loss: 1334.705, KL-Loss: 6.865, Kmeans-Loss: 1.734
+INFO:root:Saving model!
+INFO:root:
+
+INFO:root:Epoch: 42, Epochs on convergence counter: 0
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 42
+INFO:root:04:09:53
+INFO:root:Train loss: 6319.555, MSE-Loss: 2129.730, MSE-Future-Loss 4181.465, KL-Loss: 6.664, Kmeans-Loss: 1.694, weight: 1.00
+INFO:root:Test loss: 1349.401, MSE-Loss: 1340.780, KL-Loss: 6.887, Kmeans-Loss: 1.734
+INFO:root:
+
+INFO:root:Epoch: 43, Epochs on convergence counter: 1
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 43
+INFO:root:04:15:53
+INFO:root:Train loss: 6319.030, MSE-Loss: 2126.083, MSE-Future-Loss 4184.606, KL-Loss: 6.643, Kmeans-Loss: 1.695, weight: 1.00
+INFO:root:Test loss: 1353.541, MSE-Loss: 1344.953, KL-Loss: 6.853, Kmeans-Loss: 1.735
+INFO:root:
+
+INFO:root:Epoch: 44, Epochs on convergence counter: 2
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 44
+INFO:root:04:21:53
+INFO:root:Train loss: 6308.539, MSE-Loss: 2126.593, MSE-Future-Loss 4173.615, KL-Loss: 6.636, Kmeans-Loss: 1.697, weight: 1.00
+INFO:root:Test loss: 1328.703, MSE-Loss: 1320.143, KL-Loss: 6.823, Kmeans-Loss: 1.737
+INFO:root:Saving model!
+INFO:root:
+
+INFO:root:Epoch: 45, Epochs on convergence counter: 0
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 45
+INFO:root:04:27:55
+INFO:root:Train loss: 6298.356, MSE-Loss: 2125.831, MSE-Future-Loss 4164.210, KL-Loss: 6.616, Kmeans-Loss: 1.698, weight: 1.00
+INFO:root:Test loss: 1353.707, MSE-Loss: 1345.130, KL-Loss: 6.839, Kmeans-Loss: 1.738
+INFO:root:Saving model snapshot!
+
+INFO:root:
+
+INFO:root:Epoch: 46, Epochs on convergence counter: 1
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 46
+INFO:root:04:33:57
+INFO:root:Train loss: 6285.190, MSE-Loss: 2119.069, MSE-Future-Loss 4157.811, KL-Loss: 6.609, Kmeans-Loss: 1.699, weight: 1.00
+INFO:root:Test loss: 1344.530, MSE-Loss: 1335.981, KL-Loss: 6.810, Kmeans-Loss: 1.739
+INFO:root:
+
+INFO:root:Epoch: 47, Epochs on convergence counter: 2
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 47
+INFO:root:04:39:58
+INFO:root:Train loss: 6267.423, MSE-Loss: 2116.969, MSE-Future-Loss 4142.153, KL-Loss: 6.595, Kmeans-Loss: 1.701, weight: 1.00
+INFO:root:Test loss: 1316.856, MSE-Loss: 1308.278, KL-Loss: 6.835, Kmeans-Loss: 1.743
+INFO:root:Saving model!
+INFO:root:
+
+INFO:root:Epoch: 48, Epochs on convergence counter: 0
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 48
+INFO:root:04:46:00
+INFO:root:Train loss: 6269.796, MSE-Loss: 2119.206, MSE-Future-Loss 4142.302, KL-Loss: 6.586, Kmeans-Loss: 1.704, weight: 1.00
+INFO:root:Test loss: 1296.226, MSE-Loss: 1287.689, KL-Loss: 6.793, Kmeans-Loss: 1.744
+INFO:root:Saving model!
+INFO:root:
+
+INFO:root:Epoch: 49, Epochs on convergence counter: 0
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 49
+INFO:root:04:52:03
+INFO:root:Train loss: 6258.762, MSE-Loss: 2114.324, MSE-Future-Loss 4136.169, KL-Loss: 6.565, Kmeans-Loss: 1.705, weight: 1.00
+INFO:root:Test loss: 1310.427, MSE-Loss: 1301.865, KL-Loss: 6.812, Kmeans-Loss: 1.750
+INFO:root:
+
+INFO:root:Epoch: 50, Epochs on convergence counter: 1
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 50
+INFO:root:04:58:05
+INFO:root:Train loss: 6235.526, MSE-Loss: 2111.222, MSE-Future-Loss 4116.046, KL-Loss: 6.559, Kmeans-Loss: 1.709, weight: 1.00
+INFO:root:Test loss: 1315.582, MSE-Loss: 1307.054, KL-Loss: 6.776, Kmeans-Loss: 1.752
+INFO:root:
+
+INFO:root:Epoch: 51, Epochs on convergence counter: 2
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 51
+INFO:root:05:04:07
+INFO:root:Train loss: 6224.500, MSE-Loss: 2106.648, MSE-Future-Loss 4109.580, KL-Loss: 6.556, Kmeans-Loss: 1.709, weight: 1.00
+INFO:root:Test loss: 1302.467, MSE-Loss: 1293.923, KL-Loss: 6.792, Kmeans-Loss: 1.752
+INFO:root:
+
+INFO:root:Epoch: 52, Epochs on convergence counter: 3
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 52
+INFO:root:05:10:09
+INFO:root:Train loss: 6220.967, MSE-Loss: 2105.872, MSE-Future-Loss 4106.839, KL-Loss: 6.537, Kmeans-Loss: 1.710, weight: 1.00
+INFO:root:Test loss: 1300.326, MSE-Loss: 1291.771, KL-Loss: 6.800, Kmeans-Loss: 1.755
+INFO:root:
+
+INFO:root:Epoch: 53, Epochs on convergence counter: 4
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 53
+INFO:root:05:16:10
+INFO:root:Train loss: 6216.756, MSE-Loss: 2106.196, MSE-Future-Loss 4102.318, KL-Loss: 6.530, Kmeans-Loss: 1.715, weight: 1.00
+INFO:root:Test loss: 1297.859, MSE-Loss: 1289.331, KL-Loss: 6.772, Kmeans-Loss: 1.757
+INFO:root:
+
+INFO:root:Epoch: 54, Epochs on convergence counter: 5
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 54
+INFO:root:05:22:11
+INFO:root:Train loss: 6194.720, MSE-Loss: 2103.919, MSE-Future-Loss 4082.572, KL-Loss: 6.516, Kmeans-Loss: 1.717, weight: 1.00
+INFO:root:Test loss: 1290.363, MSE-Loss: 1281.836, KL-Loss: 6.770, Kmeans-Loss: 1.757
+INFO:root:Saving model!
+INFO:root:
+
+INFO:root:Epoch: 55, Epochs on convergence counter: 0
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 55
+INFO:root:05:28:12
+INFO:root:Train loss: 6187.456, MSE-Loss: 2101.083, MSE-Future-Loss 4078.146, KL-Loss: 6.512, Kmeans-Loss: 1.718, weight: 1.00
+INFO:root:Test loss: 1267.897, MSE-Loss: 1259.388, KL-Loss: 6.748, Kmeans-Loss: 1.761
+INFO:root:Saving model!
+INFO:root:
+
+INFO:root:Epoch: 56, Epochs on convergence counter: 0
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 56
+INFO:root:05:34:13
+INFO:root:Train loss: 6176.507, MSE-Loss: 2096.237, MSE-Future-Loss 4072.051, KL-Loss: 6.493, Kmeans-Loss: 1.719, weight: 1.00
+INFO:root:Test loss: 1277.919, MSE-Loss: 1269.398, KL-Loss: 6.761, Kmeans-Loss: 1.761
+INFO:root:
+
+INFO:root:Epoch: 57, Epochs on convergence counter: 1
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 57
+INFO:root:05:40:15
+INFO:root:Train loss: 6164.783, MSE-Loss: 2096.983, MSE-Future-Loss 4059.586, KL-Loss: 6.489, Kmeans-Loss: 1.721, weight: 1.00
+INFO:root:Test loss: 1259.968, MSE-Loss: 1251.447, KL-Loss: 6.755, Kmeans-Loss: 1.766
+INFO:root:Saving model!
+INFO:root:
+
+INFO:root:Epoch: 58, Epochs on convergence counter: 0
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 58
+INFO:root:05:46:17
+INFO:root:Train loss: 6158.153, MSE-Loss: 2098.132, MSE-Future-Loss 4051.821, KL-Loss: 6.475, Kmeans-Loss: 1.724, weight: 1.00
+INFO:root:Test loss: 1271.738, MSE-Loss: 1263.186, KL-Loss: 6.781, Kmeans-Loss: 1.772
+INFO:root:
+
+INFO:root:Epoch: 59, Epochs on convergence counter: 1
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 59
+INFO:root:05:52:16
+INFO:root:Train loss: 6146.217, MSE-Loss: 2092.130, MSE-Future-Loss 4045.902, KL-Loss: 6.462, Kmeans-Loss: 1.725, weight: 1.00
+INFO:root:Test loss: 1264.582, MSE-Loss: 1256.099, KL-Loss: 6.713, Kmeans-Loss: 1.769
+INFO:root:
+
+INFO:root:Epoch: 60, Epochs on convergence counter: 2
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 60
+INFO:root:05:58:16
+INFO:root:Train loss: 6135.006, MSE-Loss: 2092.405, MSE-Future-Loss 4034.420, KL-Loss: 6.459, Kmeans-Loss: 1.729, weight: 1.00
+INFO:root:Test loss: 1283.266, MSE-Loss: 1274.750, KL-Loss: 6.740, Kmeans-Loss: 1.775
+INFO:root:Saving model snapshot!
+
+INFO:root:
+
+INFO:root:Epoch: 61, Epochs on convergence counter: 3
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 61
+INFO:root:06:04:15
+INFO:root:Train loss: 6132.541, MSE-Loss: 2086.573, MSE-Future-Loss 4037.777, KL-Loss: 6.457, Kmeans-Loss: 1.732, weight: 1.00
+INFO:root:Test loss: 1271.120, MSE-Loss: 1262.618, KL-Loss: 6.726, Kmeans-Loss: 1.776
+INFO:root:
+
+INFO:root:Epoch: 62, Epochs on convergence counter: 4
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 62
+INFO:root:06:10:15
+INFO:root:Train loss: 6107.369, MSE-Loss: 2083.845, MSE-Future-Loss 4015.345, KL-Loss: 6.442, Kmeans-Loss: 1.733, weight: 1.00
+INFO:root:Test loss: 1252.262, MSE-Loss: 1243.755, KL-Loss: 6.728, Kmeans-Loss: 1.779
+INFO:root:Saving model!
+INFO:root:
+
+INFO:root:Epoch: 63, Epochs on convergence counter: 0
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 63
+INFO:root:06:16:15
+INFO:root:Train loss: 6113.086, MSE-Loss: 2085.270, MSE-Future-Loss 4019.647, KL-Loss: 6.431, Kmeans-Loss: 1.735, weight: 1.00
+INFO:root:Test loss: 1255.034, MSE-Loss: 1246.540, KL-Loss: 6.713, Kmeans-Loss: 1.781
+INFO:root:
+
+INFO:root:Epoch: 64, Epochs on convergence counter: 1
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 64
+INFO:root:06:22:15
+INFO:root:Train loss: 6091.565, MSE-Loss: 2083.058, MSE-Future-Loss 4000.343, KL-Loss: 6.425, Kmeans-Loss: 1.739, weight: 1.00
+INFO:root:Test loss: 1246.552, MSE-Loss: 1238.053, KL-Loss: 6.718, Kmeans-Loss: 1.782
+INFO:root:Saving model!
+INFO:root:
+
+INFO:root:Epoch: 65, Epochs on convergence counter: 0
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 65
+INFO:root:06:28:13
+INFO:root:Train loss: 6090.276, MSE-Loss: 2082.908, MSE-Future-Loss 3999.205, KL-Loss: 6.418, Kmeans-Loss: 1.743, weight: 1.00
+INFO:root:Test loss: 1223.423, MSE-Loss: 1214.927, KL-Loss: 6.708, Kmeans-Loss: 1.788
+INFO:root:Saving model!
+INFO:root:
+
+INFO:root:Epoch: 66, Epochs on convergence counter: 0
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 66
+INFO:root:06:34:15
+INFO:root:Train loss: 6078.966, MSE-Loss: 2081.838, MSE-Future-Loss 3988.978, KL-Loss: 6.413, Kmeans-Loss: 1.745, weight: 1.00
+INFO:root:Test loss: 1220.354, MSE-Loss: 1211.871, KL-Loss: 6.692, Kmeans-Loss: 1.791
+INFO:root:Saving model!
+INFO:root:
+
+INFO:root:Epoch: 67, Epochs on convergence counter: 0
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 67
+INFO:root:06:40:15
+INFO:root:Train loss: 6064.010, MSE-Loss: 2081.206, MSE-Future-Loss 3974.668, KL-Loss: 6.388, Kmeans-Loss: 1.747, weight: 1.00
+INFO:root:Test loss: 1229.315, MSE-Loss: 1220.861, KL-Loss: 6.664, Kmeans-Loss: 1.789
+INFO:root:
+
+INFO:root:Epoch: 68, Epochs on convergence counter: 1
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 68
+INFO:root:06:46:15
+INFO:root:Train loss: 6051.952, MSE-Loss: 2078.642, MSE-Future-Loss 3965.178, KL-Loss: 6.378, Kmeans-Loss: 1.750, weight: 1.00
+INFO:root:Test loss: 1211.189, MSE-Loss: 1202.717, KL-Loss: 6.676, Kmeans-Loss: 1.796
+INFO:root:Saving model!
+INFO:root:
+
+INFO:root:Epoch: 69, Epochs on convergence counter: 0
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 69
+INFO:root:06:52:15
+INFO:root:Train loss: 6042.074, MSE-Loss: 2073.315, MSE-Future-Loss 3960.622, KL-Loss: 6.381, Kmeans-Loss: 1.753, weight: 1.00
+INFO:root:Test loss: 1246.718, MSE-Loss: 1238.237, KL-Loss: 6.683, Kmeans-Loss: 1.798
+INFO:root:
+
+INFO:root:Epoch: 70, Epochs on convergence counter: 1
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 70
+INFO:root:06:58:16
+INFO:root:Train loss: 6040.793, MSE-Loss: 2075.875, MSE-Future-Loss 3956.783, KL-Loss: 6.374, Kmeans-Loss: 1.757, weight: 1.00
+INFO:root:Test loss: 1244.419, MSE-Loss: 1235.938, KL-Loss: 6.676, Kmeans-Loss: 1.805
+INFO:root:
+
+INFO:root:Epoch: 71, Epochs on convergence counter: 2
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 71
+INFO:root:07:04:17
+INFO:root:Train loss: 6014.525, MSE-Loss: 2073.542, MSE-Future-Loss 3932.852, KL-Loss: 6.367, Kmeans-Loss: 1.759, weight: 1.00
+INFO:root:Test loss: 1228.977, MSE-Loss: 1220.519, KL-Loss: 6.653, Kmeans-Loss: 1.804
+INFO:root:
+
+INFO:root:Epoch: 72, Epochs on convergence counter: 3
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 72
+INFO:root:07:10:20
+INFO:root:Train loss: 6022.165, MSE-Loss: 2071.633, MSE-Future-Loss 3942.415, KL-Loss: 6.358, Kmeans-Loss: 1.763, weight: 1.00
+INFO:root:Test loss: 1211.395, MSE-Loss: 1202.942, KL-Loss: 6.644, Kmeans-Loss: 1.808
+INFO:root:
+
+INFO:root:Epoch: 73, Epochs on convergence counter: 4
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 73
+INFO:root:07:16:22
+INFO:root:Train loss: 6009.335, MSE-Loss: 2073.001, MSE-Future-Loss 3928.216, KL-Loss: 6.356, Kmeans-Loss: 1.766, weight: 1.00
+INFO:root:Test loss: 1209.200, MSE-Loss: 1200.729, KL-Loss: 6.661, Kmeans-Loss: 1.810
+INFO:root:Saving model!
+INFO:root:
+
+INFO:root:Epoch: 74, Epochs on convergence counter: 0
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 74
+INFO:root:07:22:24
+INFO:root:Train loss: 5989.891, MSE-Loss: 2071.732, MSE-Future-Loss 3910.034, KL-Loss: 6.350, Kmeans-Loss: 1.769, weight: 1.00
+INFO:root:Test loss: 1204.676, MSE-Loss: 1196.197, KL-Loss: 6.659, Kmeans-Loss: 1.820
+INFO:root:Saving model!
+INFO:root:
+
+INFO:root:Epoch: 75, Epochs on convergence counter: 0
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 75
+INFO:root:07:28:28
+INFO:root:Train loss: 5972.112, MSE-Loss: 2068.304, MSE-Future-Loss 3895.696, KL-Loss: 6.338, Kmeans-Loss: 1.773, weight: 1.00
+INFO:root:Test loss: 1221.218, MSE-Loss: 1212.752, KL-Loss: 6.647, Kmeans-Loss: 1.818
+INFO:root:Saving model snapshot!
+
+INFO:root:
+
+INFO:root:Epoch: 76, Epochs on convergence counter: 1
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 76
+INFO:root:07:34:30
+INFO:root:Train loss: 5958.911, MSE-Loss: 2066.777, MSE-Future-Loss 3884.024, KL-Loss: 6.330, Kmeans-Loss: 1.775, weight: 1.00
+INFO:root:Test loss: 1202.959, MSE-Loss: 1194.485, KL-Loss: 6.650, Kmeans-Loss: 1.823
+INFO:root:Saving model!
+INFO:root:
+
+INFO:root:Epoch: 77, Epochs on convergence counter: 0
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 77
+INFO:root:07:40:34
+INFO:root:Train loss: 5953.024, MSE-Loss: 2065.304, MSE-Future-Loss 3879.622, KL-Loss: 6.321, Kmeans-Loss: 1.777, weight: 1.00
+INFO:root:Test loss: 1200.069, MSE-Loss: 1191.593, KL-Loss: 6.650, Kmeans-Loss: 1.826
+INFO:root:Saving model!
+INFO:root:
+
+INFO:root:Epoch: 78, Epochs on convergence counter: 0
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 78
+INFO:root:07:46:37
+INFO:root:Train loss: 5940.220, MSE-Loss: 2065.214, MSE-Future-Loss 3866.901, KL-Loss: 6.320, Kmeans-Loss: 1.781, weight: 1.00
+INFO:root:Test loss: 1195.182, MSE-Loss: 1186.710, KL-Loss: 6.644, Kmeans-Loss: 1.827
+INFO:root:Saving model!
+INFO:root:
+
+INFO:root:Epoch: 79, Epochs on convergence counter: 0
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 79
+INFO:root:07:52:43
+INFO:root:Train loss: 5934.703, MSE-Loss: 2067.616, MSE-Future-Loss 3858.994, KL-Loss: 6.306, Kmeans-Loss: 1.785, weight: 1.00
+INFO:root:Test loss: 1192.767, MSE-Loss: 1184.319, KL-Loss: 6.617, Kmeans-Loss: 1.831
+INFO:root:Saving model!
+INFO:root:
+
+INFO:root:Epoch: 80, Epochs on convergence counter: 0
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 80
+INFO:root:07:58:47
+INFO:root:Train loss: 5909.893, MSE-Loss: 2062.797, MSE-Future-Loss 3839.004, KL-Loss: 6.308, Kmeans-Loss: 1.787, weight: 1.00
+INFO:root:Test loss: 1176.205, MSE-Loss: 1167.748, KL-Loss: 6.623, Kmeans-Loss: 1.834
+INFO:root:Saving model!
+INFO:root:
+
+INFO:root:Epoch: 81, Epochs on convergence counter: 0
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 81
+INFO:root:08:04:52
+INFO:root:Train loss: 5898.128, MSE-Loss: 2063.532, MSE-Future-Loss 3826.498, KL-Loss: 6.303, Kmeans-Loss: 1.790, weight: 1.00
+INFO:root:Test loss: 1193.568, MSE-Loss: 1185.111, KL-Loss: 6.618, Kmeans-Loss: 1.839
+INFO:root:
+
+INFO:root:Epoch: 82, Epochs on convergence counter: 1
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 82
+INFO:root:08:10:56
+INFO:root:Train loss: 5892.767, MSE-Loss: 2065.673, MSE-Future-Loss 3818.997, KL-Loss: 6.303, Kmeans-Loss: 1.794, weight: 1.00
+INFO:root:Test loss: 1216.143, MSE-Loss: 1207.664, KL-Loss: 6.639, Kmeans-Loss: 1.839
+INFO:root:
+
+INFO:root:Epoch: 83, Epochs on convergence counter: 2
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 83
+INFO:root:08:16:59
+INFO:root:Train loss: 5883.685, MSE-Loss: 2063.611, MSE-Future-Loss 3811.984, KL-Loss: 6.293, Kmeans-Loss: 1.798, weight: 1.00
+INFO:root:Test loss: 1180.535, MSE-Loss: 1172.091, KL-Loss: 6.598, Kmeans-Loss: 1.847
+INFO:root:
+
+INFO:root:Epoch: 84, Epochs on convergence counter: 3
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 84
+INFO:root:08:23:03
+INFO:root:Train loss: 5879.077, MSE-Loss: 2061.815, MSE-Future-Loss 3809.184, KL-Loss: 6.285, Kmeans-Loss: 1.800, weight: 1.00
+INFO:root:Test loss: 1168.883, MSE-Loss: 1160.422, KL-Loss: 6.615, Kmeans-Loss: 1.846
+INFO:root:Saving model!
+INFO:root:
+
+INFO:root:Epoch: 85, Epochs on convergence counter: 0
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 85
+INFO:root:08:29:10
+INFO:root:Train loss: 5856.843, MSE-Loss: 2061.275, MSE-Future-Loss 3787.474, KL-Loss: 6.282, Kmeans-Loss: 1.804, weight: 1.00
+INFO:root:Test loss: 1182.175, MSE-Loss: 1173.722, KL-Loss: 6.601, Kmeans-Loss: 1.852
+INFO:root:
+
+INFO:root:Epoch: 86, Epochs on convergence counter: 1
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 86
+INFO:root:08:35:15
+INFO:root:Train loss: 5842.202, MSE-Loss: 2058.194, MSE-Future-Loss 3775.939, KL-Loss: 6.268, Kmeans-Loss: 1.807, weight: 1.00
+INFO:root:Test loss: 1169.213, MSE-Loss: 1160.777, KL-Loss: 6.581, Kmeans-Loss: 1.855
+INFO:root:
+
+INFO:root:Epoch: 87, Epochs on convergence counter: 2
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 87
+INFO:root:08:41:21
+INFO:root:Train loss: 5829.985, MSE-Loss: 2057.782, MSE-Future-Loss 3764.117, KL-Loss: 6.273, Kmeans-Loss: 1.810, weight: 1.00
+INFO:root:Test loss: 1160.877, MSE-Loss: 1152.436, KL-Loss: 6.589, Kmeans-Loss: 1.852
+INFO:root:Saving model!
+INFO:root:
+
+INFO:root:Epoch: 88, Epochs on convergence counter: 0
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 88
+INFO:root:08:47:26
+INFO:root:Train loss: 5812.653, MSE-Loss: 2056.755, MSE-Future-Loss 3747.818, KL-Loss: 6.265, Kmeans-Loss: 1.814, weight: 1.00
+INFO:root:Test loss: 1159.673, MSE-Loss: 1151.227, KL-Loss: 6.585, Kmeans-Loss: 1.861
+INFO:root:Saving model!
+INFO:root:
+
+INFO:root:Epoch: 89, Epochs on convergence counter: 0
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 89
+INFO:root:08:53:31
+INFO:root:Train loss: 5804.970, MSE-Loss: 2059.391, MSE-Future-Loss 3737.487, KL-Loss: 6.269, Kmeans-Loss: 1.818, weight: 1.00
+INFO:root:Test loss: 1180.386, MSE-Loss: 1171.923, KL-Loss: 6.599, Kmeans-Loss: 1.864
+INFO:root:
+
+INFO:root:Epoch: 90, Epochs on convergence counter: 1
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 90
+INFO:root:08:59:37
+INFO:root:Train loss: 5800.925, MSE-Loss: 2054.492, MSE-Future-Loss 3738.347, KL-Loss: 6.260, Kmeans-Loss: 1.821, weight: 1.00
+INFO:root:Test loss: 1157.061, MSE-Loss: 1148.604, KL-Loss: 6.586, Kmeans-Loss: 1.871
+INFO:root:Saving model!
+INFO:root:Saving model snapshot!
+
+INFO:root:
+
+INFO:root:Epoch: 91, Epochs on convergence counter: 0
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 91
+INFO:root:09:05:41
+INFO:root:Train loss: 5788.569, MSE-Loss: 2057.346, MSE-Future-Loss 3723.145, KL-Loss: 6.258, Kmeans-Loss: 1.824, weight: 1.00
+INFO:root:Test loss: 1172.340, MSE-Loss: 1163.890, KL-Loss: 6.581, Kmeans-Loss: 1.869
+INFO:root:
+
+INFO:root:Epoch: 92, Epochs on convergence counter: 1
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 92
+INFO:root:09:11:46
+INFO:root:Train loss: 5765.333, MSE-Loss: 2054.025, MSE-Future-Loss 3703.232, KL-Loss: 6.254, Kmeans-Loss: 1.826, weight: 1.00
+INFO:root:Test loss: 1173.994, MSE-Loss: 1165.528, KL-Loss: 6.591, Kmeans-Loss: 1.876
+INFO:root:
+
+INFO:root:Epoch: 93, Epochs on convergence counter: 2
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 93
+INFO:root:09:17:51
+INFO:root:Train loss: 5762.221, MSE-Loss: 2055.745, MSE-Future-Loss 3698.418, KL-Loss: 6.239, Kmeans-Loss: 1.830, weight: 1.00
+INFO:root:Test loss: 1148.331, MSE-Loss: 1139.902, KL-Loss: 6.552, Kmeans-Loss: 1.876
+INFO:root:Saving model!
+INFO:root:
+
+INFO:root:Epoch: 94, Epochs on convergence counter: 0
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 94
+INFO:root:09:23:57
+INFO:root:Train loss: 5740.207, MSE-Loss: 2050.874, MSE-Future-Loss 3681.263, KL-Loss: 6.235, Kmeans-Loss: 1.832, weight: 1.00
+INFO:root:Test loss: 1158.080, MSE-Loss: 1149.641, KL-Loss: 6.559, Kmeans-Loss: 1.880
+INFO:root:
+
+INFO:root:Epoch: 95, Epochs on convergence counter: 1
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 95
+INFO:root:09:30:03
+INFO:root:Train loss: 5733.512, MSE-Loss: 2054.754, MSE-Future-Loss 3670.680, KL-Loss: 6.237, Kmeans-Loss: 1.837, weight: 1.00
+INFO:root:Test loss: 1130.265, MSE-Loss: 1121.823, KL-Loss: 6.561, Kmeans-Loss: 1.882
+INFO:root:Saving model!
+INFO:root:
+
+INFO:root:Epoch: 96, Epochs on convergence counter: 0
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 96
+INFO:root:09:36:09
+INFO:root:Train loss: 5712.951, MSE-Loss: 2050.752, MSE-Future-Loss 3654.121, KL-Loss: 6.233, Kmeans-Loss: 1.839, weight: 1.00
+INFO:root:Test loss: 1156.965, MSE-Loss: 1148.504, KL-Loss: 6.571, Kmeans-Loss: 1.889
+INFO:root:
+
+INFO:root:Epoch: 97, Epochs on convergence counter: 1
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 97
+INFO:root:09:42:17
+INFO:root:Train loss: 5704.749, MSE-Loss: 2054.518, MSE-Future-Loss 3642.151, KL-Loss: 6.234, Kmeans-Loss: 1.842, weight: 1.00
+INFO:root:Test loss: 1150.747, MSE-Loss: 1142.292, KL-Loss: 6.568, Kmeans-Loss: 1.888
+INFO:root:
+
+INFO:root:Epoch: 98, Epochs on convergence counter: 2
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 98
+INFO:root:09:48:25
+INFO:root:Train loss: 5689.635, MSE-Loss: 2050.997, MSE-Future-Loss 3630.546, KL-Loss: 6.242, Kmeans-Loss: 1.846, weight: 1.00
+INFO:root:Test loss: 1121.767, MSE-Loss: 1113.336, KL-Loss: 6.540, Kmeans-Loss: 1.890
+INFO:root:Saving model!
+INFO:root:
+
+INFO:root:Epoch: 99, Epochs on convergence counter: 0
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 99
+INFO:root:09:54:31
+INFO:root:Train loss: 5672.203, MSE-Loss: 2050.211, MSE-Future-Loss 3613.927, KL-Loss: 6.224, Kmeans-Loss: 1.849, weight: 1.00
+INFO:root:Test loss: 1130.979, MSE-Loss: 1122.528, KL-Loss: 6.555, Kmeans-Loss: 1.897
+INFO:root:
+
+INFO:root:Epoch: 100, Epochs on convergence counter: 1
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 100
+INFO:root:10:00:39
+INFO:root:Train loss: 5662.980, MSE-Loss: 2051.420, MSE-Future-Loss 3603.486, KL-Loss: 6.218, Kmeans-Loss: 1.852, weight: 1.00
+INFO:root:Test loss: 1156.408, MSE-Loss: 1147.975, KL-Loss: 6.537, Kmeans-Loss: 1.897
+INFO:root:
+
+INFO:root:Epoch: 101, Epochs on convergence counter: 2
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 101
+INFO:root:10:06:48
+INFO:root:Train loss: 5646.854, MSE-Loss: 2048.940, MSE-Future-Loss 3589.849, KL-Loss: 6.212, Kmeans-Loss: 1.855, weight: 1.00
+INFO:root:Test loss: 1143.486, MSE-Loss: 1135.065, KL-Loss: 6.521, Kmeans-Loss: 1.900
+INFO:root:
+
+INFO:root:Epoch: 102, Epochs on convergence counter: 3
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 102
+INFO:root:10:12:56
+INFO:root:Train loss: 5635.267, MSE-Loss: 2049.520, MSE-Future-Loss 3577.692, KL-Loss: 6.198, Kmeans-Loss: 1.856, weight: 1.00
+INFO:root:Test loss: 1158.111, MSE-Loss: 1149.658, KL-Loss: 6.547, Kmeans-Loss: 1.906
+INFO:root:
+
+INFO:root:Epoch: 103, Epochs on convergence counter: 4
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 103
+INFO:root:10:19:03
+INFO:root:Train loss: 5623.283, MSE-Loss: 2048.400, MSE-Future-Loss 3566.816, KL-Loss: 6.205, Kmeans-Loss: 1.859, weight: 1.00
+INFO:root:Test loss: 1152.532, MSE-Loss: 1144.060, KL-Loss: 6.564, Kmeans-Loss: 1.909
+INFO:root:
+
+INFO:root:Epoch: 104, Epochs on convergence counter: 5
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 104
+INFO:root:10:25:12
+INFO:root:Train loss: 5610.751, MSE-Loss: 2048.329, MSE-Future-Loss 3554.351, KL-Loss: 6.204, Kmeans-Loss: 1.863, weight: 1.00
+INFO:root:Test loss: 1138.023, MSE-Loss: 1129.553, KL-Loss: 6.557, Kmeans-Loss: 1.912
+INFO:root:
+
+INFO:root:Epoch: 105, Epochs on convergence counter: 6
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 105
+INFO:root:10:31:19
+INFO:root:Train loss: 5599.366, MSE-Loss: 2047.512, MSE-Future-Loss 3543.771, KL-Loss: 6.210, Kmeans-Loss: 1.866, weight: 1.00
+INFO:root:Test loss: 1129.630, MSE-Loss: 1121.181, KL-Loss: 6.533, Kmeans-Loss: 1.916
+INFO:root:Saving model snapshot!
+
+INFO:root:
+
+INFO:root:Epoch: 106, Epochs on convergence counter: 7
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 106
+INFO:root:10:37:27
+INFO:root:Train loss: 5580.393, MSE-Loss: 2046.160, MSE-Future-Loss 3526.149, KL-Loss: 6.207, Kmeans-Loss: 1.869, weight: 1.00
+INFO:root:Test loss: 1145.656, MSE-Loss: 1137.218, KL-Loss: 6.526, Kmeans-Loss: 1.913
+INFO:root:
+
+INFO:root:Epoch: 107, Epochs on convergence counter: 8
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 107
+INFO:root:10:43:36
+INFO:root:Train loss: 5562.950, MSE-Loss: 2046.270, MSE-Future-Loss 3508.612, KL-Loss: 6.199, Kmeans-Loss: 1.871, weight: 1.00
+INFO:root:Test loss: 1141.556, MSE-Loss: 1133.126, KL-Loss: 6.517, Kmeans-Loss: 1.914
+INFO:root:
+
+INFO:root:Epoch: 108, Epochs on convergence counter: 9
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 108
+INFO:root:10:49:49
+INFO:root:Train loss: 5556.017, MSE-Loss: 2045.878, MSE-Future-Loss 3502.081, KL-Loss: 6.189, Kmeans-Loss: 1.872, weight: 1.00
+INFO:root:Test loss: 1147.315, MSE-Loss: 1138.866, KL-Loss: 6.530, Kmeans-Loss: 1.919
+INFO:root:
+
+INFO:root:Epoch: 109, Epochs on convergence counter: 10
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 109
+INFO:root:10:55:59
+INFO:root:Train loss: 5546.296, MSE-Loss: 2045.804, MSE-Future-Loss 3492.440, KL-Loss: 6.182, Kmeans-Loss: 1.875, weight: 1.00
+INFO:root:Test loss: 1131.829, MSE-Loss: 1123.375, KL-Loss: 6.539, Kmeans-Loss: 1.915
+INFO:root:
+
+INFO:root:Epoch: 110, Epochs on convergence counter: 11
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 110
+INFO:root:11:02:12
+INFO:root:Train loss: 5523.587, MSE-Loss: 2044.593, MSE-Future-Loss 3470.917, KL-Loss: 6.197, Kmeans-Loss: 1.877, weight: 1.00
+INFO:root:Test loss: 1125.710, MSE-Loss: 1117.250, KL-Loss: 6.535, Kmeans-Loss: 1.925
+INFO:root:
+
+INFO:root:Epoch: 111, Epochs on convergence counter: 12
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 111
+INFO:root:11:08:24
+INFO:root:Train loss: 5507.799, MSE-Loss: 2041.141, MSE-Future-Loss 3458.594, KL-Loss: 6.187, Kmeans-Loss: 1.879, weight: 1.00
+INFO:root:Test loss: 1118.378, MSE-Loss: 1109.939, KL-Loss: 6.516, Kmeans-Loss: 1.923
+INFO:root:Saving model!
+INFO:root:
+
+INFO:root:Epoch: 112, Epochs on convergence counter: 0
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 112
+INFO:root:11:14:39
+INFO:root:Train loss: 5491.570, MSE-Loss: 2040.976, MSE-Future-Loss 3442.528, KL-Loss: 6.185, Kmeans-Loss: 1.881, weight: 1.00
+INFO:root:Test loss: 1132.880, MSE-Loss: 1124.439, KL-Loss: 6.513, Kmeans-Loss: 1.928
+INFO:root:
+
+INFO:root:Epoch: 113, Epochs on convergence counter: 1
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 113
+INFO:root:11:20:51
+INFO:root:Train loss: 5480.619, MSE-Loss: 2041.780, MSE-Future-Loss 3430.771, KL-Loss: 6.179, Kmeans-Loss: 1.885, weight: 1.00
+INFO:root:Test loss: 1130.151, MSE-Loss: 1121.725, KL-Loss: 6.498, Kmeans-Loss: 1.928
+INFO:root:
+
+INFO:root:Epoch: 114, Epochs on convergence counter: 2
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 114
+INFO:root:11:27:03
+INFO:root:Train loss: 5468.656, MSE-Loss: 2039.993, MSE-Future-Loss 3420.605, KL-Loss: 6.173, Kmeans-Loss: 1.886, weight: 1.00
+INFO:root:Test loss: 1113.209, MSE-Loss: 1104.766, KL-Loss: 6.511, Kmeans-Loss: 1.933
+INFO:root:Saving model!
+INFO:root:
+
+INFO:root:Epoch: 115, Epochs on convergence counter: 0
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 115
+INFO:root:11:33:14
+INFO:root:Train loss: 5450.568, MSE-Loss: 2037.396, MSE-Future-Loss 3405.109, KL-Loss: 6.174, Kmeans-Loss: 1.890, weight: 1.00
+INFO:root:Test loss: 1148.254, MSE-Loss: 1139.793, KL-Loss: 6.527, Kmeans-Loss: 1.933
+INFO:root:
+
+INFO:root:Epoch: 116, Epochs on convergence counter: 1
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 116
+INFO:root:11:39:26
+INFO:root:Train loss: 5436.664, MSE-Loss: 2041.650, MSE-Future-Loss 3386.943, KL-Loss: 6.175, Kmeans-Loss: 1.892, weight: 1.00
+INFO:root:Test loss: 1139.839, MSE-Loss: 1131.369, KL-Loss: 6.534, Kmeans-Loss: 1.935
+INFO:root:
+
+INFO:root:Epoch: 117, Epochs on convergence counter: 2
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 117
+INFO:root:11:45:38
+INFO:root:Train loss: 5429.318, MSE-Loss: 2038.700, MSE-Future-Loss 3382.547, KL-Loss: 6.172, Kmeans-Loss: 1.894, weight: 1.00
+INFO:root:Test loss: 1118.396, MSE-Loss: 1109.957, KL-Loss: 6.498, Kmeans-Loss: 1.941
+INFO:root:
+
+INFO:root:Epoch: 118, Epochs on convergence counter: 3
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 118
+INFO:root:11:51:48
+INFO:root:Train loss: 5413.053, MSE-Loss: 2036.487, MSE-Future-Loss 3368.512, KL-Loss: 6.158, Kmeans-Loss: 1.896, weight: 1.00
+INFO:root:Test loss: 1130.773, MSE-Loss: 1122.339, KL-Loss: 6.494, Kmeans-Loss: 1.940
+INFO:root:
+
+INFO:root:Epoch: 119, Epochs on convergence counter: 4
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 119
+INFO:root:11:58:00
+INFO:root:Train loss: 5405.197, MSE-Loss: 2036.865, MSE-Future-Loss 3360.286, KL-Loss: 6.156, Kmeans-Loss: 1.897, weight: 1.00
+INFO:root:Test loss: 1129.091, MSE-Loss: 1120.618, KL-Loss: 6.525, Kmeans-Loss: 1.947
+INFO:root:
+
+INFO:root:Epoch: 120, Epochs on convergence counter: 5
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 120
+INFO:root:12:04:13
+INFO:root:Train loss: 5387.592, MSE-Loss: 2035.863, MSE-Future-Loss 3343.673, KL-Loss: 6.159, Kmeans-Loss: 1.899, weight: 1.00
+INFO:root:Test loss: 1123.123, MSE-Loss: 1114.686, KL-Loss: 6.493, Kmeans-Loss: 1.944
+INFO:root:Saving model snapshot!
+
+INFO:root:
+
+INFO:root:Epoch: 121, Epochs on convergence counter: 6
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 121
+INFO:root:12:10:24
+INFO:root:Train loss: 5377.957, MSE-Loss: 2035.866, MSE-Future-Loss 3334.022, KL-Loss: 6.157, Kmeans-Loss: 1.902, weight: 1.00
+INFO:root:Test loss: 1124.451, MSE-Loss: 1115.994, KL-Loss: 6.509, Kmeans-Loss: 1.948
+INFO:root:
+
+INFO:root:Epoch: 122, Epochs on convergence counter: 7
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 122
+INFO:root:12:16:35
+INFO:root:Train loss: 5358.539, MSE-Loss: 2034.128, MSE-Future-Loss 3316.349, KL-Loss: 6.157, Kmeans-Loss: 1.903, weight: 1.00
+INFO:root:Test loss: 1120.451, MSE-Loss: 1111.999, KL-Loss: 6.503, Kmeans-Loss: 1.949
+INFO:root:
+
+INFO:root:Epoch: 123, Epochs on convergence counter: 8
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 123
+INFO:root:12:22:50
+INFO:root:Train loss: 5347.444, MSE-Loss: 2034.538, MSE-Future-Loss 3304.838, KL-Loss: 6.157, Kmeans-Loss: 1.905, weight: 1.00
+INFO:root:Test loss: 1107.325, MSE-Loss: 1098.902, KL-Loss: 6.477, Kmeans-Loss: 1.946
+INFO:root:Saving model!
+INFO:root:
+
+INFO:root:Epoch: 124, Epochs on convergence counter: 0
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 124
+INFO:root:12:29:05
+INFO:root:Train loss: 5338.532, MSE-Loss: 2033.011, MSE-Future-Loss 3297.465, KL-Loss: 6.149, Kmeans-Loss: 1.906, weight: 1.00
+INFO:root:Test loss: 1109.242, MSE-Loss: 1100.798, KL-Loss: 6.491, Kmeans-Loss: 1.953
+INFO:root:
+
+INFO:root:Epoch: 125, Epochs on convergence counter: 1
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 125
+INFO:root:12:35:19
+INFO:root:Train loss: 5320.305, MSE-Loss: 2030.914, MSE-Future-Loss 3281.323, KL-Loss: 6.153, Kmeans-Loss: 1.908, weight: 1.00
+INFO:root:Test loss: 1119.436, MSE-Loss: 1110.988, KL-Loss: 6.493, Kmeans-Loss: 1.955
+INFO:root:
+
+INFO:root:Epoch: 126, Epochs on convergence counter: 2
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 126
+INFO:root:12:41:32
+INFO:root:Train loss: 5311.139, MSE-Loss: 2032.335, MSE-Future-Loss 3270.747, KL-Loss: 6.149, Kmeans-Loss: 1.910, weight: 1.00
+INFO:root:Test loss: 1122.009, MSE-Loss: 1113.569, KL-Loss: 6.485, Kmeans-Loss: 1.955
+INFO:root:
+
+INFO:root:Epoch: 127, Epochs on convergence counter: 3
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 127
+INFO:root:12:47:46
+INFO:root:Train loss: 5296.795, MSE-Loss: 2030.440, MSE-Future-Loss 3258.288, KL-Loss: 6.152, Kmeans-Loss: 1.913, weight: 1.00
+INFO:root:Test loss: 1112.587, MSE-Loss: 1104.151, KL-Loss: 6.479, Kmeans-Loss: 1.956
+INFO:root:
+
+INFO:root:Epoch: 128, Epochs on convergence counter: 4
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 128
+INFO:root:12:53:58
+INFO:root:Train loss: 5271.645, MSE-Loss: 2025.520, MSE-Future-Loss 3238.060, KL-Loss: 6.158, Kmeans-Loss: 1.914, weight: 1.00
+INFO:root:Test loss: 1129.943, MSE-Loss: 1121.485, KL-Loss: 6.497, Kmeans-Loss: 1.962
+INFO:root:
+
+INFO:root:Epoch: 129, Epochs on convergence counter: 5
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 129
+INFO:root:13:00:12
+INFO:root:Train loss: 5266.957, MSE-Loss: 2027.290, MSE-Future-Loss 3231.587, KL-Loss: 6.157, Kmeans-Loss: 1.916, weight: 1.00
+INFO:root:Test loss: 1113.078, MSE-Loss: 1104.645, KL-Loss: 6.472, Kmeans-Loss: 1.962
+INFO:root:
+
+INFO:root:Epoch: 130, Epochs on convergence counter: 6
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 130
+INFO:root:13:06:24
+INFO:root:Train loss: 5251.872, MSE-Loss: 2028.580, MSE-Future-Loss 3215.228, KL-Loss: 6.150, Kmeans-Loss: 1.917, weight: 1.00
+INFO:root:Test loss: 1132.160, MSE-Loss: 1123.684, KL-Loss: 6.515, Kmeans-Loss: 1.961
+INFO:root:
+
+INFO:root:Epoch: 131, Epochs on convergence counter: 7
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 131
+INFO:root:13:12:38
+INFO:root:Train loss: 5240.969, MSE-Loss: 2026.101, MSE-Future-Loss 3206.804, KL-Loss: 6.146, Kmeans-Loss: 1.917, weight: 1.00
+INFO:root:Test loss: 1131.694, MSE-Loss: 1123.232, KL-Loss: 6.499, Kmeans-Loss: 1.962
+INFO:root:
+
+INFO:root:Epoch: 132, Epochs on convergence counter: 8
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 132
+INFO:root:13:18:51
+INFO:root:Train loss: 5233.019, MSE-Loss: 2028.157, MSE-Future-Loss 3196.798, KL-Loss: 6.148, Kmeans-Loss: 1.920, weight: 1.00
+INFO:root:Test loss: 1124.506, MSE-Loss: 1116.057, KL-Loss: 6.485, Kmeans-Loss: 1.964
+INFO:root:
+
+INFO:root:Epoch: 133, Epochs on convergence counter: 9
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 133
+INFO:root:13:25:06
+INFO:root:Train loss: 5215.540, MSE-Loss: 2024.845, MSE-Future-Loss 3182.639, KL-Loss: 6.136, Kmeans-Loss: 1.921, weight: 1.00
+INFO:root:Test loss: 1116.484, MSE-Loss: 1108.048, KL-Loss: 6.466, Kmeans-Loss: 1.970
+INFO:root:
+
+INFO:root:Epoch: 134, Epochs on convergence counter: 10
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 134
+INFO:root:13:31:18
+INFO:root:Train loss: 5201.506, MSE-Loss: 2022.943, MSE-Future-Loss 3170.511, KL-Loss: 6.123, Kmeans-Loss: 1.922, weight: 1.00
+INFO:root:Test loss: 1115.786, MSE-Loss: 1107.368, KL-Loss: 6.452, Kmeans-Loss: 1.965
+INFO:root:
+
+INFO:root:Epoch: 135, Epochs on convergence counter: 11
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 135
+INFO:root:13:37:31
+INFO:root:Train loss: 5194.219, MSE-Loss: 2022.537, MSE-Future-Loss 3163.621, KL-Loss: 6.137, Kmeans-Loss: 1.923, weight: 1.00
+INFO:root:Test loss: 1129.764, MSE-Loss: 1121.294, KL-Loss: 6.500, Kmeans-Loss: 1.970
+INFO:root:Saving model snapshot!
+
+INFO:root:
+
+INFO:root:Epoch: 136, Epochs on convergence counter: 12
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 136
+INFO:root:13:43:44
+INFO:root:Train loss: 5185.374, MSE-Loss: 2023.015, MSE-Future-Loss 3154.294, KL-Loss: 6.141, Kmeans-Loss: 1.925, weight: 1.00
+INFO:root:Test loss: 1112.337, MSE-Loss: 1103.893, KL-Loss: 6.473, Kmeans-Loss: 1.971
+INFO:root:
+
+INFO:root:Epoch: 137, Epochs on convergence counter: 13
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 137
+INFO:root:13:49:56
+INFO:root:Train loss: 5172.372, MSE-Loss: 2020.806, MSE-Future-Loss 3143.524, KL-Loss: 6.127, Kmeans-Loss: 1.925, weight: 1.00
+INFO:root:Test loss: 1109.932, MSE-Loss: 1101.491, KL-Loss: 6.471, Kmeans-Loss: 1.971
+INFO:root:
+
+INFO:root:Epoch: 138, Epochs on convergence counter: 14
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 138
+INFO:root:13:56:12
+INFO:root:Train loss: 5153.613, MSE-Loss: 2019.375, MSE-Future-Loss 3126.164, KL-Loss: 6.144, Kmeans-Loss: 1.927, weight: 1.00
+INFO:root:Test loss: 1143.425, MSE-Loss: 1134.960, KL-Loss: 6.491, Kmeans-Loss: 1.974
+INFO:root:
+
+INFO:root:Epoch: 139, Epochs on convergence counter: 15
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 139
+INFO:root:14:02:24
+INFO:root:Train loss: 5137.954, MSE-Loss: 2016.765, MSE-Future-Loss 3113.134, KL-Loss: 6.129, Kmeans-Loss: 1.928, weight: 1.00
+INFO:root:Test loss: 1113.877, MSE-Loss: 1105.425, KL-Loss: 6.479, Kmeans-Loss: 1.973
+INFO:root:
+
+INFO:root:Epoch: 140, Epochs on convergence counter: 16
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 140
+INFO:root:14:08:39
+INFO:root:Train loss: 5128.005, MSE-Loss: 2017.553, MSE-Future-Loss 3102.387, KL-Loss: 6.131, Kmeans-Loss: 1.929, weight: 1.00
+INFO:root:Test loss: 1102.810, MSE-Loss: 1094.374, KL-Loss: 6.463, Kmeans-Loss: 1.973
+INFO:root:Saving model!
+INFO:root:
+
+INFO:root:Epoch: 141, Epochs on convergence counter: 0
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 141
+INFO:root:14:14:55
+INFO:root:Train loss: 5116.233, MSE-Loss: 2017.401, MSE-Future-Loss 3090.777, KL-Loss: 6.126, Kmeans-Loss: 1.931, weight: 1.00
+INFO:root:Test loss: 1129.150, MSE-Loss: 1120.685, KL-Loss: 6.486, Kmeans-Loss: 1.979
+INFO:root:
+
+INFO:root:Epoch: 142, Epochs on convergence counter: 1
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 142
+INFO:root:14:21:08
+INFO:root:Train loss: 5108.634, MSE-Loss: 2014.683, MSE-Future-Loss 3085.885, KL-Loss: 6.137, Kmeans-Loss: 1.932, weight: 1.00
+INFO:root:Test loss: 1103.067, MSE-Loss: 1094.621, KL-Loss: 6.466, Kmeans-Loss: 1.980
+INFO:root:
+
+INFO:root:Epoch: 143, Epochs on convergence counter: 2
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 143
+INFO:root:14:27:20
+INFO:root:Train loss: 5098.151, MSE-Loss: 2013.440, MSE-Future-Loss 3076.647, KL-Loss: 6.133, Kmeans-Loss: 1.933, weight: 1.00
+INFO:root:Test loss: 1143.548, MSE-Loss: 1135.084, KL-Loss: 6.481, Kmeans-Loss: 1.982
+INFO:root:
+
+INFO:root:Epoch: 144, Epochs on convergence counter: 3
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 144
+INFO:root:14:33:33
+INFO:root:Train loss: 5089.792, MSE-Loss: 2016.838, MSE-Future-Loss 3064.887, KL-Loss: 6.132, Kmeans-Loss: 1.935, weight: 1.00
+INFO:root:Test loss: 1142.520, MSE-Loss: 1134.047, KL-Loss: 6.496, Kmeans-Loss: 1.977
+INFO:root:
+
+INFO:root:Epoch: 145, Epochs on convergence counter: 4
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 145
+INFO:root:14:39:45
+INFO:root:Train loss: 5064.909, MSE-Loss: 2009.952, MSE-Future-Loss 3046.890, KL-Loss: 6.130, Kmeans-Loss: 1.935, weight: 1.00
+INFO:root:Test loss: 1134.059, MSE-Loss: 1125.584, KL-Loss: 6.490, Kmeans-Loss: 1.985
+INFO:root:
+
+INFO:root:Epoch: 146, Epochs on convergence counter: 5
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 146
+INFO:root:14:45:57
+INFO:root:Train loss: 5061.875, MSE-Loss: 2010.886, MSE-Future-Loss 3042.922, KL-Loss: 6.132, Kmeans-Loss: 1.936, weight: 1.00
+INFO:root:Test loss: 1132.930, MSE-Loss: 1124.457, KL-Loss: 6.490, Kmeans-Loss: 1.983
+INFO:root:
+
+INFO:root:Epoch: 147, Epochs on convergence counter: 6
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 147
+INFO:root:14:52:11
+INFO:root:Train loss: 5054.852, MSE-Loss: 2012.688, MSE-Future-Loss 3034.102, KL-Loss: 6.129, Kmeans-Loss: 1.937, weight: 1.00
+INFO:root:Test loss: 1149.245, MSE-Loss: 1140.776, KL-Loss: 6.487, Kmeans-Loss: 1.982
+INFO:root:
+
+INFO:root:Epoch: 148, Epochs on convergence counter: 7
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 148
+INFO:root:14:58:25
+INFO:root:Train loss: 5038.666, MSE-Loss: 2011.325, MSE-Future-Loss 3019.280, KL-Loss: 6.120, Kmeans-Loss: 1.937, weight: 1.00
+INFO:root:Test loss: 1120.170, MSE-Loss: 1111.733, KL-Loss: 6.457, Kmeans-Loss: 1.980
+INFO:root:
+
+INFO:root:Epoch: 149, Epochs on convergence counter: 8
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 149
+INFO:root:15:04:39
+INFO:root:Train loss: 5026.752, MSE-Loss: 2008.216, MSE-Future-Loss 3010.469, KL-Loss: 6.130, Kmeans-Loss: 1.938, weight: 1.00
+INFO:root:Test loss: 1122.623, MSE-Loss: 1114.156, KL-Loss: 6.485, Kmeans-Loss: 1.982
+INFO:root:
+
+INFO:root:Model seemed to have not reached convergence. You may want to check your model 
+with vame.evaluate_model(). If your satisfied you can continue with 
+Use vame.behavior_segmentation() to identify behavioral motifs!
+
+OPTIONAL: You can re-run vame.rnn_model() to improve performance.
+INFO:root:Train Variational Autoencoder - model name: VAME_15prcnt_sweep 
+
+INFO:root:Latent Dimensions: 30, Time window: 60, Batch Size: 512, Beta: 1, lr: 0.0050
+
+INFO:root:Scheduler step size: 100, Scheduler gamma: 0.20, Scheduler Threshold: 0.05000
+
+INFO:root:Start training... 
+INFO:root:Epoch: 1, Epochs on convergence counter: 0
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 1
+INFO:root:15:16:34
+INFO:root:Train loss: 1355297444185666560.000, MSE-Loss: 823184864149341184.000, MSE-Future-Loss 532112569272369152.000, KL-Loss: 0.000, Kmeans-Loss: 0.000, weight: 0.00
+INFO:root:Test loss: 483359571.470, MSE-Loss: 483359571.470, KL-Loss: 0.000, Kmeans-Loss: 0.000
+INFO:root:
+
+INFO:root:Epoch: 2, Epochs on convergence counter: 1
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 2
+INFO:root:15:28:07
+INFO:root:Train loss: 1803589294.357, MSE-Loss: 1146771449.795, MSE-Future-Loss 656817664.000, KL-Loss: 0.000, Kmeans-Loss: 0.000, weight: 0.00
+INFO:root:Test loss: 210093508.492, MSE-Loss: 210093508.492, KL-Loss: 0.000, Kmeans-Loss: 0.000
+INFO:root:
+
+INFO:root:Epoch: 3, Epochs on convergence counter: 2
+INFO:root:Train: 
+INFO:root:In the training loop. Epoch: 3
+ERROR:wandb.sdk.internal.internal_api:400 response executing GraphQL.
+ERROR:wandb.sdk.internal.internal_api:{"errors":[{"message":"Invalid sweep config: invalid hyperparameter configuration: learning_rate","path":["upsertSweep"]}],"data":{"upsertSweep":null}}
