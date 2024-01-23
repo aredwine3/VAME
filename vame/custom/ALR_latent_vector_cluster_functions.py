@@ -50,6 +50,7 @@ from sklearn.cluster import AgglomerativeClustering
 from sklearn.cluster import SpectralClustering
 from sklearn.mixture import GaussianMixture
 
+from sklearn.manifold import TSNE
 reload(AlPf)
 
 
@@ -289,7 +290,6 @@ def create_umap_projection(config, all_latent_vectors_all_idx, use_cluster_label
     
     return plt
 
-from sklearn.manifold import TSNE
 
 def create_tsne_projection(config, all_latent_vectors_all_idx, use_cluster_labels=True, clustering_method='agglomerative'):
     config_file = Path(config).resolve()
