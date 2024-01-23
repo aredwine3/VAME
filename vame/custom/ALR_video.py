@@ -65,6 +65,7 @@ def extract_pose_data(path_to_file, projectPath, file, extractData):
         dataFile = dataFile_list[0] if dataFile_list else None
             
         # If the data file exists, read it with the appropriate headers
+        data = None  # Initialize the "data" variable with a default value of None
         if dataFile:
             header_check = count_headers(dataFile)
             
@@ -72,7 +73,7 @@ def extract_pose_data(path_to_file, projectPath, file, extractData):
                 data = pd.read_csv(dataFile, index_col=0, header=[0, 1])
             elif header_check == 3:
                 data = pd.read_csv(dataFile, index_col=0, header=[0, 1, 2])
-            return data
+        return data
     return None
 
 
@@ -108,10 +109,18 @@ def get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag, fps=30,
     None. Saves motif videos.
     
     """
+
+    import tqdm
     import cv2 as cv
     import os
     import glob
     import numpy as np
+    import pandas as pd
+    from typing import Optional
+    
+    labels: Optional[np.ndarray] = None
+    output: Optional[str] = None
+    
     cluster_method = cfg['parameterization']
 
     projectPath=cfg['project_path']
@@ -124,78 +133,78 @@ def get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag, fps=30,
         labels = np.load(glob.glob(path_to_file+'/'+str(n_cluster)+'_km_label_'+'*.npy')[0])
 
     capture, width, height =  capture_video(cfg, file, videoType, symlinks)
-    
-    data = extract_pose_data(path_to_file, projectPath, file, extractData)
-        
-    for cluster in range(n_cluster):
-        print('Cluster: %d' %(cluster))
-        vid_length = cfg['length_of_motif_video']
-        cluster_lbl = np.where(labels == cluster)
-        cluster_lbl = cluster_lbl[0]
-        if cluster_lbl.shape[0] < vid_length:
-            vid_length=cluster_lbl.shape[0]-1
-        cons_lbl = consecutive(cluster_lbl, 1)
-        cons_df = pd.DataFrame(cons_lbl)
-        try:
-            startFrames = cons_df[0].tolist()
-        except KeyError:
-            startFrames=0
-        cons_df = cons_df.T
-        cons_counts = pd.DataFrame(cons_df.count())
-        cons_counts.columns=['length']
-        cons_counts['startFrame']=startFrames
-        cons_counts.sort_values('length', inplace=True, ascending=False)
-        cons_counts.reset_index(inplace=True)
-        frames = cons_counts['startFrame'].tolist()
-        lengths = cons_counts['length'].tolist()
 
-        used_seqs=[]
-        while len(used_seqs)<vid_length:
-            if lengths[0]==0:
-                break
-            for i in frames:
-                if len(used_seqs)>=vid_length:
+    data = extract_pose_data(path_to_file, projectPath, file, extractData)
+
+    if labels is not None:
+        for cluster in range(n_cluster):
+            print('Cluster: %d' %(cluster))
+            vid_length = cfg['length_of_motif_video']
+            cluster_lbl = np.where(labels == cluster)
+            cluster_lbl = cluster_lbl[0]
+            if cluster_lbl.shape[0] < vid_length:
+                vid_length=cluster_lbl.shape[0]-1
+            cons_lbl = consecutive(cluster_lbl, 1)
+            cons_df = pd.DataFrame(cons_lbl)
+            try:
+                startFrames = cons_df[0].tolist()
+            except KeyError:
+                startFrames=0
+            cons_df = cons_df.T
+            cons_counts = pd.DataFrame(cons_df.count())
+            cons_counts.columns=['length']
+            cons_counts['startFrame']=startFrames
+            cons_counts.sort_values('length', inplace=True, ascending=False)
+            cons_counts.reset_index(inplace=True)
+            frames = cons_counts['startFrame'].tolist()
+            lengths = cons_counts['length'].tolist()
+
+            used_seqs=[]
+            while len(used_seqs)<vid_length:
+                if lengths[0]==0:
                     break
-                idx = frames.index(i)
-                length = lengths[idx]
-                endFrame = i+length
-                seq = list(range(i, endFrame))
-                if len(seq)<vid_length//bins:
-                    used_seqs.extend(seq)
+                for i in frames:
+                    if len(used_seqs)>=vid_length:
+                        break
+                    idx = frames.index(i)
+                    length = lengths[idx]
+                    endFrame = i+length
+                    seq = list(range(i, endFrame))
+                    if len(seq)<vid_length//bins:
+                        used_seqs.extend(seq)
+                    else:
+                        seq = seq[:vid_length//bins]
+                        used_seqs.extend(sorted(seq))
+            if extractData and data is not None:
+                clusterData = data.iloc[used_seqs,:]
+                clusterData.to_csv(os.path.join(path_to_file,'dlcPoseData', file+'_DLC_Results_Cluster'+str(cluster)+'.csv'))
+
+            if len(used_seqs) > vid_length:
+                used_seqs = used_seqs[:vid_length]
+
+            if flag == "motif":
+                output = os.path.join(path_to_file,"cluster_videos",file+'-motif_%d_longestSequences_binned%d.avi' %(cluster,bins))
+            elif flag == "community":
+                output = os.path.join(path_to_file,"community_videos",file+'-community_%d_longestSequences_binned%d.avi' %(cluster,bins))
+
+            if output is not None and not os.path.exists(output):
+                video = cv.VideoWriter(output, cv.VideoWriter_fourcc('M','J','P','G'), fps, (int(width), int(height)))
+
+                if len(used_seqs) < cfg['length_of_motif_video']:
+                    vid_length = len(used_seqs)
                 else:
-                    seq = seq[:vid_length//bins]
-                    used_seqs.extend(sorted(seq))
-        if extractData:
-            clusterData = data.iloc[used_seqs,:]
-            clusterData.to_csv(os.path.join(path_to_file,'dlcPoseData', file+'_DLC_Results_Cluster'+str(cluster)+'.csv'))
-               
-        if len(used_seqs) > vid_length:
-            used_seqs = used_seqs[:vid_length]
-            
-        if flag == "motif":
-            output = os.path.join(path_to_file,"cluster_videos",file+'-motif_%d_longestSequences_binned%d.avi' %(cluster,bins))
-        elif flag == "community":
-            output = os.path.join(path_to_file,"community_videos",file+'-community_%d_longestSequences_binned%d.avi' %(cluster,bins))
-            
-        if os.path.exists(os.path.join(path_to_file,"cluster_videos",file+'-motif_%d_longestSequences_binned%d.avi' %(cluster,bins))):
-            print("Video for cluster %d already found, skipping..." %cluster)
-            continue
-        else:
-            video = cv.VideoWriter(output, cv.VideoWriter_fourcc('M','J','P','G'), fps, (int(width), int(height)))
-    
-            if len(used_seqs) < cfg['length_of_motif_video']:
-                vid_length = len(used_seqs)
+                    vid_length = cfg['length_of_motif_video']
+
+                for num in tqdm.tqdm(range(vid_length)):
+                    idx = used_seqs[num]
+                    capture.set(1,idx)
+                    _, frame = capture.read()
+                    video.write(frame)
+
+                video.release()
             else:
-                vid_length = cfg['length_of_motif_video']
-    
-            for num in tqdm.tqdm(range(vid_length)):
-                idx = used_seqs[num]
-                capture.set(1,idx)
-                ret, frame = capture.read()
-                video.write(frame)
-    
-            video.release()
-    capture.release()
+                print("Video for cluster %d already found, skipping..." %cluster)
+        capture.release()
 
 
 
