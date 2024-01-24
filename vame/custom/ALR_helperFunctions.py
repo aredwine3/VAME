@@ -80,7 +80,7 @@ def process_file(file_data):
     return temp_df
 
 
-def create_andOR_get_master_df(config, fps=30, create_new_df=False):
+def create_andOR_get_master_df(config, fps=30, create_new_df=False, df_kind = 'polars'):
     files = get_files(config)
     config_file = Path(config).resolve()
     cfg = read_config(config_file)
@@ -113,7 +113,10 @@ def create_andOR_get_master_df(config, fps=30, create_new_df=False):
     
 
     if not create_new_df and os.path.exists(df_path):
-        df = pl.read_csv(df_path)
+        if df_kind == 'polars':
+            df = pl.read_csv(df_path)
+        elif df_kind == 'pandas':
+            df = pd.read_csv(df_path)
     else:
         print("Creating new master data frame...")
         cpu_count = os.cpu_count()
