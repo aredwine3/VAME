@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 from vame.util.auxiliary import read_config
 
 from typing import Union
@@ -15,6 +15,7 @@ import pandas as pd
 import polars as pl
 from pathlib import Path
 import cv2 as cv
+from cv2 import VideoCapture
 import os
 import glob
 import numpy as np
@@ -534,7 +535,7 @@ def crop_following_rat(capture: cv.VideoCapture, centroid_x: List[int], centroid
         # Ensure the crop window doesn't go outside the frame
         end_x = int(min(frame.shape[1], x + half_crop))
         end_y = int(min(frame.shape[0], y + half_crop))
-         
+
         # Calculate padding to ensure the centroid is in the center of the crop
         pad_x = max(0, half_crop - start_x, end_x - frame.shape[1] + half_crop)
         pad_y = max(0, half_crop - start_y, end_y - frame.shape[0] + half_crop)
@@ -553,6 +554,7 @@ def crop_following_rat(capture: cv.VideoCapture, centroid_x: List[int], centroid
 
         # Write the text (time_point, group, motif) on the cropped frame
         cv.putText(crop_padded, f"{time_point} {group} {motif}", bottom_left_corner, font, font_scale, font_color, line_type)
+        
         
         # Write the speed on the cropped frame
         #cv.putText(crop_padded, f"Speed: {spd:.2f}", bottom_left_corner_speed, font, font_scale, font_color, line_type)
@@ -584,10 +586,10 @@ def process_video_group(cfg: dict, group_df: pd.DataFrame, videoType: str, symli
     """
     
     # Extract necessary information from group_df
-    file_name = group_df.loc[0, 'file_name']
-    time_point = group_df.loc[0, 'time_point']
-    group = group_df.loc[0, 'group']
-    motif = group_df.loc[0, 'motif']
+    file_name = group_df['file_name'].iloc[0]
+    time_point = group_df['time_point'].iloc[0]
+    group = group_df['group'].iloc[0]
+    motif = group_df['motif'].iloc[0]
     centroid_x = group_df['centroid_x'].tolist()
     centroid_y = group_df['centroid_y'].tolist()
     speed = group_df['speed'].tolist()
@@ -605,24 +607,31 @@ def process_video_group(cfg: dict, group_df: pd.DataFrame, videoType: str, symli
         
     return cropped_frames_list
 
-def write_frames_to_video(frames_list, output_path, fps=30):
-    # Check if there are any frames to write
+
+def write_frames_to_video(frames_list: List, output_path: str, fps: int = 30):
+    """
+    Writes a list of frames to a video file.
+
+    Args:
+        frames_list (list): A list of frames to be written to the video file.
+        output_path (str): The path where the video file will be saved.
+        fps (int): The frames per second for the video. Default is 30.
+
+    Returns:
+        None
+    """
     if not frames_list:
         print("No frames to write to video.")
         return
     
-    # Get the height and width of the first frame
     height, width, layers = frames_list[0].shape
     
-    # Define the codec and create VideoWriter object
-    fourcc = cv.VideoWriter_fourcc(*'mp4v')  # You can change 'mp4v' to 'XVID' if you prefer
+    fourcc = cv.VideoWriter_fourcc(*'mp4v')
     out = cv.VideoWriter(output_path, fourcc, fps, (width, height))
     
-    # Write each frame to the video
     for frame in frames_list:
         out.write(frame)
     
-    # Release the VideoWriter
     out.release()
     print(f"Video written to {output_path}")
 
@@ -982,7 +991,7 @@ def motif_videos_conserved(config, symlinks = False, videoType = '.mp4', fps = 3
         pbar.update(1)
 
 
-def create_videos_for_motifs(video_df: pl.DataFrame, cfg: dict, videoType: str, symlinks: bool, fps: int, n_cluster: int, vid_length: int, bins: int, min_consecutive_frames: int, videos_path: str) -> None:
+def create_videos_for_motifs(video_df: pl.DataFrame | pd.DataFrame, cfg: dict, videoType: str, symlinks: bool, fps: int, n_cluster: int, vid_length: int, bins: int, min_consecutive_frames: int, videos_path: str) -> None:
     """
     Create videos for each motif in the DataFrame.
 
@@ -1007,42 +1016,37 @@ def create_videos_for_motifs(video_df: pl.DataFrame, cfg: dict, videoType: str, 
         if col not in video_df.columns:
             raise ValueError(f"Input DataFrame must contain '{col}' column")
 
-    motif_videos = {}  # Dictionary to store the frames for each motif
+    motif_videos: Dict[int, List[str]] = {}  # Dictionary to store the frames for each motif
+    
+    # Reset the index of video_df
+    video_df = video_df.reset_index()
 
-    for cluster in range(n_cluster):
-        cropped_frames_list = []
-        for rat_id in video_df['rat_id'].unique():
-            # Filter the DataFrame for the specific cluster and rat_id
-            cluster_df = video_df.filter((pl.col('motif') == cluster) & (pl.col('rat_id') == rat_id)).sort('frame')
+    for motif in range(n_cluster):
+        # Filter the motif in video_df by the cluster 
+        motif_df = video_df[video_df['motif'] == motif].sort_values(['file_name', 'rat_id', 'frame'])
+        
+        cropped_frames_list: list[VideoCapture] = []
+        
+        for rat_id, file_name in motif_df.groupby(['rat_id', 'file_name']).groups.keys():
+            
+            # Filter the DataFrame for the specific file_name and rat_id
+            file_rat_and_motif_df = motif_df[(motif_df['file_name'] == file_name) & (motif_df['rat_id'] == rat_id)].sort_values('frame')
 
-            # Convert the 'frame' column to a NumPy array
-            frames = cluster_df.get_column('frame').to_numpy()
-
-            # Find the longest sequences for the cluster
-            longest_sequences = find_longest_sequences(frames, n_cluster, vid_length, bins, limit_by_vid_length=False)
-
-            longest_seq_cluster = longest_sequences.get(cluster, [])
-
-            if not longest_seq_cluster:  # Check if the list is empty
-                print(f"No sequences found for cluster {cluster}")
-                continue
-
-            # Check if the sequence is long enough
-            if len(longest_seq_cluster) < min_consecutive_frames:
-                continue
+            start_frame = min(file_rat_and_motif_df['frame'])
+            end_frame = max(file_rat_and_motif_df['frame'])
 
             # Process the video for the given sequence
-            cropped_frames_list = process_video_group(cfg, cluster_df, videoType, symlinks, longest_seq_cluster[0], longest_seq_cluster[-1])
+            cropped_frames_list: list[VideoCapture] = process_video_group(cfg, file_rat_and_motif_df, videoType, symlinks, start_frame, end_frame)
 
             # Store the frames in the dictionary
-            motif_videos[cluster] = cropped_frames_list
+            motif_videos[motif] = cropped_frames_list
 
         if cropped_frames_list:
-            output_video_path = os.path.join(videos_path, f"motif_{cluster}_clips.mp4")  # Change the file name as needed
+            output_video_path = os.path.join(videos_path, f"motif_{motif}_clips.mp4")  # Change the file name as needed
             # Create a video from the frames
             write_frames_to_video(cropped_frames_list, output_video_path, fps)
 
-            print(f"Video for cluster {cluster} created at {output_video_path}")
+            print(f"Video for cluster {motif} created at {output_video_path}")
 
 
 def find_conserved_motif_sequences(df_pandas: pd.DataFrame, sequence_length: int = 30) -> pd.DataFrame:
@@ -1110,16 +1114,16 @@ def select_long_sequences(df_pandas: pd.DataFrame, fps: int = 30, max_video_leng
     video_length_per_motif['minutes'] = video_length_per_motif['seconds'] / 60
 
     # Determine the longest sequence length in the DataFrame
-    longest_sequence = max(df_pandas['sequence_length'])
+    longest_sequence = df_pandas['sequence_length'].max()
 
     # Define the bin edges for sequence length bins
-    bin_edges = list(range(30, longest_sequence, 10))
+    bin_edges = list(range(30, longest_sequence + 10, 10))
 
     # Create the sequence length bins using the 'pd.cut' function
-    sequence_length_bin = pd.cut(df_pandas['sequence_length'], bins=bin_edges)
+    df_pandas['sequence_length_bin'] = pd.cut(df_pandas['sequence_length'], bins=bin_edges)
 
-    # Count the number of sequences in each bin for each motif
-    sequences_per_bin_per_motif = df_pandas.groupby(['motif', sequence_length_bin], observed=False).size()
+    # Calculate the number of sequences per bin per motif
+    sequences_per_bin_per_motif = df_pandas.groupby(['motif', 'sequence_length_bin'], observed=False)['sequence_id'].nunique()
 
     # Convert the resulting series to a DataFrame and reset the index
     sequences_per_bin_per_motif_df = sequences_per_bin_per_motif.reset_index(name='count')
@@ -1130,28 +1134,35 @@ def select_long_sequences(df_pandas: pd.DataFrame, fps: int = 30, max_video_leng
     # Sort the long sequences DataFrame by 'sequence_length' in descending order
     long_sequences = long_sequences.sort_values('sequence_length', ascending=False)
 
-    return long_sequences, max_video_length_frames
+    num_false = long_sequences[long_sequences['is_long_sequence'] == False].shape[0]
+
+    if num_false == 0:
+        return long_sequences, max_video_length_frames
+    else:
+        print(f"There are {num_false} sequences that are not long enough to be included in the video in 'long_sequences.")
 
 
-
-
-
-
-def select_sequences(group: pd.DataFrame, max_length: int, extra_rows: int) -> pd.Series:
+def select_sequences(group: pd.DataFrame, max_length: int, extra_rows: int, random_sample: bool = False) -> pd.Series:
     """
     Select sequences from a group based on their length, up to a maximum length.
     It also allows for selecting additional sequences beyond the maximum length if specified.
+    If random_sample is True, sequences are randomly selected from each bin.
 
     Args:
         group (pd.DataFrame): A pandas DataFrame containing the sequences to select from.
                               It should have columns 'sequence_id' and 'sequence_length'.
         max_length (int): The maximum total length of the selected sequences.
         extra_rows (int): The number of additional sequences to select beyond the maximum length.
+        random_sample (bool): If True, sequences are randomly selected from each bin.
 
     Returns:
         pd.Series: A pandas Series containing the IDs of the selected sequences.
     """
-    group = group.sort_values('sequence_length', ascending=False)
+    if random_sample:
+        group = group.sample(frac=1)
+    else:
+        group = group.sort_values('sequence_length', ascending=False)
+        
     selected_sequences = []
     total_length = 0
     over_max = False
@@ -1174,11 +1185,7 @@ def select_sequences(group: pd.DataFrame, max_length: int, extra_rows: int) -> p
     return pd.Series(selected_sequences)
 
 
-# Group the DataFrame by motif and apply the selection function to each group
-
-
-
-def motif_videos_conserved_newest(config, symlinks = False, videoType = '.mp4', fps = 30, bins = 6, maximum_video_length=1000, min_consecutive_frames = 60):
+def motif_videos_conserved_newest(config, symlinks = False, videoType = '.mp4', fps = 30, bins = 6, maximum_video_length=1000, min_consecutive_frames = 30):
     config_file = Path(config).resolve()
     cfg = read_config(config_file)
     model_name = cfg['model_name']
@@ -1196,28 +1203,55 @@ def motif_videos_conserved_newest(config, symlinks = False, videoType = '.mp4', 
         "Rat4": {"x": (332.5, 680), "y": (328.5, 680)},
     }
 
-    df: Union[pl.DataFrame, pd.DataFrame] = AlHf.create_andOR_get_master_df(config, fps=30, create_new_df=False, df_kind = 'pandas')
+    df: Union[pl.DataFrame, pd.DataFrame] = AlHf.create_andOR_get_master_df(config, fps=fps, create_new_df=False, df_kind = 'pandas')
 
-    df = find_conserved_motif_sequences(df_pandas = df, sequence_length = 30)  
+    df = find_conserved_motif_sequences(df_pandas = df, sequence_length = min_consecutive_frames)  
     
     long_sequences, max_video_length_frames = select_long_sequences(df)
-    selected_sequences_per_motif = long_sequences.groupby('motif').apply(select_sequences, max_length=max_video_length_frames, extra_rows = 10)
     
-    # TODO: Continue from here!
-        
-    #df_min_consecutive = find_consecutive_sequences(df, min_length=min_consecutive_frames)
-    
-    #longest_sequences_df = find_longest_sequence(df_min_consecutive)
+    selected_sequences_per_motif = long_sequences.groupby('motif').apply(select_sequences, max_length=max_video_length_frames, extra_rows = 10, random_sample = True)
+
+    # Convert to DataFrame and reset index
+    selected_sequences_df = selected_sequences_per_motif.reset_index()
+
+    # Rename the columns for clarity
+    selected_sequences_df.columns = ['motif', 'sequence_rank', 'sequence_id']
     
     if parameterization == 'hmm':
-        df_min_consecutive.write_csv(os.path.join(path_to_file, 'results', f"all_minimum_consecutive_sequences_{parameterization}-{n_cluster}-{cfg['hmm_iters']}.csv"))
-        longest_sequences_df.write_csv(os.path.join(path_to_file, 'results', f"all_longest_consecutive_sequences_{parameterization}-{n_cluster}-{cfg['hmm_iters']}.csv"))
+        long_sequences.write_csv(os.path.join(path_to_file, 'results', f"all_consecutive_sequences_{parameterization}-{n_cluster}-{cfg['hmm_iters']}.csv"))
+        selected_sequences_df.write_csv(os.path.join(path_to_file, 'results', f"selected_consecutive_sequences_{parameterization}-{n_cluster}-{cfg['hmm_iters']}.csv"))
     else:
-        df_min_consecutive.write_csv(os.path.join(path_to_file, 'results', f"all_minimum_consecutive_sequences_{parameterization}-{n_cluster}.csv"))
-        longest_sequences_df.write_csv(os.path.join(path_to_file, 'results', f"all_longest_consecutive_sequences_{parameterization}-{n_cluster}.csv"))
+        long_sequences.write_csv(os.path.join(path_to_file, 'results', f"all_consecutive_sequences_{parameterization}-{n_cluster}.csv"))
+        selected_sequences_df.write_csv(os.path.join(path_to_file, 'results', f"selected_consecutive_sequences_{parameterization}-{n_cluster}.csv"))
     
     #video_df = longest_sequences_df
-    video_df = df
+    
+    # Filter the dataframe by the selected sequences, ensure is_sequence_conserved is True
+    video_df_1 = df[df['sequence_id'].isin(selected_sequences_df['sequence_id'])]
+    video_df_1 = video_df_1[video_df_1['is_sequence_conserved'] == True]
+    
+    video_df_2 = long_sequences[long_sequences['sequence_id'].isin(selected_sequences_df['sequence_id'])]
+    video_df_2 = video_df_2[video_df_2['is_sequence_conserved'] == True]
+    
+    # Sort both data frames identically
+    video_df_1 = video_df_1.sort_values(['file_name', 'rat_id', 'frame'])
+    video_df_2 = video_df_2.sort_values(['file_name', 'rat_id', 'frame'])
+    
+    # Check if video_df_1 and video_df_2 are identical before moving on
+    if video_df_1.equals(video_df_2):
+        video_df = video_df_1
+    else:
+        import sys
+        print('video_df_1 and video_df_2 are not identical.')
+        print('video_df_1:')
+        print(video_df_1)
+        print('video_df_2:')
+        print(video_df_2)
+        print('Exiting...')
+        sys.exit()
+
+    # sort by file_name, rat_id and frame
+    video_df = video_df.sort_values(['file_name', 'rat_id', 'frame'])
 
     if parameterization == 'hmm':
         videos_path = os.path.join(path_to_file, 'results', 'videos', parameterization+'-'+str(n_cluster)+'-'+str(cfg['hmm_iters']))
