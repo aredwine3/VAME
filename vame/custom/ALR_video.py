@@ -1,5 +1,8 @@
 from typing import List, Tuple
 from vame.util.auxiliary import read_config
+
+from typing import Union
+from polars import DataFrame
 import glob
 import matplotlib.pyplot as plt
 from matplotlib.collections import LineCollection
@@ -117,6 +120,7 @@ def get_cluster_vid(cfg, path_to_file, file, n_cluster, videoType, flag, fps=30,
     import numpy as np
     import pandas as pd
     from typing import Optional
+
     
     labels: Optional[np.ndarray] = None
     output: Optional[str] = None
@@ -1040,6 +1044,140 @@ def create_videos_for_motifs(video_df: pl.DataFrame, cfg: dict, videoType: str, 
 
             print(f"Video for cluster {cluster} created at {output_video_path}")
 
+
+def find_conserved_motif_sequences(df_pandas: pd.DataFrame, sequence_length: int = 30) -> pd.DataFrame:
+    """
+    Adds several columns to the input DataFrame to calculate sequence conservation and length.
+
+    Args:
+        df_pandas (pd.DataFrame): Input DataFrame with columns 'file_name', 'frame', 'rat_id', 'motif', and 'time_point'.
+        sequence_length (int, optional): Minimum length of a sequence. Defaults to 30.
+
+    Returns:
+        pd.DataFrame: Modified DataFrame with additional columns 'is_sequence_conserved', 'sequence_id', 'sequence_length', and 'is_long_sequence'.
+    """
+    # Calculate whether a sequence is conserved
+    df_pandas['is_sequence_conserved'] = df_pandas.sort_values('frame').groupby(['file_name', 'rat_id','motif', 'time_point'])['frame'].transform(lambda x: x.diff().eq(1))
+    
+    df_pandas.sort_values(['file_name', 'frame', 'rat_id'], inplace=True)
+
+    # Every time is_sequence_conserved changes from True to False, generate a new sequence ID
+    df_pandas['sequence_id'] = (df_pandas['is_sequence_conserved'] != df_pandas['is_sequence_conserved'].shift()).cumsum()
+
+    # Calculate the length of each sequence
+    df_pandas['sequence_length'] = df_pandas.groupby('sequence_id')['frame'].transform('count')
+
+    # Determine if a sequence is longer than the specified length
+    df_pandas['is_long_sequence'] = df_pandas['sequence_length'] > sequence_length
+    
+    return df_pandas
+
+
+def select_long_sequences(df_pandas: pd.DataFrame, fps: int = 30, max_video_length: int = 5) -> tuple:
+    """
+    Selects long sequences from a pandas DataFrame based on certain criteria and calculates the video length for each motif.
+    It also creates bins for sequence lengths and counts the number of sequences in each bin for each motif.
+
+    Args:
+    - df_pandas: A pandas DataFrame containing information about sequences, including columns 'sequence_id', 'is_long_sequence', 'motif', 'frame', and 'sequence_length'.
+    - fps: An integer representing the frames per second of the video (default is 30).
+    - max_video_length: An integer representing the maximum video length in minutes (default is 5).
+
+    Returns:
+    - long_sequences: A pandas DataFrame containing the selected long sequences, sorted by 'sequence_length' in descending order.
+    - max_video_length_frames: An integer representing the maximum video length in frames.
+    """
+
+    # Select the rows from the DataFrame where 'is_long_sequence' is True
+    long_sequences = df_pandas[df_pandas['is_long_sequence']]
+
+    # Calculate the total number of unique long sequences
+    total_long_sequences = long_sequences['sequence_id'].nunique()
+
+    # Calculate the total number of long sequences per motif
+    total_long_sequences_per_motif = long_sequences.groupby('motif')['sequence_id'].nunique()
+
+    # Calculate the total number of frames per motif for long sequences
+    total_long_sequence_frames_per_motif = long_sequences.groupby('motif')['frame'].count()
+
+    # Calculate the video length per motif in seconds
+    video_length_per_motif = total_long_sequence_frames_per_motif / fps
+
+    # Create a DataFrame for video length per motif
+    video_length_per_motif = video_length_per_motif.to_frame('seconds')
+
+    # Add a 'minutes' column to the video length per motif DataFrame
+    video_length_per_motif['minutes'] = video_length_per_motif['seconds'] / 60
+
+    # Determine the longest sequence length in the DataFrame
+    longest_sequence = max(df_pandas['sequence_length'])
+
+    # Define the bin edges for sequence length bins
+    bin_edges = list(range(30, longest_sequence, 10))
+
+    # Create the sequence length bins using the 'pd.cut' function
+    sequence_length_bin = pd.cut(df_pandas['sequence_length'], bins=bin_edges)
+
+    # Count the number of sequences in each bin for each motif
+    sequences_per_bin_per_motif = df_pandas.groupby(['motif', sequence_length_bin], observed=False).size()
+
+    # Convert the resulting series to a DataFrame and reset the index
+    sequences_per_bin_per_motif_df = sequences_per_bin_per_motif.reset_index(name='count')
+
+    # Calculate the maximum video length in frames
+    max_video_length_frames = max_video_length * 60 * fps
+
+    # Sort the long sequences DataFrame by 'sequence_length' in descending order
+    long_sequences = long_sequences.sort_values('sequence_length', ascending=False)
+
+    return long_sequences, max_video_length_frames
+
+
+
+
+
+
+def select_sequences(group: pd.DataFrame, max_length: int, extra_rows: int) -> pd.Series:
+    """
+    Select sequences from a group based on their length, up to a maximum length.
+    It also allows for selecting additional sequences beyond the maximum length if specified.
+
+    Args:
+        group (pd.DataFrame): A pandas DataFrame containing the sequences to select from.
+                              It should have columns 'sequence_id' and 'sequence_length'.
+        max_length (int): The maximum total length of the selected sequences.
+        extra_rows (int): The number of additional sequences to select beyond the maximum length.
+
+    Returns:
+        pd.Series: A pandas Series containing the IDs of the selected sequences.
+    """
+    group = group.sort_values('sequence_length', ascending=False)
+    selected_sequences = []
+    total_length = 0
+    over_max = False
+
+    for _, row in group.iterrows():
+        if total_length + row['sequence_length'] > max_length:
+            if over_max:
+                break
+            over_max = True
+            continue
+
+        selected_sequences.append(row['sequence_id'])
+        total_length += row['sequence_length']
+
+        if over_max:
+            extra_rows -= 1
+            if extra_rows == 0:
+                break
+
+    return pd.Series(selected_sequences)
+
+
+# Group the DataFrame by motif and apply the selection function to each group
+
+
+
 def motif_videos_conserved_newest(config, symlinks = False, videoType = '.mp4', fps = 30, bins = 6, maximum_video_length=1000, min_consecutive_frames = 60):
     config_file = Path(config).resolve()
     cfg = read_config(config_file)
@@ -1058,11 +1196,18 @@ def motif_videos_conserved_newest(config, symlinks = False, videoType = '.mp4', 
         "Rat4": {"x": (332.5, 680), "y": (328.5, 680)},
     }
 
-    df = AlHf.create_andOR_get_master_df(config)
-        
-    df_min_consecutive = find_consecutive_sequences(df, min_length=min_consecutive_frames)
+    df: Union[pl.DataFrame, pd.DataFrame] = AlHf.create_andOR_get_master_df(config, fps=30, create_new_df=False, df_kind = 'pandas')
+
+    df = find_conserved_motif_sequences(df_pandas = df, sequence_length = 30)  
     
-    longest_sequences_df = find_longest_sequence(df_min_consecutive)
+    long_sequences, max_video_length_frames = select_long_sequences(df)
+    selected_sequences_per_motif = long_sequences.groupby('motif').apply(select_sequences, max_length=max_video_length_frames, extra_rows = 10)
+    
+    # TODO: Continue from here!
+        
+    #df_min_consecutive = find_consecutive_sequences(df, min_length=min_consecutive_frames)
+    
+    #longest_sequences_df = find_longest_sequence(df_min_consecutive)
     
     if parameterization == 'hmm':
         df_min_consecutive.write_csv(os.path.join(path_to_file, 'results', f"all_minimum_consecutive_sequences_{parameterization}-{n_cluster}-{cfg['hmm_iters']}.csv"))
