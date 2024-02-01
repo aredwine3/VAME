@@ -1,27 +1,11 @@
 # Project configurations
 Project: ALR_VAME_1
-model_name: VAME
-n_cluster: 30
+model_name: VAME_15prcnt_sweep_drawn-sweep-88
+n_cluster: 40
 pose_confidence: 0.99
 
-# wandb configurations
-wandb_entity: aredwine3
-wandb_project: VAME
-wandb_api_key: # your wandb api key
-name: VAME_1
-
-
-# Fabric configurations
-accelerator: auto # "cpu", "cuda", "mps", "gpu", "tpu", "auto"
-devices: 1 # Number of devices to run on (``int``), which devices to run on (``list`` or ``str``), or ``'auto'``. The value applies per node.
-strategy: ddp # [ddp|dp|deepspeed|deepspeed_stage_1|deepspeed_stage_2|deepspeed_stage_3|fsdp] Strategy for how to run across multiple devices.
-num_nodes: 1 # Number of machines (nodes) for distributed execution.
-precision: 16 # 16-mixed|bf16-mixed|32-true|64-true|64|32|16|bf16] Double precision (``64-true`` or ``64``), 
-              # full precision (``32-true`` or ``64``), half precision (``16-mixed`` or ``16``) or bfloat16 precision (``bf16-mixed`` or ``bf16``)
-config_file: null # Path to YAML config file
-
 # Project path and videos
-project_path: /Volumes/G-DRIVE_SSD/VAME_working/ALR_VAME_1-Sep15-2023
+project_path: D:\Users\tywin\VAME
 video_sets:
 - 22-01-10_Baseline_1_DJL_TABB_cropped_CRF0_0min_to_15min_Rat1
 - 22-01-10_Baseline_1_DJL_TABB_cropped_CRF0_0min_to_15min_Rat2
@@ -492,14 +476,28 @@ video_sets:
 - 22-05-05_Drug_Trt_DJL_TXBY_cropped_CRF0_0min_to_15min_Rat3
 - 22-05-05_Drug_Trt_DJL_TXBY_cropped_CRF0_0min_to_15min_Rat4
 # Data
+
+# Data
+
+# Data
+
+# Data
+
+# Data
+
+# Data
+
+# Data
+
+# Data
 all_data: Yes
 
 # Creation of train set:
-egocentric_data: False
+egocentric_data: false
 robust: true
 iqr_factor: 4
 axis:
-savgol_filter: false
+savgol_filter: true
 savgol_length: 5
 savgol_order: 2
 test_fraction: 0.2
@@ -531,8 +529,8 @@ softplus: false
 
 # Segmentation:
 parameterization: hmm
-hmm_trained: false
-load_data: -PE-seq-clean_2023-09-18_30prcnt
+hmm_trained: true
+load_data: -PE-seq-clean_2023-11-16_100prcnt
 individual_parameterization: false
 random_state_kmeans: 42
 n_init_kmeans: 15
@@ -572,3 +570,17 @@ annealtime: 4
 
 # Legacy mode
 legacy: false
+wandb_entity: aredwine3
+wandb_project: VAME
+wandb_api_key:
+name: VAME_1
+accelerator: auto
+devices: 1
+strategy: ddp
+num_nodes: 1
+precision: 16
+config_file:
+hmm_iters: 650
+
+    
+

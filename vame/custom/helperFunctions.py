@@ -233,6 +233,7 @@ def combineBehavior(config, save=True, cluster_method='kmeans', legacy=False):
     project_path = cfg['project_path']
     n_cluster=cfg['n_cluster']
     model_name = cfg['model_name']
+    load_data = cfg['load_data']
     files = []
     if cfg['all_data'] == 'No':
         all_flag = input("Do you want to write motif videos for your entire dataset? \n"
@@ -260,7 +261,10 @@ def combineBehavior(config, save=True, cluster_method='kmeans', legacy=False):
         if legacy:
             arr = np.load(os.path.join(project_path, 'results/' + file + '/VAME_NPW/kmeans-' + str(n_cluster) + '/behavior_quantification/motif_usage.npy'))
         elif not legacy:
-            arr = np.load(os.path.join(project_path, 'results',file,model_name,cluster_method+'-'+str(n_cluster),'motif_usage_'+file+'.npy'))
+            if cluster_method == 'hmm':
+                arr = np.load(os.path.join(project_path, 'results',file,model_name,load_data,cluster_method+'-'+str(n_cluster)+'-'+str(cfg['hmm_iters']),'motif_usage_'+file+'.npy'))
+            else:
+                arr = np.load(os.path.join(project_path, 'results',file,model_name,load_data,cluster_method+'-'+str(n_cluster),'motif_usage_'+file+'.npy'))
         df = pd.DataFrame(arr, columns=[file])
         cat = pd.concat([cat, df], axis=1)
     if save:

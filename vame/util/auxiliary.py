@@ -139,9 +139,9 @@ def read_config(configname):
             with open(path, "r") as f:
                 cfg = ruamelFile.load(f)
                 curr_dir = os.path.dirname(configname)
-                if cfg["project_path"] != curr_dir:
-                    cfg["project_path"] = curr_dir
-                    write_config(configname, cfg)
+                #if cfg["project_path"] != curr_dir:
+                #    cfg["project_path"] = curr_dir
+                #    write_config(configname, cfg)
         except Exception as err:
             if len(err.args) > 2:
                 if (

@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "../.."
+		},
+		{
+			"path": "../../../../../../d:/Users/tywin/VAME"
+		}
+	],
+	"settings": {
+		"markdown.extension.completion.enabled": true,
+		"notebook.diff.enablePreview": true
+	}
+}
