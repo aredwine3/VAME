@@ -7,9 +7,11 @@ import pickle
 import re
 import shutil
 import sys
+from ast import Raise
 from collections import defaultdict
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from importlib import reload
+from math import e
 from pathlib import Path
 from typing import List, Union
 
@@ -19,6 +21,7 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
 import pandas as pd
+import plotly.express as px
 import polars as pl
 import scipy
 import scipy.cluster.hierarchy as sch
@@ -78,60 +81,170 @@ else:
     matplotlib.use("Qt5Agg")  # Use this backend for environments with a display server
 
 
+""" Functions for ALR_Behavior_Data_Approach2.py """
+
+def prepare_plot_df(df, motif, cluster):
+    # Copy the input DataFrame
+    plot_df = df.copy()
+    
+    # if motif isn't passed as an arg
+    if motif is None:
+        plot_col = "Cluster"
+    else:
+        plot_col = "Motif"
+
+    # Rename "Time_Point" column to "Week"
+    plot_df.rename(columns={"Time_Point": "Week"}, inplace=True)
+
+    # Filter out rows where "Treatment_State" is "Treated" or "ABX"
+    plot_df = plot_df.loc[~plot_df["Treatment_State"].isin(["Treated", "ABX"])]
+
+    # Drop all rows where "Week" is "Drug_Trt"
+    plot_df = plot_df.loc[plot_df['Week'] != 'Drug_Trt']
+
+    # Create a new column "Week_Int" that is the integer value of "Week"
+    plot_df["Week_Int"] = pd.to_numeric(
+        plot_df["Week"].str.extract("(\d+)")[0], errors="coerce"
+    )
+
+    # Filter the DataFrame for a specific motif/cluster
+    specific_motif_df = plot_df[plot_df[plot_col] == (motif if motif is not None else cluster)]
+
+    # Sort the DataFrame by 'Week_Int'
+    specific_motif_df = specific_motif_df.sort_values('Week_Int')
+
+    specific_motif_df["Week_Int"] = specific_motif_df["Week_Int"].astype(str)
+
+    return specific_motif_df
+
+def plot_motif_data(df, motif, cluster, plot_type, y_label, title):
+    specific_motif_df = prepare_plot_df(df, motif, cluster)
+    
+    if plot_type == 'boxplot':
+        fig = px.box(specific_motif_df,
+                     x='Week_Int',
+                     y='Value',
+                     color='Treatment_State',
+                     title=title,
+                     labels={'Value': y_label, 'Week_Int': 'Week'}, 
+                     color_discrete_map={
+                         "Injured": "#FF5136",
+                         "Sham": "#4984FC",
+                     },
+                     #points="all",
+                     category_orders={"Week": sorted(specific_motif_df["Week_Int"].unique(), key=int)},
+                     )
+        fig.update_yaxes(range=[0, None])
+        fig.update_traces(boxmean=True)
+    elif plot_type == 'bar':
+        fig = px.bar(specific_motif_df, 
+                     x='Week_Int', 
+                     y='mean', 
+                     color='Treatment_State', 
+                     error_y='std', 
+                     title=title, 
+                     labels={'mean': y_label, 'Week_Int': 'Week'},
+                     color_discrete_map={
+                         "Injured": "#FF5136",
+                         "Sham": "#4984FC",
+                     },
+                     category_orders={"Week": sorted(specific_motif_df["Week_Int"].unique(), key=int)},
+                     )
+    elif plot_type == 'violin':
+        fig = px.violin(specific_motif_df, 
+                        x='Week_Int', 
+                        y='Value', 
+                        color='Treatment_State', 
+                        title=title, 
+                        labels={'Value': y_label, 'Week_Int': 'Week'},
+                        color_discrete_map={
+                            "Injured": "#FF5136",
+                            "Sham": "#4984FC",
+                        },
+                        category_orders={"Week": sorted(specific_motif_df["Week_Int"].unique(), key=int)},
+                        )
+
+    # Update layout
+    fig.update_layout(
+        plot_bgcolor="white",
+        barmode='group',
+        xaxis=dict(linecolor="black", linewidth=2, mirror=True),
+        yaxis=dict(linecolor="black", linewidth=2, mirror=True),
+    )
+
+    return fig
+    
+
+
+""" End of Function for the above"""
+
+
 """ NORMALIZATION FUNCTIONS """
 
 
-def handle_missing_baseline_values(df_long, baseline_time_points):
-    df_long = df_long.copy()
-    from rich.console import Console
+from rich.console import Console
 
+
+def handle_missing_baseline_values(df_long: pd.DataFrame, baseline_time_points: List[str]) -> pd.DataFrame:
+    """
+    Handle missing baseline values in a given dataframe.
+
+    Args:
+        df_long: A pandas DataFrame containing the data.
+        baseline_time_points: A list of baseline time points.
+
+    Returns:
+        The modified dataframe with missing baseline values handled.
+    """
     console = Console()
-    # Get all of the unique animal IDs
-    animal_ids = df_long["Animal_ID"].unique()
 
-    # Get all of the unique motifs
+    # Create a copy of the input dataframe
+    df_long = df_long.copy()
+
+    # Get all unique animal IDs and motifs from the dataframe
+    animal_ids = df_long["Animal_ID"].unique()
     all_motifs = df_long["Motif"].unique()
 
-    # Define a set to store all motifs without baseline
+    # Initialize a set to store motifs without baseline values
     all_motifs_without_baseline = set()
 
-    # Check if animal ids don't have a value for each motif in at least one of the baseline time points
+    # Check if motifs don't have a value for each baseline time point for each animal ID
     for animal_id in animal_ids:
-        # Get all of the motifs for the animal_id in the baseline time points
-        motifs_with_baseline = df_long[
-            (df_long["Animal_ID"] == animal_id)
-            & (df_long["Time_Point"].isin(baseline_time_points))
-        ]["Motif"].unique()
-        # Get the motifs that don't have a value for the animal_id in at least one of the baseline time points
-        motifs_without_baseline = [
-            motif for motif in all_motifs if motif not in motifs_with_baseline
-        ]
+        # Get all motifs for the animal_id in the baseline time points
+        motifs_with_baseline = df_long.loc[
+            (df_long["Animal_ID"] == animal_id) & (df_long["Time_Point"].isin(baseline_time_points)),
+            "Motif"
+        ].unique()
+
+        # Get motifs without a value for at least one baseline time point
+        motifs_without_baseline = np.setdiff1d(all_motifs, motifs_with_baseline)
+
         if len(motifs_without_baseline) > 0:
-            # If there are motifs without a baseline value, set the Normalized_Value to NaN
+            # Set the Normalized_Value to NaN for motifs without a baseline value
             df_long.loc[
-                (df_long["Animal_ID"] == animal_id)
-                & (df_long["Motif"].isin(motifs_without_baseline)),
-                "Normalized_Value",
+                (df_long["Animal_ID"] == animal_id) & (df_long["Motif"].isin(motifs_without_baseline)),
+                "Normalized_Value"
             ] = np.nan
 
             console.print(motifs_without_baseline, style="bold red")
-            # Update the set of all motifs without baseline
+
+            # Update the set of motifs without baseline values
             all_motifs_without_baseline.update(motifs_without_baseline)
 
-    # If there were any motifs without a baseline value, remove all rows with that Motif from the data frame
+    # Remove rows with motifs that don't have a baseline value
     df_long = df_long[~df_long["Motif"].isin(all_motifs_without_baseline)]
 
     return df_long
 
 
-def log_normalize_values(df_long):
+def log_transform_values(df_long):
     df_long = df_long.copy()
-    if (df_long["value"] <= 0).any():
-        # Handle non-positive values. Here we add a small constant (e.g., 1) to all values.
-        df_long["log_value"] = np.log(df_long["value"] + 1)
+    if (df_long["Value"] <= 0).any():
+        # Handle non-positive values. Add a small constant (e.g., 1) to all values.
+        df_long["log_value"] = np.log(df_long["Value"] + 1)
     else:
-        # If all values are positive, we can directly apply the log transformation
-        df_long["log_value"] = np.log(df_long["value"])
+        # If all values are positive, apply the log transformation
+        df_long["log_value"] = np.log(df_long["Value"])
 
     return df_long
 
@@ -163,9 +276,9 @@ def normalize_to_baseline_log(df_long):
     )
 
     # When the Time_Point is Baseline_1 or Baseline_2, the Log_Normalized_Value should be 0
-    df_long.loc[
-        df_long["Time_Point"].isin(baseline_time_points), "Log_Normalized_Value"
-    ] = 0
+    #df_long.loc[
+    #    df_long["Time_Point"].isin(baseline_time_points), "Log_Normalized_Value"
+    #] = 0
 
     return df_long
 
@@ -193,9 +306,9 @@ def normalize_to_baseline(df_long):
     df_long["Normalized_Value"] = df_long["value"] / df_long["Baseline_Mean"]
 
     # When the Time_Point is Baseline_1 or Baseline_2, the Normalized_Value should be 1
-    df_long.loc[
-        df_long["Time_Point"].isin(baseline_time_points), "Normalized_Value"
-    ] = 1
+    #df_long.loc[
+    #    df_long["Time_Point"].isin(baseline_time_points), "Normalized_Value"
+    #] = 1
 
     return df_long
 
@@ -226,21 +339,28 @@ def normalize_to_baseline_sham_log(df_long):
     df_long["Log_Normalized_Value"] = df_long["log_value"] - df_long["Sham_Log_Mean"]
 
     # Set Log_Normalized_Value to 0 for the sham group to represent no change
-    df_long.loc[df_long["Group"] == "Sham", "Log_Normalized_Value"] = 0
+    #df_long.loc[df_long["Group"] == "Sham", "Log_Normalized_Value"] = 0
 
     return df_long
 
 
-def normalize_to_baseline_sham(df_long):
+def normalize_to_baseline_sham(df_long, handle_miss_baseline_values=True):
     df_long = df_long.copy()
-    baseline_time_points = ["Baseline_1", "Baseline_2"]
-    df_long = handle_missing_baseline_values(df_long, baseline_time_points)
+    
+    if handle_miss_baseline_values:
+        if (df_long["Time_Points"] == "Baseline_1").any() and (df_long["Time_Points"] == "Baseline_2").any():
+            baseline_time_points = ["Baseline_1", "Baseline_2"]
+        else:
+            baseline_time_points = ["Week_00"]
+        
+        df_long = handle_missing_baseline_values(df_long, baseline_time_points)
+    
     # Step 1: Filter Sham Group Data
-    sham_df = df_long[df_long["Group"] == "Sham"]
+    sham_df = df_long[df_long["Treatment_State"] == "Sham"]
 
     # Step 2: Compute Sham Group Means
     sham_means = (
-        sham_df.groupby(["Time_Point", "Motif"])["value"]
+        sham_df.groupby(["Time_Point", "Motif"])["Value"]
         .mean()
         .reset_index(name="Sham_Mean")
     )
@@ -249,55 +369,41 @@ def normalize_to_baseline_sham(df_long):
     df_long = df_long.merge(sham_means, on=["Time_Point", "Motif"], how="left")
 
     # Step 4: Normalize Values
-    df_long["Normalized_Value"] = df_long["value"] / df_long["Sham_Mean"]
+    df_long["Sham_Normalized_Value"] = df_long["Value"] / df_long["Sham_Mean"]
 
     # Set Sham_Normalized_Value to 1 for the sham group
-    df_long.loc[df_long["Group"] == "Sham", "Normalized_Value"] = 1
+    #df_long.loc[df_long["Group"] == "Sham", "Sham_Normalized_Value"] = 1
 
     return df_long
 
 
-def calculate_mean_and_sd(df_long, normalization=True, type="Group"):
-    if type == "Group":
-        if normalization:
-            # Calculate the mean and standard deviation for each motif, time point, and group
-            stats = (
-                df_long.groupby(["Motif", "Time_Point", "Group"])["Normalized_Value"]
-                .agg(["mean", "std"])
-                .reset_index()
-            )
-        else:
-            stats = (
-                df_long.groupby(["Motif", "Time_Point", "Group"])["value"]
-                .agg(["mean", "std"])
-                .reset_index()
-            )
+def calculate_mean_and_sd(df_long: pd.DataFrame, normalization: bool = True, group_columns: list = ["Motif", "Time_Point", "Group"]) -> pd.DataFrame:
+    """
+    Calculates the mean and standard deviation for a given dataframe, based on different grouping criteria and whether or not normalization is required.
 
-    elif type == "State":
-        if normalization:
-            # Calculate the mean and standard deviation for each motif, time point, and group
-            stats = (
-                df_long.groupby(["Motif", "Time_Point", "Treatment_State"])[
-                    "Normalized_Value"
-                ]
-                .agg(["mean", "std"])
-                .reset_index()
-            )
-        else:
-            stats = (
-                df_long.groupby(["Motif", "Time_Point", "Treatment_State"])["value"]
-                .agg(["mean", "std"])
-                .reset_index()
-            )
+    Args:
+        df_long (pd.DataFrame): The input dataframe containing the data to be analyzed.
+        normalization (bool, optional): A flag indicating whether or not to perform normalization. Default is True.
+        group_columns (list, optional): The column names to group the data by. Default is ["Motif", "Time_Point", "Group"].
 
-        # Sort the Time_Point values
+    Returns:
+        pd.DataFrame: The resulting dataframe with the calculated mean and standard deviation for each group.
+    """
+    value_column = "Normalized_Value" if normalization else "Value"
+        
+    stats = (
+        df_long.groupby(group_columns)[value_column]
+        .agg(["mean", "std"])
+        .reset_index()
+    )
+
+    if "Time_Point" in group_columns:
         sorted_time_points = sorted(stats["Time_Point"].unique())
         stats["Time_Point"] = pd.Categorical(
             stats["Time_Point"], categories=sorted_time_points, ordered=True
         )
 
     return stats
-
 
 # Assuming distance_traveled_normality_results is your dictionary
 def shapiro_normality_results_to_polars_df(normality_results):
@@ -901,84 +1007,74 @@ def calculate_p_values_vs_sham_Group(df, log_comp=False):
 
     return p_values_df
 
+def filter_data(df, time_point, state, group, motif_or_cluster):
+    return df[
+        (df["Time_Point"] == time_point)
+        & (df["Treatment_State"] == state)
+        & (df[motif_or_cluster.capitalize()] == group)
+    ]
 
-def calculate_p_values_vs_sham_State(df, log_comp=False):
+def create_new_row(state_data, time_point, state, group, p_val, stat_val, test_type, motif_or_cluster):
+    return {
+        "Animal_ID": state_data["Animal_ID"].iloc[0],
+        "Time_Point": time_point,
+        "Treatment_State": state,
+        motif_or_cluster.capitalize(): group,
+        "P_Value": p_val,
+        "Stat_Value": stat_val,
+        "Test_Type": test_type,
+    }
+
+def perform_statistical_test(state_data, sham_data, value_column):
+    if state_data["Is_Normal_State"].all() and sham_data["Is_Normal_State"].all():
+        test_type = "t-test"
+        stat_val, p_val = ttest_ind(
+            state_data[value_column],
+            sham_data[value_column],
+            equal_var=False,
+            nan_policy="omit",
+        )
+    else:
+        test_type = "Mann-Whitney"
+        stat_val, p_val = mannwhitneyu(
+            state_data[value_column], sham_data[value_column], alternative="two-sided"
+        )
+    return stat_val, p_val, test_type
+
+def calculate_p_values_vs_sham_State(df, motif_or_cluster="Motif", value_column = "Value", log_comp=False, normalized=True):
     new_rows = []
     time_points = df["Time_Point"].unique()
     states = df["Treatment_State"].unique()
-    motifs = df["Motif"].unique()
+    stat_grouping = df[motif_or_cluster.capitalize()].unique()
 
-    # Iterate over each time point and state
     for time_point in time_points:
         for state in states:
             if state == "Sham":
                 continue
-            for motif in motifs:
-                # Filter the DataFrame for the current state, time point, and motif
-                state_data = df[
-                    (df["Time_Point"] == time_point)
-                    & (df["Treatment_State"] == state)
-                    & (df["Motif"] == motif)
-                ]
-                sham_data = df[
-                    (df["Time_Point"] == time_point)
-                    & (df["Treatment_State"] == "Sham")
-                    & (df["Motif"] == motif)
-                ]
+            for group in stat_grouping:
+                state_data = filter_data(df, time_point, state, group, motif_or_cluster).copy()
+                sham_data = filter_data(df, time_point, "Sham", group, motif_or_cluster).copy()
 
-                # Check if both distributions are normal
-                if (
-                    state_data["Is_Normal_State"].all()
-                    and sham_data["Is_Normal_State"].all()
-                ):
-                    test = "t_stat"
-                else:
-                    test = "u_stat"
+                if len(state_data) < 2 or len(sham_data) < 2:
+                    #raise ValueError(f"No data for {time_point} {state} {group} {motif_or_cluster}")
+                    continue
+                
+                if "Is_Normal_State" not in state_data.columns:
+                    state_data_norm = scipy.stats.shapiro(state_data[value_column])
+                    sham_data_norm = scipy.stats.shapiro(sham_data[value_column])
 
-                # Select the appropriate value column based on log_comp
-                value_column = (
-                    "Log_Normalized_Value" if log_comp else "Normalized_Value"
-                )
-                state_values = state_data[value_column]
-                sham_values = sham_data[value_column]
+                    state_data.loc[:, "Is_Normal_State"] = (False if state_data_norm[1] < 0.05 else True)
+                    sham_data.loc[:, "Is_Normal_State"] = (False if sham_data_norm[1] < 0.05 else True)
+                        
+                stat_val, p_val, test_type = perform_statistical_test(state_data, sham_data, value_column)
 
-                if not state_values.empty and not sham_values.empty:
-                    if test == "t_stat":
-                        t_stat, p_val = ttest_ind(
-                            state_values,
-                            sham_values,
-                            equal_var=False,
-                            nan_policy="omit",
-                        )
-                        new_row = {
-                            "Animal_ID": state_data["Animal_ID"].iloc[0],
-                            "Time_Point": time_point,
-                            "Treatment_State": state,
-                            "Motif": motif,
-                            "P_Value": p_val,
-                            "Stat_Value": t_stat,
-                            "Test_Type": "t-test",
-                        }
-                    elif test == "u_stat":
-                        u_stat, p_val = mannwhitneyu(
-                            state_values, sham_values, alternative="two-sided"
-                        )
-                        new_row = {
-                            "Animal_ID": state_data["Animal_ID"].iloc[0],
-                            "Time_Point": time_point,
-                            "Treatment_State": state,
-                            "Motif": motif,
-                            "P_Value": p_val,
-                            "Stat_Value": u_stat,
-                            "Test_Type": "Mann-Whitney",
-                        }
+                if not state_data[value_column].empty and not sham_data[value_column].empty:
+                    new_row = create_new_row(state_data, time_point, state, group, p_val, stat_val, test_type, motif_or_cluster)
                     new_rows.append(new_row)
 
-    # Create a DataFrame from the list of new rows
     p_values_df = pd.DataFrame(new_rows)
 
     return p_values_df
-
 
 def calculate_p_values_vs_baseline_Group(df, log_comp=False):
     new_rows = []
@@ -1062,7 +1158,7 @@ def calculate_p_values_vs_baseline_Group(df, log_comp=False):
     return p_values_df
 
 
-def calculate_p_values_vs_baseline_State(df, log_comp=False):
+def calculate_p_values_vs_baseline_State(df, normalized=False, log_comp=False):
     new_rows = []
     time_points = df["Time_Point"].unique()
     states = df["Treatment_State"].unique()
@@ -1085,10 +1181,15 @@ def calculate_p_values_vs_baseline_State(df, log_comp=False):
                     & (df["Treatment_State"] == state)
                     & (df["Motif"] == motif)
                 ]
+            if normalized:
+                baseline_value_column = (
+                    "Log_Normalized_Value" if log_comp else "Normalized_Value"
+                )
+            else:
+                baseline_value_column = (
+                    "value" if "value" in baseline_state_data.columns else "Value"
+                )
 
-            baseline_value_column = (
-                "Log_Normalized_Value" if log_comp else "Normalized_Value"
-            )
             baseline_values = baseline_state_data[baseline_value_column]
 
             # Iterate over each time point
