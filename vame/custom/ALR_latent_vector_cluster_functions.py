@@ -1,11 +1,12 @@
-from typing import Dict, List, Tuple
 import csv
 import glob
 import logging
 import os
 import pickle
 from collections import defaultdict
+from importlib import reload
 from pathlib import Path
+from typing import Dict, List, Tuple
 
 import community as community_louvain
 import matplotlib
@@ -25,64 +26,29 @@ from scipy.cluster.hierarchy import dendrogram, fcluster, to_tree
 from scipy.optimize import linear_sum_assignment
 from scipy.spatial.distance import cdist
 from scipy.stats import mannwhitneyu, ttest_ind
-from sklearn.metrics import (
-    adjusted_rand_score,
-    calinski_harabasz_score,
-    davies_bouldin_score,
-    jaccard_score,
-    silhouette_score,
+from sklearn.cluster import (
+    DBSCAN,
+    HDBSCAN,
+    OPTICS,
+    AgglomerativeClustering,
+    KMeans,
+    SpectralClustering,
 )
+from sklearn.manifold import TSNE
+from sklearn.metrics import silhouette_score
+from sklearn.mixture import GaussianMixture
 from sklearn.preprocessing import StandardScaler
-from vame.analysis.pose_segmentation import load_latent_vectors
+from sympy import SparseMatrix
+
+import vame.custom.ALR_analysis as ana
 import vame.custom.ALR_helperFunctions as AlHf
 import vame.custom.ALR_plottingFunctions as AlPf
-from vame.util.auxiliary import read_config
-from importlib import reload
-import vame.custom.ALR_analysis as ana
-from vame.custom.ALR_helperFunctions import get_files
+from vame.analysis.pose_segmentation import load_latent_vectors
 from vame.custom.ALR_analysis import get_label
-
-import numpy as np
-import matplotlib.pyplot as plt
-import umap
-
-from sklearn.cluster import AgglomerativeClustering
-from sklearn.cluster import SpectralClustering
-from sklearn.cluster import KMeans
-from sklearn.mixture import GaussianMixture
-from sklearn.cluster import DBSCAN, HDBSCAN, OPTICS
-
-from sklearn.manifold import TSNE
+from vame.custom.ALR_helperFunctions import get_files
+from vame.util.auxiliary import read_config
 
 reload(AlPf)
-
-
-def calculate_mean_vectors(
-    vec: np.ndarray, label: np.ndarray, n_cluster: int, path: Path
-) -> Dict[int, np.ndarray]:
-    mean_latent_vectors = {}
-    for cluster_idx in range(n_cluster):
-        cluster_vec = vec[label == cluster_idx]
-        mean_vec = np.mean(cluster_vec, axis=0)
-        mean_latent_vectors[cluster_idx] = mean_vec
-    return mean_latent_vectors
-
-
-def calculate_mean_and_all_latent_vectors_all_motifs(
-    mean_latent_vectors_all_files: Dict[str, Dict[int, np.ndarray]], n_cluster: int
-) -> Tuple[Dict[int, np.ndarray], Dict[int, List[np.ndarray]]]:
-    all_latent_vectors_all_idx = {}
-    mean_latent_vectors_all_idx = {}
-    for cluster_idx in range(n_cluster):
-        all_latent_vectors_all_idx[cluster_idx] = []
-        for file, mean_latent_vectors_file in mean_latent_vectors_all_files.items():
-            all_latent_vectors_all_idx[cluster_idx].extend(
-                mean_latent_vectors_file[cluster_idx]
-            )
-        mean_latent_vectors_all_idx[cluster_idx] = np.mean(
-            all_latent_vectors_all_idx[cluster_idx], axis=0
-        )
-    return mean_latent_vectors_all_idx, all_latent_vectors_all_idx
 
 
 def calculate_mean_latent_vector_for_motifs(
@@ -91,17 +57,25 @@ def calculate_mean_latent_vector_for_motifs(
     config_file = Path(config).resolve()
     cfg = read_config(config_file)
     model_name = cfg["model_name"]
-    n_cluster = cfg["n_cluster"]
-    load_data = cfg["load_data"]
-    hmm_iters = cfg["hmm_iters"]
-    parameterization = cfg["parameterization"]
+    n_cluster = cfg[
+        "n_cluster"
+    ]  # the number of motifs (behaviors) identified from the latent vectors
+    load_data = cfg["load_data"]  # the dataset used to train the model
+    hmm_iters = cfg[
+        "hmm_iters"
+    ]  # the number of iterations the hidden markov model was trained for
+    parameterization = cfg[
+        "parameterization"
+    ]  # the parameterization used to identify motifs from the latent vectors, hidden markov model or kmeans
 
-    files = get_files(config)
+    files = AlHf.get_files(config)  # Returns a list of all file names to quantify
 
     mean_latent_vectors_all_files = {}
 
     for file in files:
-        label = get_label(cfg, file, model_name, n_cluster)
+        label = get_label(
+            cfg, file, model_name, n_cluster
+        )  # Returns a 1D numpy array of the label for each frame (from an open arena video), 'label' refers to the motif that the animal was classified as doing, an integer in the range 0 to n_cluster-1
         resultPath = (
             Path(cfg["project_path"]) / "results" / file / model_name / load_data
         )
@@ -110,7 +84,9 @@ def calculate_mean_latent_vector_for_motifs(
         else:
             path = resultPath / f"{parameterization}-{n_cluster}"
         latent_vec = next(path.glob("latent_vector_*.npy"))
-        vec = np.load(latent_vec)
+        vec = np.load(
+            latent_vec
+        )  # The latent vector for the given file, a 2D numpy array of shape (n_frames, 50), 50 was the dimensionality of the latent vectors used in the model. n_frames will be identical to the length of "label"
         mean_latent_vectors_file = calculate_mean_vectors(vec, label, n_cluster, path)
         mean_latent_vectors_all_files[file] = mean_latent_vectors_file
 
@@ -121,7 +97,10 @@ def calculate_mean_latent_vector_for_motifs(
         mean_latent_vectors_all_files, n_cluster
     )
 
-    return all_latent_vectors_all_idx, mean_latent_vectors_all_idx
+    return (
+        all_latent_vectors_all_idx,
+        mean_latent_vectors_all_idx,
+    )  # From here I have used the mean_latent_vectors_all_idx to and the clustering functions/methods to visualize the clustering of the latent vectors.
 
 
 def calculate_mean_vectors(
@@ -133,11 +112,11 @@ def calculate_mean_vectors(
     Args:
         vec (np.ndarray): The set of latent vectors.
         label (np.ndarray): The labels corresponding to each latent vector.
-        n_cluster (int): The number of clusters.
+        n_cluster (int): The number of motifs (behaviors) identified from the latent vectors.
         path (Path): The path to save the mean latent vectors.
 
     Returns:
-        dict: A dictionary where the keys are the cluster indices and the values are the mean latent vectors for each motif.
+        mean_latent_vectors_file (dict): A dictionary where the keys are the motif indices and the values are the mean latent vectors for each motif for a single file.
     """
     mean_latent_vectors_file = {}
     for idx in range(n_cluster):
@@ -171,24 +150,35 @@ def save_mean_vector(path: str, idx: int, mean_idx_values: np.ndarray) -> None:
 
 
 def calculate_mean_and_all_latent_vectors_all_motifs(
-    mean_latent_vectors_all_files, n_cluster
-):
-    # Initialize a dictionary to hold the mean latent vectors for each idx
+    mean_latent_vectors_all_files: Dict[str, Dict[int, List[np.ndarray]]],
+    n_cluster: int,
+) -> Tuple[Dict[int, np.ndarray], Dict[int, List[np.ndarray]]]:
+    """
+    Calculates the mean and all latent vectors for each motif (behavior) identified in a set of files.
+
+    Args:
+        mean_latent_vectors_all_files: A dictionary containing the mean latent vectors for each file and motif.
+            The keys are the file names and the values are dictionaries where the keys are the motif indices
+            and the values are lists of numpy arrays representing the mean latent vectors for each motif.
+        n_cluster: The number of motifs (behaviors) identified from the latent vectors.
+
+    Returns:
+        A tuple containing two dictionaries:
+        - mean_latent_vectors_all_idx: A dictionary where the keys are the motif indices and the values are numpy
+            arrays representing the mean latent vectors for each motif.
+        - all_latent_vectors_all_idx: A dictionary where the keys are the motif indices and the values are lists
+            of numpy arrays representing all latent vectors for each motif.
+    """
     mean_latent_vectors_all_idx = {idx: [] for idx in range(n_cluster)}
-    # Initialize a dictionary to hold all latent vectors for each idx
     all_latent_vectors_all_idx = {idx: [] for idx in range(n_cluster)}
 
-    # Iterate over all files
-    for _, mean_vectors_file in mean_latent_vectors_all_files.items():
-        # For each idx, append the mean latent vector to the list in mean_latent_vectors_all_idx
+    for file_name, mean_vectors_file in mean_latent_vectors_all_files.items():
         for idx, mean_vector in mean_vectors_file.items():
-            # Skip this mean_vector if it contains any NaN values
             if np.isnan(mean_vector).any():
                 continue
             mean_latent_vectors_all_idx[idx].append(mean_vector)
             all_latent_vectors_all_idx[idx].append(mean_vectors_file[idx])
 
-    # Calculate the mean of the mean latent vectors for each idx
     for idx, mean_vectors in mean_latent_vectors_all_idx.items():
         mean_latent_vectors_all_idx[idx] = np.mean(mean_vectors, axis=0)
 
@@ -199,6 +189,7 @@ def cluster_data_with_agglomerative_clustering(n_clusters, vectors, connectivity
     if connectivity:
         from sklearn.neighbors import kneighbors_graph
 
+        connectivity_mat = SparseMatrix()
         connectivity_mat = kneighbors_graph(vectors, n_neighbors=10, include_self=False)
 
     # Create the agglomerative clustering transformer
@@ -278,6 +269,50 @@ def cluster_data_with_hdbscan(n_clusters, vectors):
 
     return labels
 
+def determine_optimal_clusters(vectors, clustering_method="kmeans"):
+    silhouette_scores = []  # List to hold silhouette scores for different numbers of clusters
+    range_n_clusters = list(range(5, 13))  # The range of cluster numbers to try; adjust as needed
+
+    for n_clusters in range_n_clusters:
+        if clustering_method == "agglomerative":
+            clusterer = AgglomerativeClustering(n_clusters=n_clusters)
+        elif clustering_method == "spectral":
+            clusterer = SpectralClustering(n_clusters=n_clusters, assign_labels="discretize", random_state=0)
+        elif clustering_method == "gmm":
+            clusterer = GaussianMixture(n_components=n_clusters, random_state=0)
+        elif clustering_method == "kmeans":
+            clusterer = KMeans(n_clusters=n_clusters, random_state=0)
+        elif clustering_method == "dbscan":
+            clusterer = DBSCAN(eps=0.5, min_samples=20)
+        elif clustering_method == "optics":
+            clusterer = OPTICS(min_samples=20)
+        elif clustering_method == "hdbscan":
+            clusterer = HDBSCAN(min_cluster_size=15)
+        else:
+            raise ValueError("Invalid clustering method")
+
+        cluster_labels = clusterer.fit_predict(vectors)
+        silhouette_avg = silhouette_score(vectors, cluster_labels)
+        silhouette_scores.append(silhouette_avg)
+
+    optimal_n_clusters = range_n_clusters[silhouette_scores.index(max(silhouette_scores))]
+
+    if clustering_method == "agglomerative":
+        labels = cluster_data_with_agglomerative_clustering(optimal_n_clusters, vectors)
+    elif clustering_method == "spectral":
+        labels = cluster_data_with_spectral_clustering(optimal_n_clusters, vectors)
+    elif clustering_method == "gmm":
+        labels = cluster_data_with_gmm(optimal_n_clusters, vectors)
+    elif clustering_method == "kmeans":
+        labels = cluster_data_with_kmeans(optimal_n_clusters, vectors)
+    elif clustering_method == "dbscan":
+        labels = cluster_data_with_dbscan(optimal_n_clusters, vectors)
+    elif clustering_method == "optics":
+        labels = cluster_data_with_optics(optimal_n_clusters, vectors)
+    elif clustering_method == "hdbscan":
+        labels = cluster_data_with_hdbscan(optimal_n_clusters, vectors)
+
+    return optimal_n_clusters, labels
 
 def create_umap_projection(
     config,
@@ -312,63 +347,8 @@ def create_umap_projection(
     vectors = vectors[mask]
     labels = labels[mask]
 
-    # Step 3: Determine the optimal number of clusters
-    silhouette_scores = (
-        []
-    )  # List to hold silhouette scores for different numbers of clusters
-    range_n_clusters = list(
-        range(5, 13)
-    )  # The range of cluster numbers to try; adjust as needed
-
     if use_cluster_labels:
-        for n_clusters in range_n_clusters:
-            if clustering_method == "agglomerative":
-                clusterer = AgglomerativeClustering(n_clusters=n_clusters)
-            elif clustering_method == "spectral":
-                clusterer = SpectralClustering(
-                    n_clusters=n_clusters, assign_labels="discretize", random_state=0
-                )
-            elif clustering_method == "gmm":
-                clusterer = GaussianMixture(n_components=n_clusters, random_state=0)
-            elif clustering_method == "kmeans":
-                clusterer = KMeans(n_clusters=n_clusters, random_state=0)
-            elif clustering_method == "dbscan":
-                clusterer = DBSCAN(eps=0.5, min_samples=20)
-            elif clustering_method == "optics":
-                clusterer = OPTICS(min_samples=20)
-            elif clustering_method == "hdbscan":
-                clusterer = HDBSCAN(min_cluster_size=15)
-            else:
-                raise ValueError("Invalid clustering method")
-
-            cluster_labels = clusterer.fit_predict(vectors)
-            silhouette_avg = silhouette_score(vectors, cluster_labels)
-            silhouette_scores.append(silhouette_avg)
-
-        optimal_n_clusters = (
-            0  # Define the variable "optimal_n_clusters" before using it
-        )
-
-        optimal_n_clusters = range_n_clusters[
-            silhouette_scores.index(max(silhouette_scores))
-        ]
-
-        if clustering_method == "agglomerative":
-            labels = cluster_data_with_agglomerative_clustering(
-                optimal_n_clusters, vectors
-            )
-        elif clustering_method == "spectral":
-            labels = cluster_data_with_spectral_clustering(optimal_n_clusters, vectors)
-        elif clustering_method == "gmm":
-            labels = cluster_data_with_gmm(optimal_n_clusters, vectors)
-        elif clustering_method == "kmeans":
-            labels = cluster_data_with_kmeans(optimal_n_clusters, vectors)
-        elif clustering_method == "dbscan":
-            labels = cluster_data_with_dbscan(optimal_n_clusters, vectors)
-        elif clustering_method == "optics":
-            labels = cluster_data_with_optics(optimal_n_clusters, vectors)
-        elif clustering_method == "hdbscan":
-            labels = cluster_data_with_hdbscan(optimal_n_clusters, vectors)
+        optimal_n_clusters, labels =  determine_optimal_clusters(vectors, clustering_method)
 
     # Step 5: Create the UMAP transformer
     reducer = umap.UMAP()
@@ -457,65 +437,9 @@ def create_tsne_projection(
     vectors = vectors[mask]
     labels = labels[mask]
 
-    # Step 3: Determine the optimal number of clusters
-    silhouette_scores = (
-        []
-    )  # List to hold silhouette scores for different numbers of clusters
-    range_n_clusters = list(
-        range(5, 13)
-    )  # The range of cluster numbers to try; adjust as needed
-
+    # Step 3: Determine optimal number of clusters
     if use_cluster_labels:
-        for n_clusters in range_n_clusters:
-            if clustering_method == "agglomerative":
-                clusterer = AgglomerativeClustering(n_clusters=n_clusters)
-            elif clustering_method == "spectral":
-                clusterer = SpectralClustering(
-                    n_clusters=n_clusters, assign_labels="discretize", random_state=0
-                )
-            elif clustering_method == "gmm":
-                clusterer = GaussianMixture(n_components=n_clusters, random_state=0)
-            elif clustering_method == "kmeans":
-                clusterer = KMeans(n_clusters=n_clusters, random_state=0)
-            elif clustering_method == "dbscan":
-                clusterer = DBSCAN(
-                    eps=0.5, min_samples=20
-                )  # ! TRY DIFFERENT MIN_SAMPLES
-            elif clustering_method == "optics":
-                clusterer = OPTICS(min_samples=20)
-            elif clustering_method == "hdbscan":
-                clusterer = HDBSCAN(min_cluster_size=15)
-            else:
-                raise ValueError("Invalid clustering method")
-
-            cluster_labels = clusterer.fit_predict(vectors)
-            silhouette_avg = silhouette_score(vectors, cluster_labels)
-            silhouette_scores.append(silhouette_avg)
-
-        optimal_n_clusters = (
-            0  # Define the variable "optimal_n_clusters" before using it
-        )
-
-        optimal_n_clusters = range_n_clusters[
-            silhouette_scores.index(max(silhouette_scores))
-        ]
-
-        if clustering_method == "agglomerative":
-            labels = cluster_data_with_agglomerative_clustering(
-                optimal_n_clusters, vectors
-            )
-        elif clustering_method == "spectral":
-            labels = cluster_data_with_spectral_clustering(optimal_n_clusters, vectors)
-        elif clustering_method == "gmm":
-            labels = cluster_data_with_gmm(optimal_n_clusters, vectors)
-        elif clustering_method == "kmeans":
-            labels = cluster_data_with_kmeans(optimal_n_clusters, vectors)
-        elif clustering_method == "dbscan":
-            labels = cluster_data_with_dbscan(optimal_n_clusters, vectors)
-        elif clustering_method == "optics":
-            labels = cluster_data_with_optics(optimal_n_clusters, vectors)
-        elif clustering_method == "hdbscan":
-            labels = cluster_data_with_hdbscan(optimal_n_clusters, vectors)
+        optimal_n_clusters, labels =  determine_optimal_clusters(vectors, clustering_method)
 
     # Step 4: Create the t-SNE transformer
     tsne = TSNE(n_components=2, perplexity=40)
