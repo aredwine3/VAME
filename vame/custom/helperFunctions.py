@@ -6,21 +6,22 @@ Created on Wed May 20 13:52:04 2020
 @author: luxemk
 """
 
+import os
+from collections import defaultdict
+from pathlib import Path
+
+import matplotlib
 import numpy as np
 import pandas as pd
-import os
-from pathlib import Path
-from vame.util.auxiliary import read_config
-from vame.analysis.behavior_structure import get_adjacency_matrix, get_transition_matrix
-from vame.analysis.tree_hierarchy import graph_to_tree, draw_tree
+from icecream import ic
 from scipy.stats import ttest_ind
 from statsmodels.stats.multitest import multipletests
-from collections import defaultdict
-import matplotlib
-import vame.custom.ALR_helperFunctions as AlHf
-import vame.custom.ALR_analysis as ana
-from icecream import ic
 
+import vame.custom.ALR_analysis as ana
+import vame.custom.ALR_helperFunctions as AlHf
+from vame.analysis.behavior_structure import get_adjacency_matrix, get_transition_matrix
+from vame.analysis.tree_hierarchy import draw_tree, graph_to_tree
+from vame.util.auxiliary import read_config
 
 # Set the Matplotlib backend based on the environment.
 if os.environ.get('DISPLAY', '') == '':
@@ -29,19 +30,19 @@ else:
     matplotlib.use('Qt5Agg')  # Use this backend for environments with a display server
 
 
-import matplotlib.pyplot as plt
-import seaborn as sns
-import glob
-import shutil
-from ruamel.yaml import YAML
-import csv
-import re
-
-import sys
-import numpy as np
-import glob
 import concurrent.futures
+import csv
+import glob
+import re
+import shutil
+import sys
+
+import matplotlib.pyplot as plt
+import numpy as np
+import seaborn as sns
+from ruamel.yaml import YAML
 from tqdm import tqdm
+
 
 def trimFrames(directory, begin=1500, end=1500):
     """Crop csv or data files within specific frames. Good for removing unuseful frames from beginning, end, or both.
@@ -606,7 +607,6 @@ def countFramesBelowConfidence(config, pcutoff=None):
     """Docstring:
     Quantify # and % of frames in video with confidence below pcutoff.
     
-    
     Parameters
     ----------
     config : string
@@ -681,10 +681,16 @@ def drawHierarchyTrees(config, imagetype='.png'):
             max_motifs = n_cluster
 
     for file in videos:
-        labels = np.load(os.path.join(projectPath, 'results', file, modelName, load_data, parameterization+'-'+str(n_cluster), str(n_cluster)+'_km_label_'+file+'.npy'))
-        motif_usage = np.load(os.path.join(projectPath, 'results', file, modelName, load_data, parameterization+'-'+str(n_cluster), 'motif_usage_'+file+'.npy'))
-        #adj_mat, trans_mat = get_adjacency_matrix(labels, n_cluster)
-        trans_mat, _ = ana.create_transition_matrix(labels, max_motifs)
+        if parameterization == 'hmm':
+            labels = np.load(os.path.join(projectPath, 'results', file, modelName, load_data, parameterization+'-'+str(n_cluster)+'-'+str(cfg['hmm_iters']), str(n_cluster)+'_km_label_'+file+'.npy'))
+            motif_usage = np.load(os.path.join(projectPath, 'results', file, modelName, load_data, parameterization+'-'+str(n_cluster)+'-'+str(cfg['hmm_iters']), 'motif_usage_'+file+'.npy'))
+        else:
+            labels = np.load(os.path.join(projectPath, 'results', file, modelName, load_data, parameterization+'-'+str(n_cluster), str(n_cluster)+'_km_label_'+file+'.npy'))
+            motif_usage = np.load(os.path.join(projectPath, 'results', file, modelName, load_data, parameterization+'-'+str(n_cluster), 'motif_usage_'+file+'.npy'))
+        
+        adj_mat, trans_mat = get_adjacency_matrix(labels, n_cluster)
+        #trans_mat, _ = ana.create_transition_matrix(labels, max_motifs)
+        ic(file)
         ic(trans_mat)
         T = graph_to_tree(motif_usage, trans_mat, n_cluster, merge_sel=1)
         draw_tree(T, file, imagetype=imagetype)
