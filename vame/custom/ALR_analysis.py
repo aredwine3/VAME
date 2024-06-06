@@ -4,6 +4,7 @@ import logging
 import os
 import pickle
 from collections import defaultdict
+from importlib import reload
 from pathlib import Path
 
 import community as community_louvain
@@ -24,20 +25,28 @@ from scipy.cluster.hierarchy import dendrogram, fcluster, to_tree
 from scipy.optimize import linear_sum_assignment
 from scipy.spatial.distance import cdist
 from scipy.stats import mannwhitneyu, ttest_ind
-from sklearn.metrics import (adjusted_rand_score, calinski_harabasz_score,
-                             davies_bouldin_score, jaccard_score,
-                             silhouette_score)
+from sklearn.metrics import (
+    adjusted_rand_score,
+    calinski_harabasz_score,
+    davies_bouldin_score,
+    jaccard_score,
+    silhouette_score,
+)
 from sklearn.preprocessing import StandardScaler
-from vame.analysis.pose_segmentation import load_latent_vectors
+
 import vame.custom.ALR_helperFunctions as AlHf
 import vame.custom.ALR_plottingFunctions as AlPf
 from vame.analysis.behavior_structure import get_adjacency_matrix
-from vame.analysis.community_analysis import (compute_transition_matrices,
-                                              get_labels)
-from vame.analysis.tree_hierarchy import (draw_tree, graph_to_tree,
-                                          hierarchy_pos, traverse_tree_cutline)
+from vame.analysis.community_analysis import compute_transition_matrices, get_labels
+from vame.analysis.pose_segmentation import load_latent_vectors
+from vame.analysis.tree_hierarchy import (
+    draw_tree,
+    graph_to_tree,
+    hierarchy_pos,
+    traverse_tree_cutline,
+)
 from vame.util.auxiliary import read_config
-from importlib import reload
+
 reload(AlPf)
 
 # Set the Matplotlib backend based on the environment.
@@ -377,7 +386,7 @@ def calculate_average_speed_for_transitions(n_cluster, label_array, speed_data):
     transition_speed_matrix = np.zeros((num_motifs, num_motifs))
     transition_count_matrix = np.zeros((num_motifs, num_motifs), dtype=int)
 
-    # Example logic for calculating average speed during transitions
+    #  logic for calculating average speed during transitions
     for i in range(1, len(label_array)):
         from_motif = label_array[i - 1]
         to_motif = label_array[i]
@@ -533,7 +542,9 @@ def calculate_mean_transition_matrix(cfg, file_list, model_name, n_cluster):
         label = get_label(cfg, file, model_name, n_cluster)
         if label.size == 0:
             continue  # Skip files with no labels
-        trans_mat, motif_to_index = create_transition_matrix(label, max_motifs)
+        
+        _, trans_mat = get_adjacency_matrix(label, n_cluster)
+        #trans_mat, motif_to_index = create_transition_matrix(label, max_motifs)
         trans_mats.append(trans_mat)
 
     if not trans_mats:
@@ -545,16 +556,31 @@ def calculate_mean_transition_matrix(cfg, file_list, model_name, n_cluster):
     return np.mean(trans_mat_stack, axis=2)
 
 
-def get_label(cfg, file, model_name, n_cluster):
+def get_label(cfg: dict, file: str, model_name: str, n_cluster: int) -> np.ndarray:
+    """
+    Retrieves the label array for a specific file and model in a given configuration.
+
+    Args:
+        cfg (dict): The configuration dictionary containing the parameters for the analysis.
+        file (str): The name of the file for which to retrieve the label array.
+        model_name (str): The name of the model used for the analysis.
+        n_cluster (int): The number of clusters (motifs) used in the analysis.
+
+    Returns:
+        np.ndarray: The label array for the specified file and model.
+    """
     load_data = cfg['load_data']
     hmm_iters = cfg['hmm_iters']
     parameterization = cfg['parameterization']
 
     if parameterization == 'hmm':
-        path_to_file=os.path.join(cfg['project_path'],'results',file,model_name,load_data,cfg['parameterization']+'-'+str(n_cluster)+'-'+str(hmm_iters), "")
+        path_to_file = os.path.join(cfg['project_path'], 'results', file, model_name, load_data,
+                                    f'{parameterization}-{n_cluster}-{hmm_iters}', '')
     else:
-        path_to_file=os.path.join(cfg['project_path'],'results',file,model_name,load_data,cfg['parameterization']+'-'+str(n_cluster), "")
-    label = np.load(os.path.join(path_to_file,str(n_cluster)+'_km_label_'+file+'.npy'))
+        path_to_file = os.path.join(cfg['project_path'], 'results', file, model_name, load_data,
+                                    f'{parameterization}-{n_cluster}', '')
+
+    label = np.load(os.path.join(path_to_file, f'{n_cluster}_km_label_{file}.npy'))
     return label
 
 
@@ -648,6 +674,7 @@ def aggregate_trans_mats(config, imagetype = '.svg'):
             
             transition_speed_matrix = calculate_average_speed_for_transitions(n_cluster, label_array, speed_data)
             transition_speed_matrices.append(transition_speed_matrix)
+        
         group_trans_speed_mat_stacked = np.stack(transition_speed_matrices, axis=2)
         group_trans_speed_mat_means = np.mean(group_trans_speed_mat_stacked, axis=2)
         np.save(os.path.join(aggregated_analysis_path, f"avg_transition_speed_matrix_{group_name}.npy"), group_trans_speed_mat_means)
