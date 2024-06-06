@@ -13,6 +13,7 @@ import logging
 import os
 import pickle
 from concurrent.futures import ProcessPoolExecutor
+from importlib import reload
 from pathlib import Path
 
 import community as community_louvain
@@ -29,10 +30,13 @@ from icecream import ic
 from scipy.cluster.hierarchy import fcluster
 from sklearn.preprocessing import StandardScaler
 
-from vame.analysis.tree_hierarchy import (draw_tree, graph_to_tree,
-                                          hierarchy_pos, traverse_tree_cutline)
+from vame.analysis.tree_hierarchy import (
+    draw_tree,
+    graph_to_tree,
+    hierarchy_pos,
+    traverse_tree_cutline,
+)
 from vame.util.auxiliary import read_config
-from importlib import reload
 
 # Set the Matplotlib backend based on the environment.
 if os.environ.get('DISPLAY', '') == '':
@@ -123,45 +127,72 @@ def compute_transition_matrices(files, labels, n_cluster):
     
 
 def create_community_bag(files, labels, transition_matrices, cut_tree, n_cluster, autofill=False):
-    # markov chain to tree -> community detection
+    """
+    Converts transition matrices into a tree structure and performs community detection on the tree.
+    
+    Args:
+        files (list): A list of file names.
+        labels (list): A list of label arrays corresponding to each file.
+        transition_matrices (list): A list of transition matrices corresponding to each file.
+        cut_tree (int): An integer representing the cutline for the tree (optional).
+        n_cluster (int): An integer representing the number of clusters (optional).
+        autofill (bool): A boolean indicating whether to fill the community bag automatically (optional).
+        
+    Returns:
+        communities_all (list): A list of community bags, where each bag contains a list of motif indices belonging to a community.
+        trees (list): A list of tree structures.
+    """
     trees = []
     communities_all = []
+    
     for i, file in enumerate(files):
         _, usage = np.unique(labels[i], return_counts=True)
         T = graph_to_tree(usage, transition_matrices[i], n_cluster, merge_sel=1) 
         trees.append(T)
         
-        if cut_tree != None:
-            community_bag =  traverse_tree_cutline(T,cutline=cut_tree, n_cluster=n_cluster, fill=autofill)
+        if cut_tree is not None:
+            community_bag = traverse_tree_cutline(T, cutline=cut_tree, n_cluster=n_cluster, fill=autofill)
             communities_all.append(community_bag)
             draw_tree(T, file)
         else:
             draw_tree(T, file)
             flag_1 = 'no'
             plt.pause(0.5)
+            
             while flag_1 == 'no':
                 cutline = int(input("Where do you want to cut the Tree? 0/1/2/3/..."))
-                community_bag =  traverse_tree_cutline(T,cutline=cutline)
-                print(community_bag)
+                community_bag = traverse_tree_cutline(T, cutline=cutline)
+                community_bag_arranged = [sorted(sublist) for sublist in community_bag]
+                    
+                print("Community bag: ", community_bag)
+                print("Sorted:", community_bag_arranged)
                 flag_2 = input('\nAre all motifs in the list? (yes/no/restart)')
+                
                 if flag_2 == 'no':
                     while flag_2 == 'no':
                         add = input('Extend list or add in the end? (ext/end)')
+                        
                         if add == "ext":
                             motif_idx = int(input('Which motif number? '))
                             list_idx = int(input('At which position in the list? (pythonic indexing starts at 0) '))
                             community_bag[list_idx].append(motif_idx)
+                            
                         if add == "end":
                             motif_idx = int(input('Which motif number? '))
                             community_bag.append([motif_idx])
+                            
                         print(community_bag)
                         flag_2 = input('\nAre all motifs in the list? (yes/no/restart)')
+                        
                 if flag_2 == 'yes':
                     flag_1 = 'yes'
                     communities_all.append(community_bag)
+                    
                 if flag_2 == "restart":
                     continue     
+                    
         plt.close('all')
+        
     return communities_all, trees
 
 
