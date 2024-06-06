@@ -148,7 +148,6 @@ def create_andOR_get_master_df(config, fps=30, create_new_df=False, df_kind="pol
             # Concatenate all DataFrames into one
             df = pl.concat(results)
         else:
-            # Create a store of when each motif is happening for each file
             for i, file in enumerate(files):
                 filename, time_point, group, full_group_notation = parse_filename(file)
                 labels = labels_list[i]
