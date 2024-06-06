@@ -59,8 +59,6 @@ df_hmm_650.rename(columns={"motif": "motif_hmm_650"}, inplace=True)
 profile = ProfileReport(df_hmm_650, title="Profiling Report")
 # profile.to_file("your_report.html")
 
-config = "D:\\Users\\tywin\\VAME\\config-kmeans-30.yaml"
-
 # Done after manual classification of behaviors
 # Add classifications to the master data frame (made during the motif videos creation)
 
@@ -661,3 +659,9 @@ pVals_longNorm_sham_Group = pd.read_csv(
 pVals_longNorm_sham_State = pd.read_csv(
     "D:/Users/tywin/VAME/results/aggregated_analysis/hmm-40-650/all_data/stats/pVals_longNorm_sham_State.csv"
 )
+
+# Rename the "p.value" column to "P_Value_Group"
+df.rename(columns={"p.value": "P_Value_Group"}, inplace=True)
+
+# Get the column names of df
+df.columns
