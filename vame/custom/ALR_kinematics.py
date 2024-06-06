@@ -364,11 +364,17 @@ def is_dat_rat_in_center(data):
     center_zone_percentage = 0.5  # Define the percentage of the arena that makes up the center zone
     center_zones = {}
     for rat, edges in wall_edges.items():
-        x_center = (edges['TR']['x'] + edges['TL']['x']) / 2
-        y_center = (edges['TL']['y'] + edges['BL']['y']) / 2
+        x_center_Top = (edges['TR']['x'] + edges['TL']['x']) / 2
+        x_center_Bottom = (edges['BR']['x'] + edges['BL']['x']) / 2
         
-        width = (edges['TR']['x'] - edges['TL']['x']) * center_zone_percentage
-        height = (edges['BL']['y'] - edges['TL']['y']) * center_zone_percentage
+        y_center_L = (edges['TL']['y'] + edges['BL']['y']) / 2
+        y_center_R = (edges['TR']['y'] + edges['BR']['y']) / 2
+        
+        x_center = (x_center_Top + x_center_Bottom) / 2
+        y_center = (y_center_L + y_center_R) / 2
+        
+        width = ((edges['TR']['x'] - edges['TL']['x']) + (edges['BR']['x'] - edges['BL']['x'])) / 2 * center_zone_percentage
+        height = ((edges['BL']['y'] - edges['TL']['y']) + (edges['BR']['y'] - edges['TR']['y'])) / 2 * center_zone_percentage
 
         center_zones[rat] = {
             "x": (x_center - width / 2, x_center + width / 2),
