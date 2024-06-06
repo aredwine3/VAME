@@ -103,6 +103,7 @@ def create_andOR_get_master_df(config, fps=30, create_new_df=False, df_kind="pol
             "motif": pl.Series([], dtype=pl.Int64),
             "centroid_x": pl.Series([], dtype=pl.Float32),
             "centroid_y": pl.Series([], dtype=pl.Float32),
+            "torso_angle": pl.Series([], dtype=pl.Float32),
             "in_center": pl.Series([], dtype=pl.Float32),
             "distance": pl.Series([], dtype=pl.Float32),
             "speed": pl.Series([], dtype=pl.Float32),
@@ -162,6 +163,7 @@ def create_andOR_get_master_df(config, fps=30, create_new_df=False, df_kind="pol
                 data_Torso = data.drop(columns=columns_to_drop)
                 
                 centroid_x, centroid_y = kin.calculate_centroid(data_Torso)
+                torso_angle = kin.calculate_torso_angle(data_Torso)
                 in_center = kin.is_dat_rat_in_center(data_Torso)
                 distance_cm = kin.distance_traveled(data_Torso)
                 rat_speed = kin.calculate_speed_with_spline(
@@ -174,6 +176,7 @@ def create_andOR_get_master_df(config, fps=30, create_new_df=False, df_kind="pol
                 # Trim the centroid lists
                 centroid_x_trimmed = centroid_x[trim_length:]
                 centroid_y_trimmed = centroid_y[trim_length:]
+                torso_angle_trimmed = torso_angle[trim_length:]
                 in_center_trimmed = in_center[trim_length:]
                 distance_trimmed = distance_cm[trim_length:]
                 rat_speed_trimmed = rat_speed[trim_length:]
@@ -181,6 +184,7 @@ def create_andOR_get_master_df(config, fps=30, create_new_df=False, df_kind="pol
                 motif_series = pl.Series(labels).cast(pl.Int64)
                 centroid_x_series = pl.Series(centroid_x_trimmed).cast(pl.Float32)
                 centroid_y_series = pl.Series(centroid_y_trimmed).cast(pl.Float32)
+                torso_angle_series = pl.Series(torso_angle_trimmed).cast(pl.Float32)
                 in_center_series = pl.Series(in_center_trimmed).cast(pl.Float32)
                 distance_series = pl.Series(distance_trimmed).cast(pl.Float32)
                 speed_series = pl.Series(rat_speed_trimmed).cast(pl.Float32)
@@ -193,6 +197,7 @@ def create_andOR_get_master_df(config, fps=30, create_new_df=False, df_kind="pol
                         "motif": motif_series,
                         "centroid_x": centroid_x_series,
                         "centroid_y": centroid_y_series,
+                        "torso_angle": torso_angle_series,
                         "in_center": in_center_series,
                         "distance": distance_series,
                         "speed": speed_series,

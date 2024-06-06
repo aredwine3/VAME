@@ -411,7 +411,26 @@ def distance_traveled(data, pixel_to_cm=0.215):
     # Return the distance traveled frame by frame in centimeters
     return distance_cm
 
-def calculate_torso_angle
+
+def calculate_torso_angle(data):
+    
+    # Extract the needed points
+    hips_center_x = data[('Center_of_Hips', 'x')]
+    hips_center_y = data[('Center_of_Hips', 'y')]
+
+    torso_center_x = data[('Center_of_Body', 'x')]
+    torso_center_y = data[('Center_of_Body', 'y')]
+
+    shoulder_center_x = data[('ShoulderCenter', 'x')]
+    shoulder_center_y = data[('ShoulderCenter', 'y')]
+    
+    V1 = np.array([torso_center_x - shoulder_center_x, torso_center_y - shoulder_center_y])
+    V2 = np.array([torso_center_x - hips_center_x, torso_center_y - hips_center_y])
+    
+    # Calculate the angle
+    angle = np.arccos(np.dot(V1, V2) / (np.linalg.norm(V1) * np.linalg.norm(V2)))
+
+    return np.degrees(angle)     
 
 
 def normalize_centroid_positions(centroid_x, centroid_y, rat_boundaries, rat):
