@@ -6,28 +6,28 @@ import re
 import shutil
 import sys
 from collections import defaultdict
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from pathlib import Path
 
 import matplotlib
-from matplotlib.pylab import f
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import seaborn as sns
-import scipy
-from icecream import ic
-from ruamel.yaml import YAML
-from scipy.stats import ttest_ind, kruskal
-from statsmodels.stats.multitest import multipletests
-from statsmodels.stats.anova import AnovaRM
-from statsmodels.regression.mixed_linear_model import MixedLM
-from tqdm import tqdm
-import vame.custom.ALR_kinematics as kin
 import polars as pl
-from vame.util.auxiliary import read_config
+import scipy
+import seaborn as sns
+from icecream import ic
+from matplotlib.pylab import f
+from ruamel.yaml import YAML
+from scipy.stats import kruskal, ttest_ind
+from statsmodels.regression.mixed_linear_model import MixedLM
+from statsmodels.stats.anova import AnovaRM
+from statsmodels.stats.multitest import multipletests
+from tqdm import tqdm
+
 import vame.custom.ALR_analysis as ana
-from concurrent.futures import ProcessPoolExecutor
+import vame.custom.ALR_kinematics as kin
+from vame.util.auxiliary import read_config
 
 # Set the Matplotlib backend based on the environment.
 if os.environ.get("DISPLAY", "") == "":
@@ -36,8 +36,7 @@ if os.environ.get("DISPLAY", "") == "":
     )  # Use this backend for headless environments (e.g., Google Colab, some remote servers)
 else:
     matplotlib.use("Qt5Agg")  # Use this backend for environments with a display server
-
-
+        
 def process_file(file_data):
     file, i, path_to_file, dlc_data_type, fps, labels_list = file_data
 
@@ -153,11 +152,20 @@ def create_andOR_get_master_df(config, fps=30, create_new_df=False, df_kind="pol
                 labels = labels_list[i]
                 data = kin.get_dlc_file(path_to_file, dlc_data_type, file)
                 rat = kin.get_dat_rat(data)
-                centroid_x, centroid_y = kin.calculate_centroid(data)
-                in_center = kin.is_dat_rat_in_center(data)
-                distance_cm = kin.distance_traveled(data)
+                
+                #! Need to only keep data points on rats torso...
+                columns_to_drop = [('Nose', 'x'), ('Nose', 'y'), ('Nose', 'likelihood'),
+                   ('Caudal_Skull_Point', 'x'), ('Caudal_Skull_Point', 'y'), ('Caudal_Skull_Point', 'likelihood'),
+                   ('LeftEar', 'x'), ('LeftEar', 'y'), ('LeftEar', 'likelihood'),
+                   ('RightEar', 'x'), ('RightEar', 'y'), ('RightEar', 'likelihood')]
+
+                data_Torso = data.drop(columns=columns_to_drop)
+                
+                centroid_x, centroid_y = kin.calculate_centroid(data_Torso)
+                in_center = kin.is_dat_rat_in_center(data_Torso)
+                distance_cm = kin.distance_traveled(data_Torso)
                 rat_speed = kin.calculate_speed_with_spline(
-                    data, fps, window_size=5, pixel_to_cm=0.215
+                    data_Torso, fps, window_size=5, pixel_to_cm=0.215
                 )
 
                 # Calculate the number of elements to trim
@@ -247,7 +255,16 @@ def assign_clusters(df, clustered_motifs):
     return df
 
 
-def get_files(config):
+def get_files(config: str) -> list:
+    """
+    Retrieve a list of files based on the configuration provided.
+
+    Args:
+        config (str): The path to the configuration file.
+
+    Returns:
+        list: A list of file names based on the configuration.
+    """
     config_file = Path(config).resolve()
     cfg = read_config(config_file)
 
