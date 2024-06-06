@@ -365,7 +365,8 @@ def is_dat_rat_in_center(data):
     center_zones = {}
     for rat, edges in wall_edges.items():
         x_center = (edges['TR']['x'] + edges['TL']['x']) / 2
-        y_center = (edges['TR']['y'] + edges['BL']['y']) / 2
+        y_center = (edges['TL']['y'] + edges['BL']['y']) / 2
+        
         width = (edges['TR']['x'] - edges['TL']['x']) * center_zone_percentage
         height = (edges['BL']['y'] - edges['TL']['y']) * center_zone_percentage
 
@@ -385,7 +386,7 @@ def is_dat_rat_in_center(data):
         in_center.append(x_in_center and y_in_center)
 
     return np.array(in_center)
-    
+
 
 def distance_traveled(data, pixel_to_cm=0.215):
     # Calculate the centroid for each frame
@@ -403,6 +404,8 @@ def distance_traveled(data, pixel_to_cm=0.215):
     
     # Return the distance traveled frame by frame in centimeters
     return distance_cm
+
+def calculate_torso_angle
 
 
 def normalize_centroid_positions(centroid_x, centroid_y, rat_boundaries, rat):
