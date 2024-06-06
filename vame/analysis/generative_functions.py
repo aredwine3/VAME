@@ -8,11 +8,11 @@ Licensed under GNU General Public License v3.0
 """
 
 import os
-
-import torch
-import numpy as np
 from pathlib import Path
+
 import matplotlib
+import numpy as np
+import torch
 
 # Set the Matplotlib backend based on the environment.
 if os.environ.get('DISPLAY', '') == '':
@@ -22,8 +22,9 @@ else:
 
 import matplotlib.pyplot as plt
 from sklearn.mixture import GaussianMixture
-from vame.util.auxiliary import read_config
+
 from vame.model.rnn_model import RNN_VAE
+from vame.util.auxiliary import read_config
 
 
 def random_generative_samples_motif(cfg, model, latent_vector,labels,n_cluster, path):
@@ -142,11 +143,27 @@ def load_model(cfg, model_name):
     softplus = cfg['softplus']
      
     print('Load model... ')
+    
+    device = (
+        "cuda"
+        if torch.cuda.is_available()
+        else "mps"
+        if torch.backends.mps.is_available()
+        else "cpu"
+    )
+    
+    print(f"Using {device} device")
+    # Check if cuda is available
+
     model = RNN_VAE(TEMPORAL_WINDOW,ZDIMS,NUM_FEATURES,FUTURE_DECODER,FUTURE_STEPS, hidden_size_layer_1, 
                             hidden_size_layer_2, hidden_size_rec, hidden_size_pred, dropout_encoder, 
-                            dropout_rec, dropout_pred, softplus).cuda()
+                            dropout_rec, dropout_pred, softplus).to(device)
     
-    model.load_state_dict(torch.load(os.path.join(cfg['project_path'],'model','best_model',model_name+'_'+cfg['Project']+'.pkl')))
+    print("Model parameters:")
+    for param_tensor in model.state_dict():
+        print(param_tensor, "\t", model.state_dict()[param_tensor].size())
+
+    model.load_state_dict(torch.load(os.path.join(cfg['project_path'],'model','best_model',model_name+'_'+cfg['Project']+'.pkl'), map_location=device))
     model.eval()
     
     return model
