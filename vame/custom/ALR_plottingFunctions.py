@@ -5,6 +5,7 @@ from collections import defaultdict
 from pathlib import Path
 
 import matplotlib
+import matplotlib.patches as mpatches
 import numpy as np
 import pandas as pd
 import polars as pl
@@ -454,7 +455,7 @@ def plot_aggregated_community_sizes(config, aggregated_community_sizes):
             os.path.join(
                 path_to_fig,
                 "community_louvain",
-                f"Aggregated_communities-{parameterization}-{n_cluster}-{hmm_iters}.svg",
+                f"Aggregated_communities-{parameterization}-{n_cluster}-{hmm_iters}.png",
             )
         )
     else:
@@ -462,7 +463,7 @@ def plot_aggregated_community_sizes(config, aggregated_community_sizes):
             os.path.join(
                 path_to_fig,
                 "community_louvain",
-                f"Aggregated_communities-{parameterization}-{n_cluster}.svg",
+                f"Aggregated_communities-{parameterization}-{n_cluster}.png",
             )
         )
     plt.close()
@@ -1336,7 +1337,7 @@ def plot_normalized_values_by_group_and_timepoint_3(
     plt.show()
 
 
-def plot_motifs_all_time_points(df, comparison="Group", significance_level=0.05):
+def plot_motifs_all_time_points(df, comparison="Group", value_col = "Value", significance_level=0.05):
     group_colors = {
         "Sham": "#2ca02c",
         "ABX": "#1f77b4",
@@ -1362,7 +1363,7 @@ def plot_motifs_all_time_points(df, comparison="Group", significance_level=0.05)
 
         if comparison == "Group":
             mean_values = (
-                df_time.groupby(["Group", "Motif", "Cluster"])["Log_Normalized_Value"]
+                df_time.groupby(["Group", "Motif", "Cluster"])[value_col]
                 .mean()
                 .reset_index()
             )
@@ -1370,7 +1371,7 @@ def plot_motifs_all_time_points(df, comparison="Group", significance_level=0.05)
         elif comparison == "Treatment_State":
             mean_values = (
                 df_time.groupby(["Treatment_State", "Motif", "Cluster"])[
-                    "Log_Normalized_Value"
+                    value_col
                 ]
                 .mean()
                 .reset_index()
@@ -1398,7 +1399,7 @@ def plot_motifs_all_time_points(df, comparison="Group", significance_level=0.05)
             group_data = mean_values_sorted[mean_values_sorted[comparison] == group]
             group_color = group_colors[group]
             x_values = group_data["Motif"].map(motif_order)
-            y_values = group_data["Log_Normalized_Value"]
+            y_values = group_data[value_col]
             line = ax.plot(
                 x_values, y_values, label=group, marker="o", color=group_color
             )
@@ -1881,7 +1882,7 @@ def plot_motifs3(
     ax.set_xticklabels(list(motif_order.keys()))
     ax.legend()
 
-    plt.savefig(f"{clustering}-{comparison}_{time_point}.svg", format="svg")
+    plt.savefig(f"{clustering}-{comparison}_{time_point}.png", format=png)
 
     # plt.show()
 
