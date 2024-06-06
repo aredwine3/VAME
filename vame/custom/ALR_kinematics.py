@@ -413,7 +413,6 @@ def distance_traveled(data, pixel_to_cm=0.215):
 
 
 def calculate_torso_angle(data):
-    
     # Extract the needed points
     hips_center_x = data[('Center_of_Hips', 'x')]
     hips_center_y = data[('Center_of_Hips', 'y')]
@@ -432,6 +431,36 @@ def calculate_torso_angle(data):
 
     return np.degrees(angle)     
 
+
+def calculate_torso_length(data, pixel_to_cm=0.215):
+    # Extract the needed points
+    hips_center_x = data[('Center_of_Hips', 'x')]
+    hips_center_y = data[('Center_of_Hips', 'y')]
+    
+    lumbar_center_x = data[('Lumbar_Spine_Center', 'x')]
+    lumbar_center_y = data[('Lumbar_Spine_Center', 'y')]
+    
+    torso_center_x = data[('Center_of_Body', 'x')]
+    torso_center_y = data[('Center_of_Body', 'y')]
+    
+    thoracic_center_x = data[('Thoracic_Spine_Center', 'x')]
+    thoracic_center_y = data[('Thoracic_Spine_Center', 'y')]
+    
+    shoulder_center_x = data[('ShoulderCenter', 'x')]
+    shoulder_center_y = data[('ShoulderCenter', 'y')]
+    
+    V1 = np.array([lumbar_center_x - hips_center_x, lumbar_center_y - hips_center_y])
+    V2 = np.array([torso_center_x - lumbar_center_x, torso_center_y - lumbar_center_y])
+    V3 = np.array([thoracic_center_x - torso_center_x, thoracic_center_y - torso_center_y])
+    V4 = np.array([shoulder_center_x - thoracic_center_x, shoulder_center_y - thoracic_center_y])
+    
+    # Calculate the length
+    length = np.linalg.norm(V1) + np.linalg.norm(V2) + np.linalg.norm(V3) + np.linalg.norm(V4)
+    
+    # Convert length from pixels to centimeters
+    length_cm = length * pixel_to_cm
+    
+    return length_cm
 
 def normalize_centroid_positions(centroid_x, centroid_y, rat_boundaries, rat):
     # Get the boundaries for the specific rat
