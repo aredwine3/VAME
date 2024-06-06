@@ -10,8 +10,10 @@ Licensed under GNU General Public License v3.0
 """
 
 import os
-import numpy as np
+
 import matplotlib
+import numpy as np
+
 # Set the Matplotlib backend based on the environment.
 if os.environ.get('DISPLAY', '') == '':
     matplotlib.use('Agg')  # Use this backend for headless environments (e.g., Google Colab, some remote servers)
@@ -19,17 +21,25 @@ else:
     matplotlib.use('Qt5Agg')  # Use this backend for environments with a display server
 
 
-from pathlib import Path
+import glob
 import warnings
+from pathlib import Path
+
 import matplotlib.cbook
 from icecream import ic
 
+from vame.util.auxiliary import read_config
+
 # warnings.filterwarnings("ignore",category=matplotlib.cbook.mplDeprecation)
 
-from vame.util.auxiliary import read_config
-import glob
 
 def get_adjacency_matrix(labels, n_cluster):
+    """_summary_
+    returns: Adjacency Matrix - This is a square matrix used to represent a finite graph. 
+    The elements of the matrix indicate whether pairs of vertices are adjacent or not in the graph. 
+    In the get_adjacency_matrix function, an adjacency matrix is created where adjacency_matrix[i, j] = 1 
+    if there is an edge from node i to node j, and 0 otherwise.
+    """
     temp_matrix = np.zeros((n_cluster,n_cluster), dtype=np.float64)
     adjacency_matrix = np.zeros((n_cluster,n_cluster), dtype=np.float64)
     cntMat = np.zeros((n_cluster))
@@ -72,6 +82,16 @@ def get_transition_matrix_old(adjacency_matrix, threshold = 0.0):
     return transition_matrix
 
 def get_transition_matrix(adjacency_matrix, threshold=0.0):
+    """_summary_
+    returns: Transition Matrix - This is used to represent the transitions between states 
+    in a Markov chain. Each element of the matrix represents the probability of transitioning 
+    from one state to another. In the get_transition_matrix function, a transition matrix is 
+    created from the adjacency matrix. The element transition_matrix[i, j] is the probability 
+    of transitioning from state i to state j. This is calculated as the number of transitions 
+    from i to j (from the adjacency matrix) divided by the total number of transitions from 
+    i (the sum of row i in the adjacency matrix). If the sum of row i is zero (indicating that 
+    there are no transitions from state i), it is replaced with 1 to avoid division by zero.
+    """
     row_sum = adjacency_matrix.sum(axis=1)
     # Replace zeros in row_sum with 1 to avoid division by zero
     row_sum[row_sum == 0] = 1
@@ -89,8 +109,8 @@ def consecutive(data, stepsize=1):
     
 def get_network(path_to_file, file, cluster_method, n_cluster, plot=False, imagetype='.pdf'):
     if plot:
-        import seaborn as sns
         import matplotlib.pyplot as plt
+        import seaborn as sns
         
     if cluster_method == 'kmeans' or cluster_method=='hmm':
         labels = np.load(path_to_file + '/'+str(n_cluster)+'_km_label_'+file+'.npy')
