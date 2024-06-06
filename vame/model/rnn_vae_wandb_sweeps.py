@@ -8,31 +8,33 @@ Leibniz Institute for Neurobiology, Magdeburg, Germany
 https://github.com/LINCellularNeuroscience/VAME
 Licensed under GNU General Public License v3.0
 """
+import logging
+
 # Standard libraries
 import os
-from tempfile import TemporaryFile
 import time
-from pathlib import Path
-
-# Third-party libraries
-import wandb
-import torch
-import logging
-import numpy as np
-import pandas as pd
-from torch import nn
-import torch.utils.data as Data
-from torch.autograd import Variable
-from torch.optim.lr_scheduler import StepLR, ReduceLROnPlateau
-from numba import NumbaDeprecationWarning, NumbaPendingDeprecationWarning
-
-# Local application/library specific imports
-from vame.util.auxiliary import read_config
-from vame.model.dataloader import SEQUENCE_DATASET
-from vame.model.rnn_model import RNN_VAE, RNN_VAE_LEGACY
 
 # Warnings
 import warnings
+from pathlib import Path
+from tempfile import TemporaryFile
+
+import numpy as np
+import pandas as pd
+import torch
+import torch.utils.data as Data
+from numba import NumbaDeprecationWarning, NumbaPendingDeprecationWarning
+from torch import nn
+from torch.autograd import Variable
+from torch.optim.lr_scheduler import ReduceLROnPlateau, StepLR
+
+# Third-party libraries
+import wandb
+from vame.model.dataloader import SEQUENCE_DATASET
+from vame.model.rnn_model import RNN_VAE, RNN_VAE_LEGACY
+
+# Local application/library specific imports
+from vame.util.auxiliary import read_config
 
 # Ignore these specific types of warnings
 warnings.filterwarnings("ignore", category=NumbaDeprecationWarning)
