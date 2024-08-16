@@ -753,4 +753,3 @@ def plot_box_and_whisker_plot_total_distance_traveled(organized_files, aggregate
     plt.savefig(os.path.join(aggregated_analysis_path, f"boxplot_total_distance_traveled{filetype}"))
     plt.close()
 
-# Example usage:
