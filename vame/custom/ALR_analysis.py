@@ -3,6 +3,7 @@ import glob
 import logging
 import os
 import pickle
+import sys
 from collections import defaultdict
 from importlib import reload
 from pathlib import Path
@@ -589,15 +590,15 @@ def load_trans_mats(cfg, file_list):
     n_cluster = cfg['n_cluster']
     load_data = cfg['load_data']
     hmm_iters = cfg['hmm_iters']
+    project_path = cfg['project_path']
 
     trans_mats = []
     parameterization = cfg['parameterization']
-
     for file in file_list:
         if parameterization == 'hmm':
-            path_to_file=os.path.join(cfg['project_path'],'results',file,model_name,load_data,cfg['parameterization']+'-'+str(n_cluster)+'-'+str(hmm_iters), "")
+            path_to_file=os.path.join(project_path,'results',file,model_name,load_data,cfg['parameterization']+'-'+str(n_cluster)+'-'+str(hmm_iters), "")
         else:
-            path_to_file=os.path.join(cfg['project_path'],'results',file,model_name,load_data,cfg['parameterization']+'-'+str(n_cluster), "")
+            path_to_file=os.path.join(project_path,'results',file,model_name,load_data,cfg['parameterization']+'-'+str(n_cluster), "")
 
         trans_mat = np.load(os.path.join(path_to_file, 'behavior_quantification', 'transition_matrix.npy'))
         trans_mats.append(trans_mat)
