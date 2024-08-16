@@ -27,6 +27,7 @@ from tqdm import tqdm
 
 import vame.custom.ALR_analysis as ana
 import vame.custom.ALR_kinematics as kin
+from vame.analysis.community_analysis import compute_transition_matrices, get_labels
 from vame.util.auxiliary import read_config
 
 # Set the Matplotlib backend based on the environment.
@@ -36,7 +37,12 @@ if os.environ.get("DISPLAY", "") == "":
     )  # Use this backend for headless environments (e.g., Google Colab, some remote servers)
 else:
     matplotlib.use("Qt5Agg")  # Use this backend for environments with a display server
-        
+
+
+import subprocess
+import sys
+
+
 def process_file(file_data):
     file, i, path_to_file, dlc_data_type, fps, labels_list = file_data
 
@@ -44,17 +50,29 @@ def process_file(file_data):
     labels = labels_list[i]
     data = kin.get_dlc_file(path_to_file, dlc_data_type, file)
     rat = kin.get_dat_rat(data)
-    centroid_x, centroid_y = kin.calculate_centroid(data)
-    in_center = kin.is_dat_rat_in_center(data)
-    distance_cm = kin.distance_traveled(data)
+    
+    columns_to_drop = [('Nose', 'x'), ('Nose', 'y'), ('Nose', 'likelihood'),
+        ('Caudal_Skull_Point', 'x'), ('Caudal_Skull_Point', 'y'), ('Caudal_Skull_Point', 'likelihood'),
+        ('LeftEar', 'x'), ('LeftEar', 'y'), ('LeftEar', 'likelihood'),
+        ('RightEar', 'x'), ('RightEar', 'y'), ('RightEar', 'likelihood')]
+
+    data_Torso = data.drop(columns=columns_to_drop)
+    
+    centroid_x, centroid_y = kin.calculate_centroid(data_Torso)
+    torso_angle = kin.calculate_torso_angle(data_Torso)
+    torso_length = kin.calculate_torso_length(data_Torso)
+    in_center = kin.is_dat_rat_in_center(data_Torso)
+    distance_cm = kin.distance_traveled(data_Torso)
     rat_speed = kin.calculate_speed_with_spline(
-        data, fps, window_size=5, pixel_to_cm=0.215
+        data_Torso, fps, window_size=5, pixel_to_cm=0.215
     )
 
     trim_length = len(centroid_x) - len(labels)
 
     centroid_x_trimmed = centroid_x[trim_length:]
     centroid_y_trimmed = centroid_y[trim_length:]
+    torso_angle_trimmed = torso_angle[trim_length:]
+    torso_length_trimmed = torso_length[trim_length:]
     in_center_trimmed = in_center[trim_length:]
     distance_trimmed = distance_cm[trim_length:]
     rat_speed_trimmed = rat_speed[trim_length:]
@@ -62,6 +80,8 @@ def process_file(file_data):
     motif_series = pl.Series(labels).cast(pl.Int64)
     centroid_x_series = pl.Series(centroid_x_trimmed).cast(pl.Float32)
     centroid_y_series = pl.Series(centroid_y_trimmed).cast(pl.Float32)
+    torso_angle_series = pl.Series(torso_angle_trimmed).cast(pl.Float32)
+    torso_length_series = pl.Series(torso_length_trimmed).cast(pl.Float32)
     in_center_series = pl.Series(in_center_trimmed).cast(pl.Float32)
     distance_series = pl.Series(distance_trimmed).cast(pl.Float32)
     speed_series = pl.Series(rat_speed_trimmed).cast(pl.Float32)
@@ -73,6 +93,8 @@ def process_file(file_data):
             "motif": motif_series,
             "centroid_x": centroid_x_series,
             "centroid_y": centroid_y_series,
+            "torso_angle": torso_angle_series,
+            "torso_length": torso_length_series,
             "in_center": in_center_series,
             "distance": distance_series,
             "speed": speed_series,
@@ -84,7 +106,6 @@ def process_file(file_data):
     )
     return temp_df
 
-
 def create_andOR_get_master_df(config, fps=30, create_new_df=False, df_kind="polars"):
     files = get_files(config)
     config_file = Path(config).resolve()
@@ -94,7 +115,7 @@ def create_andOR_get_master_df(config, fps=30, create_new_df=False, df_kind="pol
     parameterization = cfg["parameterization"]
     path_to_file = cfg["project_path"]
     dlc_data_type = input("Were your DLC .csv files originally multi-animal? (y/n): ")
-    labels_list = ana.get_labels(cfg, files, model_name, n_cluster)
+    labels_list = get_labels(cfg, files, model_name, n_cluster)
 
     df = pl.DataFrame(
         {
@@ -126,6 +147,7 @@ def create_andOR_get_master_df(config, fps=30, create_new_df=False, df_kind="pol
             path_to_file, "results", f"all_sequences_{parameterization}-{n_cluster}.csv"
         )
 
+
     if not create_new_df and os.path.exists(df_path):
         if df_kind == "polars":
             df = pl.read_csv(df_path)
@@ -149,6 +171,7 @@ def create_andOR_get_master_df(config, fps=30, create_new_df=False, df_kind="pol
             df = pl.concat(results)
         else:
             for i, file in enumerate(files):
+                print(f"Processing file {i+1} of {len(files)}")
                 filename, time_point, group, full_group_notation = parse_filename(file)
                 labels = labels_list[i]
                 data = kin.get_dlc_file(path_to_file, dlc_data_type, file)
