@@ -18,9 +18,62 @@ https://github.com/AlexEMG/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
-import os, yaml
+import os
+import subprocess
+import sys
 from pathlib import Path
+
 import ruamel.yaml
+import yaml
+
+
+def is_mounty_running():
+    try:
+        # Use the 'ps' command to list all processes
+        output = subprocess.check_output(["ps", "-A"]).decode("utf-8")
+        
+        # Check if 'Mounty' is in the output
+        return 'Mounty' in output
+    except subprocess.CalledProcessError:
+        print("An error occurred while trying to list processes.")
+        return False    
+
+
+def validate_and_correct_project_path(project_path):
+    """
+    Validates the project path and corrects it if necessary on macOS systems using NTFS drives.
+    
+    Args:
+    project_path (str): The initial project path to validate.
+    
+    Returns:
+    str: The validated and potentially corrected project path.
+         Returns None if the path cannot be validated.
+    """
+    if project_path is None:
+        raise ValueError("Project path is None. Please provide a valid path.")
+    
+    if sys.platform != "darwin":
+        return project_path  # Return original path for non-macOS systems
+    
+    if "Volumes" not in project_path:
+        return project_path  # Return original path if it doesn't contain "Volumes"
+    
+    if os.path.exists(project_path):
+        return project_path  # Return original path if it exists
+    
+    # At this point, we know we're on macOS, the path contains "Volumes", and doesn't exist
+    if is_mounty_running():
+        # Get the user's home directory
+        home_dir = os.path.expanduser("~")
+        # Replace "/Volumes" with "{home_dir}/.mounty"
+        modified_path = project_path.replace("/Volumes", f"{home_dir}/.mounty")
+        if os.path.exists(modified_path):
+            print(f"Project path corrected to: {modified_path}")
+            return modified_path
+
+    print("Unable to validate the project path is correct.")
+    return None
 
 
 def create_config_template():
@@ -158,6 +211,13 @@ def read_config(configname):
         raise FileNotFoundError(
             "Config file is not found. Please make sure that the file exists and/or that you passed the path of the config file correctly!"
         )
+    
+    try:
+        cfg["project_path"] = validate_and_correct_project_path(cfg["project_path"])
+    except (ValueError, FileNotFoundError) as e:
+        print(f"Error validating project path: {e}")
+        raise
+        
     return cfg
 
 def write_config(configname,cfg):
