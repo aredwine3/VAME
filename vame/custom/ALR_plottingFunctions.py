@@ -29,19 +29,32 @@ sys.path.append(grandparent_dir)
 # Add the parent directory to sys.path
 sys.path.append(parent_dir)
 
-from vame.util.auxiliary import read_config
-
-if os.environ.get("DISPLAY", "") == "":
-    print("no display found. Using non-interactive Agg backend")
-    matplotlib.use("Agg")
-else:
-    matplotlib.use("TkAgg")
-
 import matplotlib.pyplot as plt
 
 import vame
 import vame.custom.ALR_statsFunctions as AlSt
+from vame.util.auxiliary import read_config
 
+
+def is_notebook():
+    try:
+        shell = get_ipython().__class__.__name__
+        if shell == 'ZMQInteractiveShell':
+            return True   # Jupyter notebook or qtconsole
+        elif shell == 'TerminalInteractiveShell':
+            return False  # Terminal running IPython
+        else:
+            return False  # Other type (?)
+    except NameError:
+        return False      # Probably standard Python interpreter
+
+
+if os.environ.get("DISPLAY", "") == "":
+    matplotlib.use("Agg")  # 'Agg' is a non-interactive backend
+elif is_notebook():
+    matplotlib.use("nbAgg")  # 'nbAgg' is the notebook backend
+else:
+    matplotlib.use("TkAgg")
 
 def plot_distribution_of_motif(df, meta_data, motif=None, group=None, time_point=None):
     motifs = range(df.shape[0]) if motif is None else [motif]
@@ -1360,6 +1373,7 @@ def plot_motifs_all_time_points(df, comparison="Group", value_col = "Value", sig
 
     for ax, time_point in zip(axes, time_points):
         df_time = df[df["Time_Point"] == time_point]
+        print(df_time.head())
 
         if comparison == "Group":
             mean_values = (
@@ -1445,7 +1459,8 @@ def plot_motifs_all_time_points(df, comparison="Group", value_col = "Value", sig
         global_max = max(global_max, max(max_y_by_x_position.values()))
 
         # Add clusters background color
-        clusters = df_time["Cluster"].unique()
+        clusters = df["Cluster"].unique()
+        
         colors = [
             "#ff9999",
             "#ffcc99",
@@ -1577,9 +1592,11 @@ def plot_motifs_all_time_points(df, comparison="Group", value_col = "Value", sig
         hspace=0.0,  # Adjust the vertical space between subplots
         #     wspace=0.0 # Adjust the horizontal space between subplots
     )
+    plt.savefig('plot_motifs_all_time_points.png', dpi=300, bbox_inches='tight')
 
-    plt.show()
+    plt.show() 
 
+    
 
 def plot_motif_frequency(df, time_point, motifs=None):
     # Filter the DataFrame for the specified time point
