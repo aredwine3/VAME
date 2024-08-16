@@ -3,6 +3,7 @@ import glob
 import logging
 import os
 import pickle
+import sys
 from collections import defaultdict
 from importlib import reload
 from pathlib import Path
@@ -50,57 +51,60 @@ from vame.util.auxiliary import read_config
 
 reload(AlPf)
 
-
 def calculate_mean_latent_vector_for_motifs(
     config: str,
+    with_speed: bool = False,
 ) -> Tuple[Dict[int, List[np.ndarray]], Dict[int, np.ndarray]]:
+    """
+    Calculate the mean latent vectors for each motif identified in a set of files.
+
+    Args:
+        config (str): Path to the configuration file.
+        with_speed (bool): Whether to include speed in the latent vectors.
+
+    Returns:
+        Tuple[Dict[int, List[np.ndarray]], Dict[int, np.ndarray]]: A tuple containing:
+            - A dictionary where keys are motif indices and values are lists of numpy arrays representing all latent vectors for each motif.
+            - A dictionary where keys are motif indices and values are numpy arrays representing the mean latent vectors for each motif.
+    """
     config_file = Path(config).resolve()
     cfg = read_config(config_file)
     model_name = cfg["model_name"]
-    n_cluster = cfg[
-        "n_cluster"
-    ]  # the number of motifs (behaviors) identified from the latent vectors
-    load_data = cfg["load_data"]  # the dataset used to train the model
-    hmm_iters = cfg[
-        "hmm_iters"
-    ]  # the number of iterations the hidden markov model was trained for
-    parameterization = cfg[
-        "parameterization"
-    ]  # the parameterization used to identify motifs from the latent vectors, hidden markov model or kmeans
-
-    files = AlHf.get_files(config)  # Returns a list of all file names to quantify
+    n_cluster = cfg["n_cluster"]
+    load_data = cfg["load_data"]
+    hmm_iters = cfg["hmm_iters"]
+    parameterization = cfg["parameterization"]
+    project_path = Path(cfg["project_path"])
+    
+    files = AlHf.get_files(config)
 
     mean_latent_vectors_all_files = {}
 
     for file in files:
-        label = get_label(
-            cfg, file, model_name, n_cluster
-        )  # Returns a 1D numpy array of the label for each frame (from an open arena video), 'label' refers to the motif that the animal was classified as doing, an integer in the range 0 to n_cluster-1
-        resultPath = (
-            Path(cfg["project_path"]) / "results" / file / model_name / load_data
-        )
+        label = get_label(cfg, file, model_name, n_cluster)
+        resultPath = project_path / "results" / file / model_name / load_data
         if parameterization == "hmm":
             path = resultPath / f"{parameterization}-{n_cluster}-{hmm_iters}"
         else:
             path = resultPath / f"{parameterization}-{n_cluster}"
         latent_vec = next(path.glob("latent_vector_*.npy"))
-        vec = np.load(
-            latent_vec
-        )  # The latent vector for the given file, a 2D numpy array of shape (n_frames, 50), 50 was the dimensionality of the latent vectors used in the model. n_frames will be identical to the length of "label"
-        mean_latent_vectors_file = calculate_mean_vectors(vec, label, n_cluster, path)
+        vec = np.load(latent_vec)
+        
+        if not with_speed:
+            mean_latent_vectors_file = calculate_mean_vectors(vec, label, n_cluster, path)
+        else:
+            mean_latent_vectors_file = calculate_mean_vectors_with_speed(vec, label, n_cluster, path, file)
+        
         mean_latent_vectors_all_files[file] = mean_latent_vectors_file
 
-    (
-        mean_latent_vectors_all_idx,
-        all_latent_vectors_all_idx,
-    ) = calculate_mean_and_all_latent_vectors_all_motifs(
+
+    mean_latent_vectors_all_idx, all_latent_vectors_all_idx = calculate_mean_and_all_latent_vectors_all_motifs(
         mean_latent_vectors_all_files, n_cluster
     )
 
-    return (
-        all_latent_vectors_all_idx,
-        mean_latent_vectors_all_idx,
-    )  # From here I have used the mean_latent_vectors_all_idx to and the clustering functions/methods to visualize the clustering of the latent vectors.
+    return all_latent_vectors_all_idx, mean_latent_vectors_all_idx
+
+
 
 
 def calculate_mean_vectors(
@@ -124,11 +128,32 @@ def calculate_mean_vectors(
         idx_values = vec[idx_positions]
         mean_idx_values = np.mean(idx_values, axis=0)
         mean_latent_vectors_file[idx] = mean_idx_values
-        save_mean_vector(path, idx, mean_idx_values)
+        save_mean_vector(path, idx, mean_idx_values, with_speed=False)
     return mean_latent_vectors_file
 
 
-def save_mean_vector(path: str, idx: int, mean_idx_values: np.ndarray) -> None:
+def calculate_mean_vectors_with_speed(vec, label, n_cluster, Path, file):
+    # Augment the latent vectors with speed
+    
+    speed_files = glob.glob(os.path.join(Path, "kinematics", f"{file}-*-speed.npy"))
+    speed = np.load(speed_files[0])
+    
+    if speed.shape[0] != vec.shape[0]:
+        speed = speed[speed.shape[0] - vec.shape[0] :]
+    
+    augmented_vec = np.column_stack((vec, speed))
+    mean_latent_vectors = {}
+
+    for idx in range(n_cluster):
+        idx_positions = np.where(label == idx)[0]
+        idx_values = augmented_vec[idx_positions]
+        mean_idx_values = np.mean(idx_values, axis=0)
+        mean_latent_vectors[idx] = mean_idx_values
+        save_mean_vector(Path, idx, mean_idx_values, with_speed=True)
+    return mean_latent_vectors
+
+
+def save_mean_vector(path: str, idx: int, mean_idx_values: np.ndarray, with_speed = False) -> None:
     """
     Save the mean latent vector for a given motif to a file.
 
@@ -145,7 +170,10 @@ def save_mean_vector(path: str, idx: int, mean_idx_values: np.ndarray) -> None:
     mean_vector_path.mkdir(exist_ok=True)
 
     # Save the mean latent vector as a NumPy array
-    file_path = mean_vector_path / f"mean_latent_vector_motif_{idx}.npy"
+    if not with_speed:
+        file_path = mean_vector_path / f"mean_latent_vector_motif_{idx}.npy"
+    else:
+        file_path = mean_vector_path / f"mean_latent_vector_motif_{idx}_with_speed.npy"
     np.save(file_path, mean_idx_values)
 
 
