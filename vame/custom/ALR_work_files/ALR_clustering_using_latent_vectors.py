@@ -1,14 +1,20 @@
 # Clustering using latent vectors
 
-import vame
-import numpy as np
-import polars as pl
-import pandas as pd
-from typing import Union
 from importlib import reload
+from typing import Union
+
+import numpy as np
+import pandas as pd
+import polars as pl
+
+import vame
 import vame.custom.ALR_analysis as ana
-from vame.custom.ALR_latent_vector_cluster_functions import calculate_mean_latent_vector_for_motifs, create_umap_projection, create_tsne_projection
 import vame.custom.ALR_helperFunctions as AlHf
+from vame.custom.ALR_latent_vector_cluster_functions import (
+    calculate_mean_latent_vector_for_motifs,
+    create_tsne_projection,
+    create_umap_projection,
+)
 
 config = '/work/wachslab/aredwine3/VAME_working/config_sweep_drawn-sweep-88_cpu_hmm-40-650.yaml'
 
@@ -32,7 +38,6 @@ df = df.merge(df_classifications[['Motif', 'Exclude', 'Moving Quickly', 'Predomi
               how='left')
 
 df.columns = df.columns.str.replace(' ', '_')
-
 
 
 all_latent_vectors_all_idx, mean_latent_vectors_all_idx = calculate_mean_latent_vector_for_motifs(config)
@@ -68,13 +73,15 @@ for key, value in mean_latent_vectors_all_idx.items():
     if np.isnan(value).any():
         print(key)
 
+from pathlib import Path
+
+import networkx as nx
+import numpy as np
+from scipy.sparse import csr_matrix
+
 # ! May have to rework how the cluster labels are created
 import vame.custom.ALR_analysis as ana
-from pathlib import Path
 from vame.util.auxiliary import read_config
-import numpy as np
-import networkx as nx
-from scipy.sparse import csr_matrix
 
 config_file = Path(config).resolve()
 cfg = read_config(config_file)
@@ -129,3 +136,5 @@ np.savez('C:\\Users\\tywin\\UCODE\\dataset\\redwine_dataset.npz',
         label_mask=label_mask)
 
 
+#! TRYING WITH SPEED
+all_latent_vectors_all_idx, mean_latent_vectors_all_idx = calculate_mean_latent_vector_for_motifs(config, with_speed=True)

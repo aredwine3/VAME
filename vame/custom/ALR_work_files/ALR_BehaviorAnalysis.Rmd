@@ -1,0 +1,2511 @@
+---
+title: "Open Arena Analysis"
+author: "Adan Redwine"
+date: "`r Sys.Date()`"
+bibliography: /Users/adanredwine/Library/CloudStorage/OneDrive-UniversityofNebraska-Lincoln/ONE Lab - New/Personnel/Adan/Experimental Plans & Data/2022_Rat Antiobiotic + LBP Study/2022_Antibiotic_Study-16S_Sequencing/R_Analysis/16S_Analysis/beta_diversity/beta_diversity_sources.bib
+link-citations: TRUE
+output: 
+    html_document:
+        theme: default
+        highlight: rstudio
+        toc: true
+        number_sections: false
+        toc_float: true
+        code_folding: show
+        fig_caption: True
+        out.width: 100%
+        cache: yes
+---
+
+```{text, theming information, include=FALSE}
+additional themes:
+- journal
+
+
+<details> - Adds a collapsable detail section
+</details> - Closes the collapsable detail section
+<br> - Line break
+<summary> - Adds a summary to the collapsable detail section
+</summary> - Closes the summary tag
+
+```
+
+```{r, ease of use additions, echo=FALSE, eval=TRUE}
+colorize <- function(x, color, bold = FALSE, italic = FALSE) {
+    if (knitr::is_latex_output()) {
+        if (bold) x <- sprintf("\\textbf{%s}", x)
+        if (italic) x <- sprintf("\\textit{%s}", x)
+        sprintf("\\textcolor{%s}{%s}", color, x)
+    } else if (knitr::is_html_output()) {
+        style <- sprintf("color: %s;", color)
+        if (bold) style <- paste(style, "font-weight: bold;")
+        if (italic) style <- paste(style, "font-style: italic;")
+        sprintf("<span style='%s'>%s</span>", style, x)
+    } else {
+        x
+    }
+}
+```
+
+# Data Loading and Preprocessing
+
+##  Loading Required Libraries
+```{r, setup, echo=FALSE, message=FALSE, warning=FALSE, eval=TRUE, tidy=TRUE}
+# Load the required libraries
+if (!require("pacman")) install.packages("pacman")
+
+
+pacman::p_load(
+    microbiome, GUniFrac, MicrobiomeStat, devtools, reshape2, ggExtra,
+    gridExtra, scales, ggpubr, pairwiseAdonis, phyloseq, cowplot, DT, phyloseq,
+    dplyr, tidyverse, ggplot2, cowplot, vegan, gridExtra, magrittr, TidyDensity,
+    broom, tidyr, icecream, SRS, kableExtra, fitdistrplus, DHARMa, car, effects,
+    glmmTMB, vegan, emmeans, glmmTMB
+)
+
+# devtools::install_github("cafferychen777/MicrobiomeStat")
+```
+
+## Loading and Cleaning Data
+```{r, Loading and Cleaning Data, echo=TRUE, eval=TRUE}
+# Read the CSV file
+df <- read.csv("/Users/adanredwine/Library/CloudStorage/OneDrive-UniversityofNebraska-Lincoln/ONE Lab - New/Personnel/Adan/Experimental Plans & Data/2022_Rat Antiobiotic + LBP Study/Outlining_Results/Data_used_in_report/baseline_summed_df_hmm.csv")
+
+# Data Cleaning
+data <- df
+
+# Convert 'Value' column to numeric and round it
+data$Value <- as.numeric(round(data$Value))
+
+# Check if any values in 'Value' column are not rounded
+any(data$Value != round(data$Value))
+
+# Relevel 'Group' column with reference level as "Sham"
+data$Group <- relevel(as.factor(data$Group), ref = "Sham")
+
+# Extract numeric value from 'Time_Point' column
+data$Time_Point <- as.numeric(gsub("Week_", "", data$Time_Point))
+
+# Convert columns to factors
+data$Predominant_Behavior <- as.factor(data$Predominant_Behavior)
+data$Desc_Behavior <- as.factor(data$Desc_Behavior)
+data$Motif <- as.factor(data$Motif)
+data$Animal_ID <- as.factor(data$Animal_ID)
+data$Recording_Block <- as.factor(data$Recording_Block)
+data$Time_Point <- as.factor(data$Time_Point)
+data$Group <- as.factor(data$Group)
+data$Days_Post_Surgery <- as.numeric(data$Days_Post_Surgery)
+data$Days_Post_Surgery <- data$Days_Post_Surgery + abs(min(data$Days_Post_Surgery))
+data$is_injured <- as.factor(data$is_injured)
+data$is_treated <- as.factor(data$is_treated)
+data$is_abx <- as.factor(data$is_abx)
+
+analysis_level <- "Predominant_Behavior"
+# Drop all rows with NA values
+data <- na.omit(data)
+
+# Drop all rows with empty 'Predominant_Behavior' values
+data <- data %>%
+    filter(.data[[analysis_level]] != "")
+```
+
+# When to use generalized linear mixed models (GLMMs)
+
+
+# Data Exploration
+## Is data normally distributed?
+```{r, Normality Check, echo=TRUE, eval=TRUE}
+# Check if the data is normally distributed
+data %>%
+    group_by(.data[[analysis_level]]) %>%
+    shapiro_test(Value)
+
+data %>%
+    group_by(.data[[analysis_level]], Group) %>%
+    shapiro_test(Value)
+
+
+data %>%
+    group_by(.data[[analysis_level]], Group, Time_Point) %>%
+    shapiro_test(Value) %>%
+    # Return any values with a p-value greater than 0.05
+    filter(p > 0.05)
+
+# Log transform the data
+data$logValue <- log(data$Value)
+
+# Check if the data is normally distributed
+data %>%
+    group_by(.data[[analysis_level]]) %>%
+    shapiro_test(logValue)
+
+data %>%
+    group_by(.data[[analysis_level]], Group) %>%
+    shapiro_test(logValue)
+
+
+data %>%
+    group_by(.data[[analysis_level]], Group, Time_Point) %>%
+    shapiro_test(logValue) %>%
+    # Return any values with a p-value greater than 0.05
+    filter(p > 0.05)
+```
+## Is it overdispersed?
+## Is it underdispersed?
+```{r, Overdispersion, echo=TRUE, eval=TRUE}
+# Check for homogeneity of variance
+data %>%
+    group_by(.data[[analysis_level]]) %>%
+    bartlett.test(Value ~ Group, data = .)
+
+data %>%
+    group_by(.data[[analysis_level]], Group) %>%
+    bartlett.test(Value ~ Time_Point, data = .)
+
+
+data %>%
+    group_by(.data[[analysis_level]]) %>%
+    bartlett.test(logValue ~ Group, data = .)
+
+data %>%
+    group_by(.data[[analysis_level]], Group) %>%
+    bartlett.test(logValue ~ Time_Point, data = .)
+
+
+data %>%
+    group_by(.data[[analysis_level]], Group) %>%
+    summarise(
+        mean = mean(Value),
+        var = var(Value),
+        sd = sd(Value),
+        median = median(Value),
+        min = min(Value),
+        max = max(Value),
+        n = n()
+    )
+
+data %>%
+    summarise(
+        mean = mean(Value),
+        var = var(Value),
+        sd = sd(Value),
+        median = median(Value),
+        min = min(Value),
+        max = max(Value),
+        n = n()
+    )
+# DATA IS OVERDISPERSED
+```
+
+## Data Plotting
+
+### Predominant Behavior {.tabset .tabset-pills}
+#### Colored by Motif
+```{r, Data Plotting .data[[analysis_level]], echo=TRUE, eval=TRUE}
+ggplot(data, aes(x = Time_Point, y = Value, color = Motif)) +
+    geom_col(position = "dodge2") +
+    facet_wrap(~Predominant_Behavior, scales = "free_y")
+```
+
+### Summed by Group and Time Point
+```{r, Data Plotting Predominant_Behavior_Summed, echo=TRUE, eval=TRUE}
+data.summed <- data %>%
+    group_by(Predominant_Behavior, Group, Time_Point) %>%
+    summarise(Value = sum(Value))
+
+ggplot(data.summed, aes(x = Time_Point, y = Value, fill = Group)) +
+    geom_col(position = "dodge2") +
+    facet_wrap(~Predominant_Behavior, nrow = 1, scales = "free_y") +
+    labs(
+        x = "Week",
+        y = "Summed Value"
+    ) +
+    scale_fill_manual(values = c("Sham" = "grey", "ABX" = "blue", "Injured" = "red", "Treated" = "purple")) +
+    scale_y_continuous(breaks = seq(0, max(data.summed$Value), by = 5000)) +
+    theme_bw() +
+    ggtitle("Summed Behavior Frequency by Group and Time Point")
+
+
+# Normalize the data by dividing each value by the Value of the group at Time_Point 0
+data.norm <- data.summed %>%
+    group_by(Predominant_Behavior, Group) %>%
+    mutate(Value = Value / Value[Time_Point == 0]) %>%
+    ungroup()
+
+ggplot(data.norm, aes(x = Time_Point, y = Value, fill = Group)) +
+    geom_col(position = "dodge2") +
+    facet_wrap(~Predominant_Behavior, nrow = 1, scales = "free_y") +
+    labs(
+        x = "Week",
+        y = "Summed Value"
+    ) +
+    scale_fill_manual(values = c("Sham" = "grey", "ABX" = "blue", "Injured" = "red", "Treated" = "purple")) +
+    # scale_y_continuous(breaks = seq(0, max(data.summed$Value), by = 5000)) +
+    theme_bw() +
+    # Add a horizontal line at y = 1
+    geom_hline(yintercept = 1, linetype = "dashed", color = "black") +
+    # Set the title of the plot
+    ggtitle("Behavior Frequency Value by Group and Time Point (Normalized to Baseline)")
+```
+
+### Mean by Group and Time Point
+```{r, Data Plotting Predominant_Behavior_Mean, echo=TRUE, eval=TRUE}
+data.mean.pb <- data %>%
+    group_by(Predominant_Behavior, Group, Time_Point) %>%
+    summarise(
+        sd = sd(Value),
+        Value = mean(Value),
+    )
+
+ggplot(data.mean.pb, aes(x = Time_Point, y = Value, fill = Group)) +
+    geom_col(position = position_dodge(width = 0.9)) +
+    geom_errorbar(aes(ymin = Value - sd, ymax = Value + sd),
+        position = position_dodge(width = 0.9), width = 0.25
+    ) +
+    facet_wrap(~Predominant_Behavior, nrow = 1, scales = "free_y") +
+    labs(
+        x = "Week",
+        y = "Summed Value"
+    ) +
+    scale_fill_manual(values = c("Sham" = "grey", "ABX" = "blue", "Injured" = "red", "Treated" = "purple")) +
+    theme_bw() +
+    ggtitle("Mean Behavior Frequency by Group and Time Point")
+```
+
+```{r, ANOVA on Motif Mean}
+Anova(lm(Value ~ Motif * Group * Time_Point, data = data), type = "III")
+
+summary(lm(Value ~ Group * Time_Point, data = data.Grooming))
+
+
+lm_fit <- lm(Value ~ Group * Time_Point, data = data.Grooming)
+
+aov_fit <- aov(Value ~ Group * Time_Point, data = data.Grooming)
+coef(lm_fit)
+coef(aov_fit)
+```
+
+### Motif {.tabset .tabset-pills}
+#### Colored by Predominant Behavior
+```{r, Data Plotting Motif Raw, echo=TRUE, eval=TRUE}
+ggplot(data, aes(x = Time_Point, y = Value, fill = Motif)) +
+    geom_col(position = "dodge2") +
+    facet_grid(Group ~ Predominant_Behavior, scales = "free_y") +
+    theme_bw()
+```
+
+### Summed by Group and Time Point
+```{r, Data Plotting Motif Summed, echo=TRUE, eval=TRUE}
+data.summed <- data %>%
+    group_by(Motif, Group, Time_Point) %>%
+    summarise(Value = sum(Value))
+
+ggplot(data.summed, aes(x = Time_Point, y = Value, fill = Group)) +
+    geom_col(position = "dodge2") +
+    facet_grid(Motif ~ ., scales = "free_y") +
+    labs(
+        x = "Week",
+        y = "Summed Value"
+    ) +
+    scale_fill_manual(values = c("Sham" = "grey", "ABX" = "blue", "Injured" = "red", "Treated" = "purple")) +
+    scale_y_continuous(breaks = seq(0, max(data.summed$Value), by = 5000)) +
+    theme_bw() +
+    ggtitle("Summed Motif Frequency by Group and Time Point")
+
+
+# Normalize the data by dividing each value by the Value of the group at Time_Point 0
+data.norm <- data.summed %>%
+    group_by(Motif, Group) %>%
+    mutate(Value = Value / Value[Time_Point == 0]) %>%
+    ungroup()
+
+ggplot(data.norm, aes(x = Time_Point, y = Value, fill = Group)) +
+    geom_col(position = "dodge2") +
+    facet_grid(Motif ~ ., scales = "free_y") +
+    labs(
+        x = "Week",
+        y = "Summed Value"
+    ) +
+    scale_fill_manual(values = c("Sham" = "grey", "ABX" = "blue", "Injured" = "red", "Treated" = "purple")) +
+    # scale_y_continuous(breaks = seq(0, max(data.summed$Value), by = 5000)) +
+    theme_bw() +
+    # Add a horizontal line at y = 1
+    geom_hline(yintercept = 1, linetype = "dashed", color = "black") +
+    # Set the title of the plot
+    ggtitle("Behavior Frequency Value by Group and Time Point (Normalized to Baseline)")
+```
+
+### Mean by Group and Time Point
+```{r, Data Plotting Predominant_Behavior_Mean, echo=TRUE, eval=TRUE}
+data.mean.motif <- data %>%
+    group_by(Motif, Group, Time_Point) %>%
+    summarise(
+        sd = sd(Value),
+        Value = mean(Value),
+    )
+
+ggplot(data.mean.motif, aes(x = Time_Point, y = Value, fill = Group)) +
+    geom_col(position = position_dodge(width = 0.9)) +
+    geom_errorbar(aes(ymin = Value - sd, ymax = Value + sd),
+        position = position_dodge(width = 0.9), width = 0.25
+    ) +
+    facet_grid(Motif ~ ., scales = "free_y") +
+    labs(
+        x = "Week",
+        y = "Summed Value"
+    ) +
+    scale_fill_manual(values = c("Sham" = "grey", "ABX" = "blue", "Injured" = "red", "Treated" = "purple")) +
+    theme_bw() +
+    ggtitle("Mean Behavior Frequency by Group and Time Point")
+```
+
+
+## Outlier Detection
+
+### Outlier Plotting
+```{r, Outlier Plotting, echo=TRUE, eval=TRUE}
+# Are there outliers?
+# Visual method: Boxplot
+# This will create a boxplot for each behavior
+ggplot(data, aes(x = Predominant_Behavior, y = Value)) +
+    geom_boxplot() +
+    facet_grid(Group ~ Time_Point, scales = "free_y") +
+    # rotate x-axis labels
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+### Outliers by Statistics
+```{r, Outliers by Statistics, echo=TRUE, eval=TRUE}
+# Statistical method: IQR method
+# Number of outliers for each behavior for each time point for each group
+data %>%
+    group_by(Predominant_Behavior, Time_Point, Group) %>%
+    mutate(
+        IQR = IQR(Value, na.rm = TRUE),
+        Q1 = quantile(Value, 0.25, na.rm = TRUE),
+        Q3 = quantile(Value, 0.75, na.rm = TRUE)
+    ) %>%
+    filter(Value < (Q1 - 1.5 * IQR) | Value > (Q3 + 1.5 * IQR)) %>%
+    summarise(n_outliers = n())
+
+# Check if log transformation helps
+data.log <- data %>%
+    mutate(Value = log(Value))
+
+ggplot(data.log, aes(x = Predominant_Behavior, y = Value)) +
+    geom_boxplot() +
+    facet_grid(Group ~ Time_Point, scales = "free_y") +
+    # rotate x-axis labels
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+data.log %>%
+    group_by(Predominant_Behavior, Time_Point, Group) %>%
+    summarise(
+        mean = mean(Value),
+        var = var(Value),
+        sd = sd(Value),
+        median = median(Value),
+        min = min(Value),
+        max = max(Value),
+        n = n()
+    )
+
+# Remove outliers
+data.noOut <- data %>%
+    group_by(Predominant_Behavior, Time_Point, Group) %>%
+    mutate(
+        IQR = IQR(Value, na.rm = TRUE),
+        Q1 = quantile(Value, 0.25, na.rm = TRUE),
+        Q3 = quantile(Value, 0.75, na.rm = TRUE)
+    ) %>%
+    filter(Value >= (Q1 - 1.5 * IQR) & Value <= (Q3 + 1.5 * IQR)) %>%
+    ungroup()
+
+
+ggplot(data.noOut, aes(x = Predominant_Behavior, y = Value)) +
+    geom_boxplot() +
+    facet_grid(Group ~ Time_Point, scales = "free_y") +
+    # rotate x-axis labels
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+if (!require(DescTools)) install.packages("DescTools")
+# Winzorize the data
+library(DescTools)
+# Perform winsorization
+data.winz <- data %>%
+    group_by(Predominant_Behavior, Time_Point, Group) %>%
+    mutate(Value = DescTools::Winsorize(Value, probs = c(0.05, 0.95))) %>%
+    ungroup()
+
+# Make sure all values are integers
+data.winz$Value <- as.integer(data.winz$Value)
+
+ggplot(data.winz, aes(x = Predominant_Behavior, y = Value)) +
+    geom_boxplot() +
+    facet_grid(Group ~ Time_Point, scales = "free_y") +
+    # rotate x-axis labels
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+## Goodness-of-Fit Tests
+```{r, goodness_of_fit, echo=TRUE, warning=FALSE}
+# Determine the best distribution for each alpha diversity measure
+measures <- unique(data$.data[[analysis_level]])
+dat <- data.winz
+for (measure in measures) {
+    divMeasure <- measure
+
+    # Subset data for the current alpha diversity measure and phyloseq object
+    subset_data <- dat %>%
+        filter(.data[[analysis_level]] == divMeasure)
+
+    x <- subset_data$Value
+
+    x <- x[x > 0]
+
+    # Define a list of distributions to fit
+    fit_list <- list(
+        "norm" = "norm", "lognorm" = "lnorm", "gamma" = "gamma",
+        "exp" = "exp", "weibull" = "weibull", "logis" = "logis",
+        "cauchy" = "cauchy", "unif" = "unif"
+    )
+
+    gofstat_list_1 <- list()
+
+    # Fit distributions and calculate goodness-of-fit statistics
+    for (input_name in names(fit_list)) {
+        tryCatch(
+            {
+                fit <- fitdist(x, fit_list[[input_name]], method = "mle", control = list(maxit = 10000))
+                gofstat <- gofstat(fit)
+                gofstat_list_1[[input_name]] <- gofstat
+            },
+            error = function(e) {
+                message(paste("Failed to fit", input_name, "distribution: ", e$message))
+            }
+        )
+    }
+
+    list_names <- names(gofstat_list_1$norm)
+
+    # Initialize an empty dataframe for goodness-of-fit results
+    gostat_df_1 <- data.frame(matrix(ncol = length(list_names) + 1, nrow = 0))
+    colnames(gostat_df_1) <- c("input", list_names)
+
+    # Populate the dataframe with goodness-of-fit results
+    for (input_name in names(gofstat_list_1)) {
+        gofstat <- gofstat_list_1[[input_name]]
+
+        new_row <- data.frame(matrix(ncol = length(list_names) + 1, nrow = 1))
+        colnames(new_row) <- c("input", list_names)
+
+        new_row$input <- input_name
+
+        for (fit_name in list_names) {
+            if (!is.null(gofstat[[fit_name]])) {
+                new_row[[fit_name]] <- gofstat[[fit_name]][[1]]
+            }
+        }
+
+        gostat_df_1 <- rbind(gostat_df_1, new_row)
+    }
+
+    gostat_df_1$.data[[analysis_level]] <- divMeasure
+
+    # Save the goodness-of-fit results as a CSV file
+    path <- "/Users/adanredwine/Library/CloudStorage/OneDrive-UniversityofNebraska-Lincoln/ONE Lab - New/Personnel/Adan/Experimental Plans & Data/2022_Rat Antiobiotic + LBP Study/Open Arena/Statistics/glmmTMB_family_function_determination"
+    # If the directory does not exist, create it
+    if (!dir.exists(path)) {
+        dir.create(path)
+    }
+    appended_name_1 <- paste0("gostat_df_1_", divMeasure, ".csv")
+    write.csv(gostat_df_1, file = paste0(path, appended_name_1))
+
+    # Check if all data are integers and fit Poisson and negative binomial distributions
+    if (all(floor(x) == x)) {
+        # Fit Poisson and negative binomial distributions
+        fit_poisson <- try(fitdist(x, "pois"), silent = TRUE)
+        fit_nbinom <- try(fitdist(x, "nbinom"), silent = TRUE)
+
+        if (inherits(fit_poisson, "try-error") || inherits(fit_nbinom, "try-error")) {
+            warning("Fitting failed")
+            return()
+        }
+        gofstat_poisson <- gofstat(fit_poisson)
+        gofstat_nbinom <- gofstat(fit_nbinom)
+
+        gofstat_list_2 <- list("poisson" = gofstat_poisson, "nbinom" = gofstat_nbinom)
+
+        list_names <- intersect(names(gofstat_poisson), names(gofstat_nbinom))
+
+        # Initialize an empty dataframe for Poisson and negative binomial goodness-of-fit results
+        gofstat_df_2 <- data.frame(matrix(ncol = length(list_names) + 1, nrow = 0))
+        colnames(gofstat_df_2) <- c("input", list_names)
+
+        # Populate the dataframe with Poisson and negative binomial goodness-of-fit results
+        for (input_name in names(gofstat_list_2)) {
+            gofstat <- gofstat_list_2[[input_name]]
+
+            new_row <- data.frame(matrix(ncol = length(list_names) + 1, nrow = 1))
+            colnames(new_row) <- c("input", list_names)
+
+            new_row$input <- input_name
+
+            for (fit_name in list_names) {
+                if (!is.null(gofstat[[fit_name]]) && length(gofstat[[fit_name]]) > 0) {
+                    new_row[[fit_name]] <- gofstat[[fit_name]][[1]]
+                }
+            }
+
+            gofstat_df_2 <- rbind(gofstat_df_2, new_row)
+        }
+
+        gofstat_df_2$.data[[analysis_level]] <- divMeasure
+
+        # Save the Poisson and negative binomial goodness-of-fit results as a CSV file
+        appended_name_2 <- paste0("gofstat_df_2", divMeasure, ".csv")
+        write.csv(gofstat_df_2, file = paste0(path, appended_name_2))
+    }
+}
+```
+
+
+## Goodness-of-Fit Results
+
+```{r, combine and save the goodness-of-fit results, echo=TRUE}
+# Bind all .csv files into one
+all_files <- list.files(path, pattern = "*.csv", full.names = TRUE)
+
+gofstat_dfs <- bind_rows(lapply(all_files, read.csv))
+
+# Remove the "X" column
+gofstat_dfs <- gofstat_dfs[, -1]
+
+# Round all numbers to 3 decimal places
+gofstat_dfs_rndd <- gofstat_dfs %>%
+    mutate(across(where(is.numeric), ~ round(., 3)))
+
+col_order <- c("ps_name", "Predominant_Behavior", "input", "aic", "bic", "chisq", "chisqbreaks", "chisqpvalue", "chisqdf", "chisqtable", "cvm", "cvmtest", "ad", "adtest", "ks", "kstest", "discrete", "nbfit")
+
+# Drop the chisqtable, chisqdf
+current_table <- gofstat_dfs_rndd[, col_order] %>%
+    rename(
+        "PS Name" = "ps_name", "Alpha Diversity Measure" = "Predominant_Behavior",
+        Distribution = "input", AIC = "aic", BIC = "bic",
+        `Value - &chi;^2` = "chisq", `Breaks - &chi;^2` = "chisqbreaks",
+        `P-Value - &chi;^2` = "chisqpvalue", `Degrees of Freedom - &chi;^2` = "chisqdf",
+        `Table - &chi;^2` = "chisqtable", `Value - CVM` = "cvm",
+        `Test - CVM` = "cvmtest", `Value - AD` = "ad",
+        `Test - AD` = "adtest", `Value - KS` = "ks",
+        `Test - KS` = "kstest", `Discrete` = "discrete",
+        `Negative Binomial Fit` = "nbfit"
+    )
+
+gofstat_dfs %>%
+    group_by(.data[[analysis_level]]) %>%
+    arrange(aic, bic) %>%
+    group_split() %>%
+    # Take the top 5 distributions with the lowest AIC and BIC values
+    map(~ head(., 5))
+```
+
+----------------
+
+# Visualization of Distribution Fits 
+
+## Density Plots & Tables for Alpha Diversity Measures {.tabset .tabset-pills}
+
+
+The following code generates density plots to visualize the goodness-of-fit results for each alpha diversity measure and phyloseq object. The plots show the distribution of the goodness-of-fit statistics for the top 3 (if available) fitted distributions.
+
+```{r, Checking and Visualizing the fits of Behaviors using density plots, echo=TRUE, warning=FALSE}
+plot_density <- function(data, measure, stat_fxn = NULL) {
+    # Filter the data for the specific alpha diversity measure and ps_name
+    subset_data <- data %>%
+        filter(.data[[analysis_level]] == measure)
+
+    # Calculate the minimum and maximum x and maximum y values
+    x_min <- min(subset_data$Value)
+    x_min <- x_min - (0.05 * x_min)
+
+    x_max <- max(subset_data$Value)
+    x_max <- x_max + (0.05 * x_max)
+
+    y_max <- max(density(subset_data$Value)$y)
+    y_max <- y_max + (0.65 * y_max)
+
+    # Create a vector of distinct colors for each distribution
+    dist_colors <- c(
+        "Normal" = "red", "Lognormal" = "blue", "Gamma" = "green", "Exponential" = "purple",
+        "Poisson" = "orange", "Negative Binomial" = "brown", "Logistic" = "pink", "Cauchy" = "darkgreen",
+        "Weibull" = "darkred", "Uniform" = "darkblue"
+    )
+
+    # Create a density plot for each time point
+    p1 <- ggplot(subset_data, aes(x = Value, fill = Time_Point)) +
+        geom_density(alpha = 0.5) +
+        facet_wrap(~Time_Point, scales = "free_x") +
+        ggtitle(paste("Density of", .data[[analysis_level]], "at each time point")) +
+        labs(
+            x = .data[[analysis_level]],
+            y = "Density"
+        ) +
+        theme_minimal() +
+        theme(
+            plot.title = element_text(size = 14, face = "bold"),
+            plot.subtitle = element_text(size = 12),
+            plot.background = element_rect(color = "black", fill = NA, linewidth = 1), # Create a border around the plot
+            panel.border = element_rect(color = "black", fill = NA, linewidth = 1), # Make border surrounding the panel area
+            axis.title = element_text(size = 12),
+            axis.text = element_text(size = 10),
+            axis.text.y = element_text(size = 8)
+        ) +
+        scale_x_continuous(limits = c(x_min, x_max)) +
+        scale_y_continuous(limits = c(0, y_max))
+
+    data_mean <- mean(subset_data$Value, na.rm = TRUE)
+    data_sd <- sd(subset_data$Value, na.rm = TRUE)
+    mu <- data_mean
+    var <- data_sd^2
+    size <- mu^2 / (var - mu)
+    prob <- size / (size + mu)
+
+    p2 <- ggplot(subset_data, aes(x = Value)) +
+        geom_density(alpha = 0.5)
+
+    if (("normal" %in% stat_fxn) | ("norm" %in% stat_fxn)) {
+        fit_norm <- MASS::fitdistr(subset_data$Value, "normal")
+        p2 <- p2 + stat_function(fun = dnorm, args = list(mean = fit_norm$estimate[["mean"]], sd = fit_norm$estimate[["sd"]]), aes(color = "Normal"))
+    }
+    if (("lognormal" %in% stat_fxn) | ("lognorm" %in% stat_fxn)) {
+        fit_lognorm <- MASS::fitdistr(subset_data$Value, "lognormal")
+        p2 <- p2 + stat_function(fun = dlnorm, args = list(meanlog = fit_lognorm$estimate[["meanlog"]], sdlog = fit_lognorm$estimate[["sdlog"]]), aes(color = "Lognormal"))
+    }
+    if ("gamma" %in% stat_fxn) {
+        fit_gamma <- MASS::fitdistr(subset_data$Value, "gamma")
+        p2 <- p2 + stat_function(fun = dgamma, args = list(shape = fit_gamma$estimate[["shape"]], rate = fit_gamma$estimate[["rate"]], scale = 1 / (fit_gamma$estimate[["rate"]])), aes(color = "Gamma"))
+    }
+    if (("exponential" %in% stat_fxn) | ("exp" %in% stat_fxn)) {
+        fit_exp <- MASS::fitdistr(subset_data$Value, "exponential")
+        p2 <- p2 + stat_function(fun = dexp, args = list(rate = fit_exp$estimate[["rate"]]), aes(color = "Exponential"))
+    }
+    if ("poisson" %in% stat_fxn) {
+        subset_data <- subset_data[order(subset_data$Value), ]
+        fit_poisson <- MASS::fitdistr(subset_data$Value, "Poisson")
+        p2 <- p2 + geom_line(aes(x = subset_data$Value, y = dpois(subset_data$Value, lambda = fit_poisson$estimate[["lambda"]]), color = "Poisson"))
+    }
+    if ("nbinom" %in% stat_fxn) {
+        fit_nbinom <- MASS::fitdistr(subset_data$Value, "negative binomial")
+        size <- fit_nbinom$estimate[["size"]]
+        mu <- fit_nbinom$estimate[["mu"]]
+        prob <- size / (size + mu)
+        p2 <- p2 + geom_line(aes(x = subset_data$Value, y = dnbinom(subset_data$Value, size = size, prob = prob), color = "Negative Binomial"))
+    }
+    if (("logistic" %in% stat_fxn) | ("logis" %in% stat_fxn)) {
+        fit_logis <- MASS::fitdistr(subset_data$Value, "logistic")
+        p2 <- p2 + stat_function(fun = dlogis, args = list(location = fit_logis$estimate[["location"]], scale = fit_logis$estimate[["scale"]]), aes(color = "Logistic"))
+    }
+    if (("cauchy" %in% stat_fxn) | ("cau" %in% stat_fxn)) {
+        fit_cau <- MASS::fitdistr(subset_data$Value, "cauchy")
+        p2 <- p2 + stat_function(fun = dcauchy, args = list(location = fit_cau$estimate[["location"]], scale = fit_cau$estimate[["scale"]]), aes(color = "Cauchy"))
+    }
+    if (("weibull" %in% stat_fxn) | ("wei" %in% stat_fxn)) {
+        fit_wei <- MASS::fitdistr(subset_data$Value, "weibull")
+        p2 <- p2 + stat_function(fun = dweibull, args = list(shape = fit_wei$estimate[["shape"]], scale = fit_wei$estimate[["scale"]]), aes(color = "Weibull"))
+    }
+    if (("uniform" %in% stat_fxn) | ("unif" %in% stat_fxn)) {
+        fit_unif <- MASS::fitdistr(subset_data$Value, "uniform")
+        p2 <- p2 + stat_function(fun = dunif, args = list(min = fit_unif$estimate[["min"]], max = fit_unif$estimate[["max"]]), aes(color = "Uniform"))
+    }
+
+    # p2 <- p2 + scale_color_manual(values = c("Normal" = "red", "Lognormal" = "blue", "Gamma" = "green", "Exponential" = "purple", "Poisson" = "orange", "Negative Binomial" = "brown", "Logistic" = "pink", "Cauchy" = "blue", "Weibull" = "red", "Uniform" = "green"))
+
+    p2 <- p2 + scale_color_manual(values = dist_colors)
+    p2 <- p2 + ggtitle(paste("Density of", .data[[analysis_level]])) +
+        labs(
+            x = .data[[analysis_level]],
+            y = "Density"
+        ) +
+        theme_minimal() +
+        theme(
+            plot.title = element_text(size = 14, face = "bold"),
+            plot.subtitle = element_text(size = 12),
+            plot.background = element_rect(color = "black", fill = NA, linewidth = 1), # Create a border around the plot
+            panel.border = element_rect(color = "black", fill = NA, linewidth = 1), # Make border surrounding the panel area
+            axis.title = element_text(size = 12),
+            axis.text = element_text(size = 10)
+        ) +
+        scale_x_continuous(limits = c(x_min, x_max)) +
+        scale_y_continuous(limits = c(0, y_max))
+
+    p_final <- arrangeGrob(p2, p1, nrow = 2)
+    # p_final <- grid.arrange(p2, p1, nrow = 2)
+
+    return(p_final)
+}
+
+
+find_best_distributions <- function(gofstat_dfs, .data[[analysis_level]], n = 3) {
+    result <- gofstat_dfs %>%
+        filter(.data[[analysis_level]] == !!.data[[analysis_level]]) %>%
+        arrange(aic, bic, chisq, cvm, ad, ks) %>%
+        slice(1:n)
+    return(result)
+}
+
+plt_path <- "/Users/adanredwine/Library/CloudStorage/OneDrive-UniversityofNebraska-Lincoln/ONE Lab - New/Personnel/Adan/Experimental Plans & Data/2022_Rat Antiobiotic + LBP Study/Open Arena/Statistics/glmmTMB_family_function_determination/density_plots/"
+
+# Create and save density plots that show the best-fitting (top 3 - based on AIC and BIC) distributions for each alpha diversity measure and ps object/Users/adanredwine/Library/CloudStorage/OneDrive-UniversityofNebraska-Lincoln/ONE Lab - New/Personnel/Adan/Experimental Plans & Data/2022_Rat Antiobiotic + LBP Study/Open Arena/Statistics/glmmTMB_family_function_determination/density_plots
+
+for (.data[[analysis_level]] in unique(gofstat_dfs$.data[[analysis_level]])) {
+    top5_dists_table <- find_best_distributions(gofstat_dfs, .data[[analysis_level]], n = 5)
+    top5_dists <- top5_dists_table$input
+    plott <- plot_density(data, measure = .data[[analysis_level]], stat_fxn = c(top5_dists[1], top5_dists[2], top5_dists[3], top5_dists[4], top5_dists[5]))
+    ggsave(filename = paste0(plt_path, "density_plot_", .data[[analysis_level]], ".png"), plot = plott, width = 10, height = 6, units = "in", dpi = 900)
+}
+```
+
+### Grooming
+```{r, Grooming Density Plot, echo=TRUE, eval=TRUE}
+Desc_Behavior <- "Grooming"
+current_plt_path <- paste0(plt_path, "density_plot_", Predominant_BehaviDesc_Behavioror, ".png")
+
+knitr::include_graphics(current_plt_path)
+```
+
+```{r, Grooming Goodness of Fit Table, echo=TRUE, eval=TRUE}
+create_table <- function(data, measure) {
+    col_order <- c("Predominant_Behavior", "input", "aic", "bic", "chisq", "chisqbreaks", "chisqpvalue", "chisqdf", "chisqtable", "cvm", "cvmtest", "ad", "adtest", "ks", "kstest", "discrete", "nbfit")
+
+    current_table <- data[, col_order] %>%
+        filter(Desc_Behavior == measure) %>%
+        arrange(aic, bic, chisq, cvm, ad, ks) %>%
+        dplyr::select(-Desc_Behavior) %>%
+        rename(
+            Distribution = "input", AIC = "aic", BIC = "bic",
+            `Value - &chi;^2` = "chisq", `Breaks - &chi;^2` = "chisqbreaks",
+            `P-Value - &chi;^2` = "chisqpvalue", `Degrees of Freedom - &chi;^2` = "chisqdf",
+            `Table - &chi;^2` = "chisqtable", `Value - CVM` = "cvm",
+            `Test - CVM` = "cvmtest", `Value - AD` = "ad",
+            `Test - AD` = "adtest", `Value - KS` = "ks",
+            `Test - KS` = "kstest", `Discrete` = "discrete",
+            `Negative Binomial Fit` = "nbfit"
+        )
+
+    # Round all numbers to 3 decimal places
+    current_table <- current_table %>%
+        mutate(across(where(is.numeric), ~ round(., 5)))
+
+    DT::datatable(
+        current_table,
+        options = list(pageLength = 10),
+        escape = FALSE
+    )
+}
+
+create_table(gofstat_dfs, Desc_Behavior)
+```
+
+### Rearing
+```{r, Rearing Density Plot, echo=TRUE, eval=TRUE}
+Desc_Behavior <- "Rearing"
+current_plt_path <- paste0(plt_path, "density_plot_", Desc_Behavior, ".png")
+
+knitr::include_graphics(current_plt_path)
+```
+
+```{r, Rearing Goodness of Fit Table, echo=TRUE, eval=TRUE}
+create_table(gofstat_dfs, Desc_Behavior)
+```
+
+### Sniffing
+```{r, Sniffing Density Plot, echo=TRUE, eval=TRUE}
+Desc_Behavior <- "Sniffing"
+current_plt_path <- paste0(plt_path, "density_plot_", Desc_Behavior, ".png")
+
+knitr::include_graphics(current_plt_path)
+```
+
+```{r, Sniffing Goodness of Fit Table, echo=TRUE, eval=TRUE}
+create_table(gofstat_dfs, Desc_Behavior)
+```
+
+### Sniffing-Active
+```{r, Sniffing-Active Density Plot, echo=TRUE, eval=TRUE}
+Desc_Behavior <- "Sniffing-Active"
+current_plt_path <- paste0(plt_path, "density_plot_", Desc_Behavior, ".png")
+
+knitr::include_graphics(current_plt_path)
+```
+
+```{r, Sniffing-Active Goodness of Fit Table, echo=TRUE, eval=TRUE}
+create_table(gofstat_dfs, Desc_Behavior)
+```
+
+### Sniffing-Stationary
+```{r, Sniffing-Stationary Density Plot, echo=TRUE, eval=TRUE}
+Desc_Behavior <- "Sniffing-Stationary"
+current_plt_path <- paste0(plt_path, "density_plot_", Desc_Behavior, ".png")
+
+knitr::include_graphics(current_plt_path)
+```
+
+### Walking
+```{r, Walking Density Plot, echo=TRUE, eval=TRUE}
+Desc_Behavior <- "Walking"
+current_plt_path <- paste0(plt_path, "density_plot_", Desc_Behavior, ".png")
+
+knitr::include_graphics(current_plt_path)
+```
+
+### Walking-Quick
+```{r, Walking-Quick Density Plot, echo=TRUE, eval=TRUE}
+Desc_Behavior <- "Walking-Quick"
+current_plt_path <- paste0(plt_path, "density_plot_", Desc_Behavior, ".png")
+
+knitr::include_graphics(current_plt_path)
+```
+
+### Stationary
+```{r, Stationary Density Plot, echo=TRUE, eval=TRUE}
+Desc_Behavior <- "Stationary"
+current_plt_path <- paste0(plt_path, "density_plot_", Desc_Behavior, ".png")
+
+knitr::include_graphics(current_plt_path)
+```
+
+
+# Generalized Linear Mixed Models (GLMM)
+
+The splines are basis functions that are used to fit the model. Each spline is a piecewise polynomial function that is used to model the relationship between Time_Point and the response variable. The splines are designed to be smooth and to have continuous first and second derivatives, which makes them suitable for modeling smooth, nonlinear relationships.
+
+Even though you have 8 individual time points, you don't necessarily need 8 splines to model the relationship between Time_Point and the response variable. In fact, using too many splines can lead to overfitting, where the model fits the noise in the data rather than the underlying trend. By using fewer splines, you're forcing the model to find a smoother, more generalizable relationship.
+
+If you think that three splines are not enough to capture the relationship in your data, you could try increasing the degrees of freedom to use more splines. However, keep in mind that using more splines will make the model more flexible, but also more prone to overfitting. It's always a good idea to check the model diagnostics and validate the model on a separate test set to make sure it's not overfitting.
+
+The Time_Point variable in the spline is being used to model a potentially non-linear relationship between time and the response variable Value. The splines::bs() function is used to create a basis for B-splines, which are piecewise-defined polynomial functions. The df argument specifies the number of degrees of freedom, which corresponds to the number of piecewise polynomial segments in the spline. The Boundary.knots argument specifies the range over which the spline is defined.
+
+The interaction between Group and Time_Point in the formula Group * splines::bs(Time_Point, df = 3, Boundary.knots = range(Time_Point)) allows the shape of the spline (i.e., the relationship between Time_Point and Value) to differ for each level of Group. This means that each group can have a different non-linear trend over time.
+
+```{r, Select the data to use}
+# OAdata <- data.winz
+OAdata <- data
+OAdata$Time_Point <- as.factor(OAdata$Time_Point)
+# The random effects (1 | Animal_ID) and (Time_Point | Animal_ID) allow for additional variability in the response variable Value that is due to differences between animals. The term (1 | Animal_ID) represents random intercepts for Animal_ID, meaning that the baseline level of Value is allowed to differ between animals. The term (Time_Point | Animal_ID) represents random slopes for Time_Point within Animal_ID, meaning that the effect of Time_Point on Value is allowed to differ between animals.
+
+# Formulae
+FFX.1.RFX.1.Interaction.1 <- Value ~ Group * Time_Point + (1 | Animal_ID)
+#FFX.1.RFX.1.Interaction.2 <- Value ~ Group * Time_Point + (1 | Animal_ID) + (Time_Point | Animal_ID)
+FFX.1.RFX.2.Interaction.1 <- Value ~ Group * Time_Point + (1 | Animal_ID) + (1 | Recording_Block)
+#FFX.1.RFX.2.Interaction.2 <- Value ~ Group * Time_Point + (1 | Animal_ID) + (1 | Recording_Block) + (Time_Point | Animal_ID)
+FFX.1.RFX.3.Interaction.1 <- Value ~ Group * Time_Point + (1 | Animal_ID) + (1 | Recording_Wk_Day)
+#FFX.1.RFX.3.Interaction.2 <- Value ~ Group * Time_Point + (1 | Animal_ID) + (1 | Recording_Wk_Day) + (Time_Point | Animal_ID)
+FFX.1.RFX.4.Interaction.1 <- Value ~ Group * Time_Point + (1 | Animal_ID) + (1 | PostSug_Prob)
+#FFX.1.RFX.4.Interaction.2 <- Value ~ Group * Time_Point + (1 | Animal_ID) + (1 | PostSug_Prob) + (Time_Point | Animal_ID)
+FFX.1.RFX.5.Interaction.1 <- Value ~ Group * Time_Point + (1 | Animal_ID) + (1 | Recording_Wk_Day / Recording_Block)
+#FFX.1.RFX.5.Interaction.2 <- Value ~ Group * Time_Point + (1 | Animal_ID) + (1 | Recording_Wk_Day / Recording_Block) + (Time_Point | Animal_ID)
+
+
+#FFX.2.RFX.1.Interaction.1 <- Value ~ Group * Days_Post_Surgery + (1 | Animal_ID)
+#FFX.2.RFX.2.Interaction.1 <- Value ~ Group * Days_Post_Surgery + (1 | Animal_ID) + (1 | Recording_Block)
+#FFX.2.RFX.3.Interaction.1 <- Value ~ Group * Days_Post_Surgery + (1 | Animal_ID) + (1 | Recording_Wk_Day)
+#FFX.2.RFX.4.Interaction.1 <- Value ~ Group * Days_Post_Surgery + (1 | Animal_ID) + (1 | PostSug_Prob)
+#FFX.2.RFX.5.Interaction.1 <- Value ~ Group * Days_Post_Surgery + (1 | Animal_ID) + (1 | Recording_Wk_Day / Recording_Block)
+
+cntrl <- glmmTMBControl(profile = TRUE, optCtrl = list(iter.max = 3000000, eval.max = 1000000), parallel = getOption("glmmTMB.cores", 9L))
+
+variable_names <- c(
+    "FFX.1.RFX.1.Interaction.1", #"FFX.1.RFX.1.Interaction.2",
+    "FFX.1.RFX.2.Interaction.1", #"FFX.1.RFX.2.Interaction.2",
+    "FFX.1.RFX.3.Interaction.1", #"FFX.1.RFX.3.Interaction.2",
+    "FFX.1.RFX.4.Interaction.1", #"FFX.1.RFX.4.Interaction.2",
+    "FFX.1.RFX.5.Interaction.1" #"FFX.1.RFX.5.Interaction.2"
+)
+```
+
+
+
+```{r, Helper Functions for Modelling}
+library(ggplot2)
+library(ggpubr)
+
+filter_data_fit_models <- function(data, measure, variable_names, log_transform = FALSE) {
+    
+    if (log_transform) {
+        data <- data %>%
+            mutate(Value = log(Value))
+    }
+
+    data.filtered <- data %>%
+        filter(.data[[analysis_level]] == measure)
+
+    models.list <- list()
+
+    for (var_name in variable_names) {
+        formula <- get(var_name) # Get the formula stored in the variable
+
+        model.nb2 <- glmmTMB(formula, data = data.filtered, family = glmmTMB::nbinom2(link = "log"), control = cntrl)
+        model.nb2.disp.M <- glmmTMB(formula, data = data.filtered, dispformula = ~Motif, family = glmmTMB::nbinom2(link = "log"), control = cntrl)
+        model.nb2.disp.TP <- glmmTMB(formula, data = data.filtered, dispformula = ~ Time_Point + Group, family = glmmTMB::nbinom2(link = "log"), control = cntrl)
+        model.nb2.disp.MTP <- glmmTMB(formula, data = data.filtered, dispformula = ~ Motif + Time_Point + Group, family = glmmTMB::nbinom2(link = "log"), control = cntrl)
+        
+        model.tnb2 <- glmmTMB(formula, data = data.filtered, family = glmmTMB::truncated_nbinom2(link = "log"), control = cntrl)
+        model.tnb2.disp.M <- glmmTMB(formula, data = data.filtered, dispformula = ~Motif, family = glmmTMB::truncated_nbinom2(link = "log"), control = cntrl)
+        model.tnb2.disp.TP <- glmmTMB(formula, data = data.filtered, dispformula = ~ Time_Point + Group, family = glmmTMB::truncated_nbinom2(link = "log"), control = cntrl)
+        model.tnb2.disp.MTP <- glmmTMB(formula, data = data.filtered, dispformula = ~ Motif + Time_Point + Group, family = glmmTMB::truncated_nbinom2(link = "log"), control = cntrl)
+
+        # Use the variable name with ".nb2" or ".tnb2" tacked onto the end as the list name
+        models.list[[paste0(var_name, ".nb2")]] <- model.nb2
+        models.list[[paste0(var_name, ".nb2.disp.M")]] <- model.nb2.disp.M
+        models.list[[paste0(var_name, ".nb2.disp.TP")]] <- model.nb2.disp.TP
+        models.list[[paste0(var_name, ".nb2.disp.MTP")]] <- model.nb2.disp.MTP
+        models.list[[paste0(var_name, ".tnb2")]] <- model.tnb2
+        models.list[[paste0(var_name, ".tnb2.disp.M")]] <- model.tnb2.disp.M
+        models.list[[paste0(var_name, ".tnb2.disp.TP")]] <- model.tnb2.disp.TP
+        models.list[[paste0(var_name, ".tnb2.disp.MTP")]] <- model.tnb2.disp.MTP
+    }
+
+    return(list(data.filtered, models.list))
+}
+
+library(parallel)
+
+filter_data_fit_models <- function(data, measure, variable_names, log_transform = FALSE) {
+    
+    if (log_transform) {
+        data <- data %>%
+            mutate(Value = log(Value))
+    }
+
+    data.filtered <- data %>%
+        filter(.data[[analysis_level]] == measure)
+
+    models.list <- list()
+
+    # Get the number of cores
+    num_cores <- detectCores()
+
+    if (analysis_level %in% c("Predominant_Behavior", "Desc_Behavior")) {
+        # Use mclapply to apply the modeling function in parallel
+        models.list <- mclapply(variable_names, function(var_name) {
+            tryCatch({
+                formula <- get(var_name) # Get the formula stored in the variable
+
+                model.nb2 <- glmmTMB(formula, data = data.filtered, family = glmmTMB::nbinom2(link = "log"), control = cntrl)
+                
+                model.nb2.disp.M <- glmmTMB(formula, data = data.filtered, dispformula = ~Motif, family = glmmTMB::nbinom2(link = "log"), control = cntrl)
+                model.nb2.disp.TP <- glmmTMB(formula, data = data.filtered, dispformula = ~ Time_Point + Group, family = glmmTMB::nbinom2(link = "log"), control = cntrl)
+                model.nb2.disp.MTP <- glmmTMB(formula, data = data.filtered, dispformula = ~ Motif + Time_Point + Group, family = glmmTMB::nbinom2(link = "log"), control = cntrl)
+
+                model.tnb2 <- glmmTMB(formula, data = data.filtered, family = glmmTMB::truncated_nbinom2(link = "log"), control = cntrl)
+
+                model.tnb2.disp.M <- glmmTMB(formula, data = data.filtered, dispformula = ~Motif, family = glmmTMB::truncated_nbinom2(link = "log"), control = cntrl)
+                model.tnb2.disp.TP <- glmmTMB(formula, data = data.filtered, dispformula = ~ Time_Point + Group, family = glmmTMB::truncated_nbinom2(link = "log"), control = cntrl)
+                model.tnb2.disp.MTP <- glmmTMB(formula, data = data.filtered, dispformula = ~ Motif + Time_Point + Group, family = glmmTMB::truncated_nbinom2(link = "log"), control = cntrl)
+
+                # Use the variable name with ".nb2" or ".tnb2" tacked onto the end as the list name
+                setNames(
+                    list(model.nb2, model.nb2.disp.M, model.nb2.disp.TP, model.nb2.disp.MTP, model.tnb2, model.tnb2.disp.M, model.tnb2.disp.TP, model.tnb2.disp.MTP),
+                    c(paste0(var_name, ".nb2"), paste0(var_name, ".nb2.disp.M"), paste0(var_name, ".nb2.disp.TP"), paste0(var_name, ".nb2.disp.MTP"), paste0(var_name, ".tnb2"), paste0(var_name, ".tnb2.disp.M"), paste0(var_name, ".tnb2.disp.TP"), paste0(var_name, ".tnb2.disp.MTP"))
+                )
+            }, error = function(e) {
+                message(paste("Error in processing variable: ", var_name))
+                message("Error: ", e$message)
+                NULL
+            })
+        }, mc.cores = num_cores)
+    } else if (analysis_level == "Motif") {
+        models.list <- mclapply(variable_names, function(var_name) {
+            tryCatch({
+                formula <- get(var_name) # Get the formula stored in the variable
+
+                model.nb2 <- glmmTMB(formula, data = data.filtered, family = glmmTMB::nbinom2(link = "log"), control = cntrl)
+                model.nb2.disp.TP <- glmmTMB(formula, data = data.filtered, dispformula = ~ Time_Point + Group, family = glmmTMB::nbinom2(link = "log"), control = cntrl)
+
+                model.tnb2 <- glmmTMB(formula, data = data.filtered, family = glmmTMB::truncated_nbinom2(link = "log"), control = cntrl)
+                model.tnb2.disp.TP <- glmmTMB(formula, data = data.filtered, dispformula = ~ Time_Point + Group, family = glmmTMB::truncated_nbinom2(link = "log"), control = cntrl)
+
+                setNames(
+                    list(model.nb2, model.nb2.disp.TP, model.tnb2, model.tnb2.disp.TP),
+                    c(paste0(var_name, ".nb2"), paste0(var_name, ".nb2.disp.TP"), paste0(var_name, ".tnb2"), paste0(var_name, ".tnb2.disp.TP"))
+                )
+            }, error = function(e) {
+                message(paste("Error in processing variable: ", var_name))
+                message("Error: ", e$message)
+                NULL
+            })
+        }, mc.cores = num_cores)
+    }
+
+    models.list <- do.call(c, models.list)
+
+    return(list(data.filtered, models.list))
+}
+
+library(parallel)
+library(glmmTMB)
+library(dplyr)
+
+filter_data_fit_models <- function(data, measure, variable_names, log_transform = FALSE) {
+    
+    if (log_transform) {
+        data <- data %>%
+            mutate(Value = log(Value))
+    }
+
+    data.filtered <- data %>%
+        filter(.data[[analysis_level]] == measure)
+
+    models.list <- list()
+
+    # Get the number of cores
+    num_cores <- detectCores()
+
+    models.list <- mclapply(variable_names, function(var_name) {
+        tryCatch({
+            formula <- get(var_name) # Get the formula stored in the variable
+
+            model.nb2 <- glmmTMB(formula, data = data.filtered, family = glmmTMB::nbinom2(link = "log"), control = cntrl)
+            model.tnb2 <- glmmTMB(formula, data = data.filtered, family = glmmTMB::truncated_nbinom2(link = "log"), control = cntrl)
+
+            model.nb2.disp.TP <- glmmTMB(formula, data = data.filtered, dispformula = ~ Time_Point + Group, family = glmmTMB::nbinom2(link = "log"), control = cntrl)
+            model.tnb2.disp.TP <- glmmTMB(formula, data = data.filtered, dispformula = ~ Time_Point + Group, family = glmmTMB::truncated_nbinom2(link = "log"), control = cntrl)
+
+            setNames(
+                list(model.nb2, model.nb2.disp.TP, model.tnb2, model.tnb2.disp.TP),
+                c(paste0(var_name, ".nb2"), paste0(var_name, ".nb2.disp.TP"), paste0(var_name, ".tnb2"), paste0(var_name, ".tnb2.disp.TP"))
+            )
+        }, error = function(e) {
+            message(paste("Error in processing variable:", var_name))
+            message(e)
+            NULL
+        })
+    }, mc.cores = num_cores)
+    
+    models.list <- do.call(c, models.list)
+    models.list <- models.list[!sapply(models.list, is.null)]  # Remove NULL elements
+
+    return(list(data.filtered, models.list))
+}
+
+
+#' Get the best model from a list of model comparisons
+#'
+#' This function takes in a list of model comparisons and a dictionary of models,
+#' and returns the best model based on the first element of the first comparison.
+#'
+#' @param modelComparisons A list of model comparisons.
+#' @param models A dictionary of models.
+#'
+#' @return The best model.
+#'
+#' @examples
+#' modelComparisons <- list(list("model1", 0.8), list("model2", 0.9))
+#' models <- list(model1 = lm(Sepal.Length ~ Sepal.Width, data = iris),
+#'                model2 = lm(Sepal.Length ~ Petal.Length, data = iris))
+#' get_best_model(modelComparisons, models)
+#'
+#' @export
+get_best_model <- function(modelComparisons, models) {
+    best_model_name <- modelComparisons[[1]][1]
+    best_model <- models[[best_model_name]]
+    return(best_model)
+}
+
+# FILEPATH: /Users/adanredwine/VAME/vame/custom/ALR_work_files/ALR_BehaviorAnalysis.Rmd
+
+#' Check Model Error Normality
+#'
+#' This function checks the normality of the random effects in a linear mixed effects model.
+#'
+#' @param model The linear mixed effects model object.
+#'
+#' @return A Q-Q plot of the random effects with a line representing the first and third quartiles of the data,
+#'         along with the p-value from the Shapiro-Wilk test for normality.
+#'
+#' @examples
+#' model <- lmer(y ~ x + (1 | group), data = df)
+#' check_model_error_normality(model)
+#'
+#' @import ggplot2
+#' @import lme4
+#' @import qqplotr
+#' @import stats
+#' @importFrom graphics geom_abline
+#' @importFrom graphics labs
+#' @importFrom graphics shapiro.test
+#' @importFrom stats quantile
+#' @importFrom stats qnorm
+#' @importFrom stats round
+#' @importFrom stats diff
+#' @importFrom stats as.data.frame
+#' @importFrom stats as.matrix
+#' @importFrom stats ranef
+#' @importFrom stats p.value
+
+check_model_error_normality <- function(model) {
+    # Extract the random effects
+    random_effects <- as.matrix(ranef(model)[[1]]$Animal_ID["(Intercept)"])
+
+    # Create a data frame to hold the random effects
+    REdata <- as.data.frame(random_effects)
+
+    names(REdata)[1] <- "Intercept"
+
+    # Create a Q-Q plot
+    plt <- ggqqplot(REdata, x = "Intercept")
+
+    # Calculate the line through the first and third quartiles of the data
+    # Calculate the quantiles of the data
+    q <- quantile(REdata$Intercept, c(0.25, 0.75))
+
+    # Calculate the theoretical quantiles of a normal distribution
+    qnorm <- qnorm(c(0.25, 0.75))
+
+    # Calculate the slope
+    slope <- diff(q) / diff(qnorm)
+
+    # Calculate the intercept
+    intercept <- q[1] - slope * qnorm[1]
+
+    # Add the line to the plot
+    plt <- plt + geom_abline(intercept = intercept, slope = slope, color = "red")
+
+    # Perform the Shapiro-Wilk test
+    normality_results <- shapiro.test(random_effects)
+
+    # Extract the p-value
+    p_value <- normality_results$p.value
+
+    # Add the p-value to the plot
+    plt <- plt + labs(title = paste("Shapiro-Wilk Test p-value:", round(p_value, 4)))
+
+    # Return the plot and the p-value
+    return(plt)
+}
+
+extract_emmeans <- function(model, data, type) {
+    # check if the time point variable is numeric
+    if (!is.numeric(data$Time_Point)) {
+        if (!is.null(type)) {
+            res <- emmeans(model, specs = pairwise ~ Group | Time_Point, adjust = "BH", type = type)
+        } else {
+            res <- emmeans(model, specs = pairwise ~ Group | Time_Point, adjust = "BH")
+        }
+    } else {
+        if (!is.null(type)) {
+            res <- emmeans(model, specs = pairwise ~ Group | Time_Point, at = list(Time_Point = unique(OAdata$Time_Point)), adjust = "BH", type = type)
+        } else {
+            res <- emmeans(model, specs = pairwise ~ Group | Time_Point, at = list(Time_Point = unique(OAdata$Time_Point)), adjust = "BH")
+        }
+    }
+    return(res)
+}
+
+extract_emmeans_organized <- function(model, data, type) {
+    res <- extract_emmeans(model, data, type)
+    res_df <- as.data.frame(res$emmeans)
+    res_df$Time_Point <- as.numeric(as.character(res_df$Time_Point))
+
+    if (is.null(type) || type == "count") {
+        res_df_organized <- res_df %>%
+            pivot_wider(names_from = Time_Point, values_from = c(emmean, SE, df, asymp.LCL, asymp.UCL)) %>%
+            pivot_longer(
+                cols = -Group,
+                names_to = c(".value", "Time_Point"),
+                names_sep = "_"
+            )
+    } else {
+        res_df_organized <- res_df %>%
+            pivot_wider(names_from = Time_Point, values_from = c(response, SE, df, asymp.LCL, asymp.UCL)) %>%
+            pivot_longer(
+                cols = -Group,
+                names_to = c(".value", "Time_Point"),
+                names_sep = "_"
+            )
+    }
+    res_df_organized$Time_Point <- as.numeric(as.character(res_df_organized$Time_Point))
+    return(res_df_organized)
+}
+
+make_emmeans_plot <- function(df_organized, type) {
+    if (is.null(type)) {
+        title <- "Model Estimated Values of Grooming by Group and Time Point"
+        subtitle <- ""
+        y_data <- sym("emmean")
+    } else if (type == "response") {
+        title <- "Model Estimated Values of Grooming by Group and Time Point"
+        subtitle <- "Back-Transformed to Response Scale"
+        y_data <- sym("response")
+    } else if (type == "count") {
+        title <- "Model Estimated Values of Grooming by Group and Time Point"
+        subtitle <- "Count"
+        y_data <- sym("emmean")
+    }
+
+    plt <- ggplot(df_organized, aes(x = Time_Point, y = !!y_data, color = Group)) +
+        geom_point() +
+        geom_errorbar(aes(ymin = !!y_data - SE, ymax = !!y_data + SE), width = 0.1) +
+        geom_ribbon(aes(ymin = asymp.LCL, ymax = asymp.UCL, fill = Group), alpha = 0.2) +
+        facet_wrap(~Group, nrow = 2) +
+        geom_line() +
+        labs(
+            title = title,
+            subtitle = subtitle,
+            x = "Week",
+            y = "Predicted Value"
+        ) +
+        scale_x_continuous(breaks = unique(df_organized$Time_Point)) + # for continuous x variable
+        scale_color_manual(values = c("Sham" = "grey", "ABX" = "blue", "Injured" = "red", "Treated" = "purple")) +
+        scale_fill_manual(values = c("Sham" = "grey", "ABX" = "blue", "Injured" = "red", "Treated" = "purple")) +
+        theme_bw() +
+        theme(
+            legend.position = "none",
+            title = element_text(size = 14, face = "bold", hjust = 0.5),
+        )
+    return(plt)
+}
+
+add_mean_SE_CI_to_data <- function(data, grouping) {
+    data <- data %>%
+        group_by(!!!grouping) %>%
+        summarise(mean = mean(Value), se = sd(Value) / sqrt(n()), n = n(), .groups = "drop") %>%
+        mutate(
+            lower = mean - qt(0.975, n - 1) * se, # lower confidence limit
+            upper = mean + qt(0.975, n - 1) * se # upper confidence limit
+        )
+    return(data)
+}
+
+prep_dfs_for_estimatedVSactual_plotting <- function(data.mean, response_df_organized) {
+    data.mean$Time_Point <- as.numeric(as.character(data.mean$Time_Point))
+
+    # Prepare data for plotting
+    data.mean.plt <- data.mean %>%
+        rename(SE = se, LCL = lower, UCL = upper, Value = mean) %>%
+        dplyr::select(-n) %>%
+        mutate(facet = Group) # add a new column for faceting
+
+    # Prepare response data for plotting
+    response_df_organized.plt <- response_df_organized %>%
+        dplyr::select(-df) %>%
+        rename(LCL = asymp.LCL, UCL = asymp.UCL, Value = response) %>%
+        mutate(facet = Group) %>%
+        # Add the word "-estimate" after the text in each Group column
+        mutate(Group = paste0(Group, "-estimate"))
+
+    # Combine the two data frames
+    plt_df <- rbind(data.mean.plt, response_df_organized.plt)
+
+    # Add a new column for line type
+    plt_df <- plt_df %>%
+        mutate(linetype = ifelse(str_detect(Group, "-estimate"), "dotted", "solid"))
+
+    # Convert Time_Point to numeric
+    plt_df$Time_Point <- as.numeric(as.character(plt_df$Time_Point))
+
+    return(plt_df)
+}
+
+create_estimatedVSactual_plt <- function(plt_df, behaviorORmotif) {
+    plt <- ggplot(plt_df, aes(x = Time_Point, y = Value, color = Group)) +
+        geom_point() + # add points
+        geom_errorbar(aes(ymin = Value - SE, ymax = Value + SE), width = 0.1) + # add error bars
+        geom_ribbon(aes(ymin = LCL, ymax = UCL, fill = Group), alpha = 0.2) + # add confidence intervals
+        facet_wrap(~facet, nrow = 2) + # facet by group
+        geom_line(aes(linetype = linetype)) + # add lines
+        labs(
+            title = paste0("Model Estimated & Actual Values of ", behaviorORmotif, " by Group and Time Point"),
+            subtitle = behaviorORmotif,
+            x = "Time Point",
+            y = "Predicted Value"
+        ) +
+        scale_x_continuous(breaks = unique(plt_df$Time_Point)) + # set x-axis breaks
+        scale_color_manual(values = c("Sham" = "grey", "ABX" = "blue", "Injured" = "red", "Treated" = "purple")) + # set color scale
+        scale_fill_manual(values = c("Sham" = "grey", "ABX" = "blue", "Injured" = "red", "Treated" = "purple")) + # set fill scale
+        scale_linetype_manual(values = c("dotted", "solid")) + # set line type scale
+        theme_bw() + # use black and white theme
+        theme(
+            legend.position = "none", # remove legend
+            title = element_text(size = 14, face = "bold", hjust = 0.5), # set title style
+        )
+    return(plt)
+}
+
+emmeans_pairwise_comparisons <- function(res, type, group_OR_week_Comparisons) {
+    if (is.null(type) || tolower(type) == "count") {
+        values_from_1 <- sym("estimate")
+        values_from <- rlang::syms(c("estimate", "SE", "df", "z.ratio", "p.value"))
+    } else if (tolower(type) == "response") {
+        values_from_1 <- sym("ratio")
+        values_from <- rlang::syms(c("ratio", "SE", "df", "null", "z.ratio", "p.value"))
+    }
+
+    if (tolower(group_OR_week_Comparisons) == "group") {
+        res_contrast_df.Intergroup <- as.data.frame(res$contrasts)
+
+        res.contrast_df_organized <- res_contrast_df.Intergroup %>%
+            pivot_wider(
+                names_from = contrast,
+                values_from = c(!!!values_from)
+            ) %>%
+            pivot_longer(
+                cols = -Time_Point,
+                names_to = c(".value", "contrast"),
+                names_sep = "_"
+            ) %>%
+            dplyr::select(-df)
+    } else if (tolower(group_OR_week_Comparisons) == "week") {
+        res.contrast_df.InterWeek <- as.data.frame(pairs(res, simple = "Time_Point", adjust = "BH"))
+
+        res.contrast_df_organized <- res.contrast_df.InterWeek %>%
+            as.data.frame() %>%
+            pivot_longer(
+                cols = c(!!!values_from),
+                names_to = "measure",
+                values_to = "value"
+            ) %>%
+            pivot_wider(
+                names_from = c(measure),
+                values_from = value
+            )
+    }
+
+    return(res.contrast_df_organized)
+}
+
+```
+
+## Grooming {.tabset .tabset-pills}
+
+### Model Fitting
+
+```{r, Grooming Model Fitting, echo=TRUE, eval=TRUE}
+measure <- "Grooming"
+filtered_data_and_models <- filter_data_fit_models(OAdata, "Grooming", variable_names)
+
+data.filtered <- filtered_data_and_models[[1]]
+models <- filtered_data_and_models[[2]]
+```
+
+### Model Selection
+
+```{r, Model Comparison for Grooming using AICc, echo=TRUE, eval=TRUE}
+# Model comparison using AICc
+modelComparisons <- AICcmodavg::aictab(models)
+
+print(modelComparisons)
+```
+
+**Explanation of the AICc Table:**
+- **K:** The number of estimated parameters in the model.
+- **AIC:** "AIC is based on an estimate of information loss, so a model with the lowest AIC is predicted to lose the least amount of information relative to the unknown truth. The surety with which AIC selects the best model (best in the sense of losing the least information) depends on the difference in AIC between the models"
+- **AICc:** "AIC is a biased estimate of the relative information loss when the sample size (n) is small" [@ecological_statistics2015]. AICc is a bias corrected version of AIC.
+- **Delta AICc:** The difference in AICc between a model and the best model. The best model has a delta AICc of 0.
+- **AICc Wt:** Akaike weights. Provide a measure of the probability that a given model is the best model among the set of candidate models, given the data and the set of models considered
+- **LL:** Log-likelihood of the model.
+
+The model using the formula `Value ~ Group * Time_Point + (1 | Animal_ID)` has the lowest AICc value and will be used for further analysis.
+
+### Check Assumptions
+```{r, Grooming Assumptions Check, echo=TRUE, eval=TRUE}
+best_model <- get_best_model(modelComparisons, models)
+check_model_error_normality(best_model)
+
+# Restart the graphics device
+graphics.off()
+```
+
+
+### Model Diagnostics
+```{r, Grooming Model Diagnostics, echo=TRUE, eval=TRUE}
+Anova(best_model, type = "III")
+
+DHARMa::testResiduals(best_model)
+
+# Simulate residuals
+simulationOutput <- DHARMa::simulateResiduals(best_model, n = 1000, seed = 123, plot = FALSE)
+
+plot(simulationOutput, quantreg = TRUE)
+
+#residuals(simulationOutput)
+
+####### Individual tests #######
+
+# KS test for correct distribution of residuals
+testUniformity(simulationOutput)
+
+# KS test for correct distribution within and between groups
+testCategorical(simulationOutput, data.filtered$Time_Point)
+testCategorical(simulationOutput, data.filtered$Group)
+
+# Dispersion test - for details see ?testDispersion
+testDispersion(simulationOutput) # tests under and overdispersion
+
+# Outlier test (number of observations outside simulation envelope)
+# Use type = "boostrap" for exact values, see ?testOutliers
+testOutliers(simulationOutput, type = "bootstrap")
+
+# testing zero inflation
+testZeroInflation(simulationOutput)
+```
+
+### Model Summary
+```{r, Grooming Model Summary, echo=TRUE, eval=TRUE}
+summary(best_model)
+```
+
+This summary can be broken down into five sections. 
+1. The top section is a general overview containing a description of the model specification and resulting information criteria.
+2. The second section describes the variability of the Random effects.
+
+
+### Pairwise Comparisons
+```{r, Emmeans Plotting - Grooming, echo=TRUE, eval=TRUE} 
+emm_res <- extract_emmeans(best_model, data.filtered, type = NULL)
+resp_res <- extract_emmeans(best_model, data.filtered, type = "response")
+count_res <- extract_emmeans(best_model, data.filtered, type = "count")
+
+emmeans_df_organized <- extract_emmeans_organized(best_model, data.filtered, type = NULL)
+response_df_organized <- extract_emmeans_organized(best_model, data.filtered, type = "response")
+count_df_organized <- extract_emmeans_organized(best_model, data.filtered, type = "count")
+
+p1 <- make_emmeans_plot(emmeans_df_organized, type = NULL)
+p2 <- make_emmeans_plot(response_df_organized, type = "response")
+p3 <- make_emmeans_plot(count_df_organized, type = "count")
+
+cowplot::plot_grid(p1, p2, p3, nrow = 3)
+```
+
+```{r, Estimated vs Actual Values - Grooming, echo=TRUE, eval=TRUE}
+data.filtered.mean <- add_mean_SE_CI_to_data(data.filtered, grouping = rlang::syms(c("Group", "Time_Point")))
+
+plt_df <- prep_dfs_for_estimatedVSactual_plotting(data.filtered.mean, response_df_organized)
+
+plt <- create_estimatedVSactual_plt(plt_df, measure)
+plt
+```
+
+This plot shows the estimated and actual values of grooming by group and time point. The solid lines represent the actual values, while the dotted lines represent the estimated values.
+Visually, it appears that the estimated values closely follow the same trends as the actual values, indicating that the model is capturing the underlying patterns in the data, however, there are some discrepancies between the estimated and actual values which are evident in the ABX and Treated groups.
+
+```{r, Pairwise Comparisons - Grooming, echo=TRUE, eval=TRUE}
+emm_res.InterGroup <- emmeans_pairwise_comparisons(emm_res, type = NULL, group_OR_week_Comparisons = "group")
+emm_res.InterWeek <- emmeans_pairwise_comparisons(emm_res, type = NULL, group_OR_week_Comparisons = "week")
+resp_res.InterGroup <- emmeans_pairwise_comparisons(resp_res, type = "response", group_OR_week_Comparisons = "group")
+resp_res.InterWeek <- emmeans_pairwise_comparisons(resp_res, type = "response", group_OR_week_Comparisons = "group")
+count_res.InterGroup <- emmeans_pairwise_comparisons(count_res, type = "count", group_OR_week_Comparisons = "group")
+count_res.InterWeek <- emmeans_pairwise_comparisons(count_res, type = "count", group_OR_week_Comparisons = "week")
+```
+
+- **Estimated Marginal Mean (emmean)**: This is the mean response predicted by the model, averaged over the distribution of the predictor variables. Its useful when you want to understand the overall average effect of the predictors on the response variable.
+- **Response Value**: This is the predicted response for specific values of the predictor variables. Its useful when you want to understand the effect of the predictors at specific values.
+
+The contrast_df data frame shows the results of pairwise comparisons between the levels of a factor variable (in this case, "Group") at different time points. These comparisons are often used in statistical analysis to understand the differences between groups.
+
+Heres a breakdown of what each column means:
+
+**contrast**: This column shows the pair of groups being compared. For example, "Sham - ABX" means the "Sham" group is being compared with the "ABX" group.
+
+**estimate**: This is the estimated difference between the means of the two groups. A positive value indicates that the first group has a higher mean, and a negative value indicates that the second group has a higher mean.
+
+**SE**: This is the standard error of the estimate. It measures the variability in the estimate.
+
+**z.ratio**: This is the test statistic for the comparison. Its calculated by dividing the estimate by the standard error.
+
+**p.value**: This is the p-value for the test. Its the probability of observing a test statistic as extreme as the one calculated (or more extreme) if the null hypothesis is true. In this case, the null hypothesis is that theres no difference between the means of the two groups. A small p-value (usually less than 0.05) is often interpreted as evidence against the null hypothesis.
+
+#### Inter-Group Comparisons
+##### Emmeans
+```{r, InterGroup Emmeans table - Grooming, echo=TRUE, eval=TRUE}
+emm_res.InterGroupRNDD <- emm_res.InterGroup %>%
+    mutate(across(where(is.numeric), ~ round(., 3)))
+DT::datatable(emm_res.InterGroupRNDD, options = list(pageLength = 10), filter = "top", escape = FALSE)
+```
+##### Response
+```{r, InterGroup Response table - Grooming, echo=TRUE, eval=TRUE}
+resp_res.InterGroupRNDD <- resp_res.InterGroup %>%
+    mutate(across(where(is.numeric), ~ round(., 3)))
+DT::datatable(resp_res.InterGroupRNDD, options = list(pageLength = 10), filter = "top", escape = FALSE)
+```
+##### Count
+```{r, InterGroup Count table - Grooming, echo=TRUE, eval=TRUE}
+count_res.InterGroupRNDD <- count_res.InterGroup %>%
+    mutate(across(where(is.numeric), ~ round(., 3)))
+DT::datatable(count_res.InterGroupRNDD, options = list(pageLength = 10), filter = "top", escape = FALSE)
+```
+
+#### Inter-Week Comparisons
+##### Emmeans
+```{r, InterWeek Emmeans table - Grooming, echo=TRUE, eval=TRUE}
+emm_res.InterWeekRNDD <- emm_res.InterWeek %>%
+    mutate(across(where(is.numeric), ~ round(., 3)))
+DT::datatable(emm_res.InterWeekRNDD, options = list(pageLength = 10), filter = "top", escape = FALSE)
+```
+##### Response
+```{r, InterWeek Response table - Grooming, echo=TRUE, eval=TRUE}
+resp_res.InterWeekRNDD <- resp_res.InterWeek %>%
+    mutate(across(where(is.numeric), ~ round(., 3)))
+DT::datatable(resp_res.InterWeekRNDD, options = list(pageLength = 10), filter = "top", escape = FALSE)
+```
+##### Count
+```{r, InterWeek Count table - Grooming, echo=TRUE, eval=TRUE}
+count_res.InterWeekRNDD <- count_res.InterWeek %>%
+    mutate(across(where(is.numeric), ~ round(., 3)))
+DT::datatable(count_res.InterWeekRNDD, options = list(pageLength = 10), filter = "top", escape = FALSE)
+```
+
+
+## Rearing {.tabset .tabset-pills}
+### Model Fitting
+```{r, Rearing Model Fitting, echo=TRUE, eval=TRUE}
+measure <- "Rearing"
+filtered_data_and_models <- filter_data_fit_models(OAdata, measure, variable_names)
+
+data.filtered <- filtered_data_and_models[[1]]
+models <- filtered_data_and_models[[2]] 
+```
+
+
+### Model Selection
+```{r, Model Comparison for Rearing using AICc, echo=TRUE, eval=TRUE}
+modelComparisons <- AICcmodavg::aictab(models)
+print(modelComparisons)
+```
+
+### Check Assumptions
+```{r, Rearing Assumptions Check, echo=TRUE, eval=TRUE}
+best_model <- get_best_model(modelComparisons, models)
+check_model_error_normality(best_model)
+```
+
+### Model Diagnostics
+```{r, Rearing Model Diagnostics, echo=TRUE, eval=TRUE}
+Anova(best_model, type = "III")
+
+simulationOutput <- DHARMa::simulateResiduals(best_model, n = 1000, seed = 123, plot = F)
+
+plot(simulationOutput, quantreg = TRUE)
+
+residuals(simulationOutput)
+
+
+####### Individual tests #######
+
+# KS test for correct distribution of residuals
+testUniformity(simulationOutput)
+
+# KS test for correct distribution within and between groups
+testCategorical(simulationOutput, data.filtered$Time_Point)
+testCategorical(simulationOutput, data.filtered$Group)
+
+# Dispersion test - for details see ?testDispersion
+testDispersion(simulationOutput) # tests under and overdispersion
+
+# Outlier test (number of observations outside simulation envelope)
+# Use type = "boostrap" for exact values, see ?testOutliers
+testOutliers(simulationOutput, type = "bootstrap")
+
+# testing zero inflation
+testZeroInflation(simulationOutput)
+
+```
+
+- The testDispersion function from the DHARMa package tests for overdispersion and underdispersion in your model. Overdispersion occurs when the observed variance is greater than what is expected based on the model, while underdispersion is when the observed variance is less than expected.
+- The testUniformity function from the DHARMa package performs a Kolmogorov-Smirnov (KS) test to check if the scaled residuals from your model are uniformly distributed, which is an assumption of many statistical models.
+  - The D statistic is a measure of the maximum distance between the cumulative distribution function of the observed data and the expected uniform distribution. A larger D statistic indicates a larger discrepancy between the observed and expected distributions.
+  - The p-value is the probability of observing a D statistic as extreme as the one calculated, assuming the null hypothesis is true. In this case, the null hypothesis is that the residuals are uniformly distributed
+
+### Model Summary
+```{r, Rearing Model Summary, echo=TRUE, eval=TRUE}
+summary(best_model)
+```
+
+
+### Pairwise Comparisons
+```{r, Emmeans Plotting - Rearing, echo=TRUE, eval=TRUE} 
+emm_res <- extract_emmeans(best_model, data.filtered, type = NULL)
+resp_res <- extract_emmeans(best_model, data.filtered, type = "response")
+count_res <- extract_emmeans(best_model, data.filtered, type = "count")
+
+emmeans_df_organized <- extract_emmeans_organized(best_model, data.filtered, type = NULL)
+response_df_organized <- extract_emmeans_organized(best_model, data.filtered, type = "response")
+count_df_organized <- extract_emmeans_organized(best_model, data.filtered, type = "count")
+
+p1 <- make_emmeans_plot(emmeans_df_organized, type = NULL)
+p2 <- make_emmeans_plot(response_df_organized, type = "response")
+p3 <- make_emmeans_plot(count_df_organized, type = "count")
+
+cowplot::plot_grid(p1, p2, p3, nrow = 3)
+```
+
+```{r, Estimated vs Actual Values - Rearing, echo=TRUE, eval=TRUE}
+data.filtered.mean <- add_mean_SE_CI_to_data(data.filtered, grouping = rlang::syms(c("Group", "Time_Point")))
+
+plt_df <- prep_dfs_for_estimatedVSactual_plotting(data.filtered.mean, response_df_organized)
+
+plt <- create_estimatedVSactual_plt(plt_df, measure)
+plt
+```
+
+This plot shows the estimated and actual values of Rearing by group and time point. The solid lines represent the actual values, while the dotted lines represent the estimated values.
+Visually, it appears that the estimated values closely follow the same trends as the actual values, indicating that the model is capturing the underlying patterns in the data, however, there are some discrepancies between the estimated and actual values which are evident in the ABX and Treated groups.
+
+```{r, Pairwise Comparisons - Rearing, echo=TRUE, eval=TRUE}
+emm_res.InterGroup <- emmeans_pairwise_comparisons(emm_res, type = NULL, group_OR_week_Comparisons = "group")
+emm_res.InterWeek <- emmeans_pairwise_comparisons(emm_res, type = NULL, group_OR_week_Comparisons = "week")
+resp_res.InterGroup <- emmeans_pairwise_comparisons(resp_res, type = "response", group_OR_week_Comparisons = "group")
+resp_res.InterWeek <- emmeans_pairwise_comparisons(resp_res, type = "response", group_OR_week_Comparisons = "group")
+count_res.InterGroup <- emmeans_pairwise_comparisons(count_res, type = "count", group_OR_week_Comparisons = "group")
+count_res.InterWeek <- emmeans_pairwise_comparisons(count_res, type = "count", group_OR_week_Comparisons = "week")
+```
+
+- **Estimated Marginal Mean (emmean)**: This is the mean response predicted by the model, averaged over the distribution of the predictor variables. It's useful when you want to understand the overall average effect of the predictors on the response variable.
+- **Response Value**: This is the predicted response for specific values of the predictor variables. It's useful when you want to understand the effect of the predictors at specific values.
+
+The contrast_df data frame shows the results of pairwise comparisons between the levels of a factor variable (in this case, "Group") at different time points. These comparisons are often used in statistical analysis to understand the differences between groups.
+
+Here's a breakdown of what each column means:
+
+**contrast**: This column shows the pair of groups being compared. For example, "Sham - ABX" means the "Sham" group is being compared with the "ABX" group.
+
+**estimate**: This is the estimated difference between the means of the two groups. A positive value indicates that the first group has a higher mean, and a negative value indicates that the second group has a higher mean.
+
+**SE**: This is the standard error of the estimate. It measures the variability in the estimate.
+
+**z.ratio**: This is the test statistic for the comparison. It's calculated by dividing the estimate by the standard error.
+
+**p.value**: This is the p-value for the test. It's the probability of observing a test statistic as extreme as the one calculated (or more extreme) if the null hypothesis is true. In this case, the null hypothesis is that there's no difference between the means of the two groups. A small p-value (usually less than 0.05) is often interpreted as evidence against the null hypothesis.
+
+#### Inter-Group Comparisons
+##### Emmeans
+```{r, InterGroup Emmeans table - Rearing, echo=TRUE, eval=TRUE}
+emm_res.InterGroupRNDD <- emm_res.InterGroup %>%
+    mutate(across(where(is.numeric), ~ round(., 3)))
+DT::datatable(emm_res.InterGroupRNDD, options = list(pageLength = 10), filter = "top", escape = FALSE)
+```
+##### Response
+```{r, InterGroup Response table - Rearing, echo=TRUE, eval=TRUE}
+resp_res.InterGroupRNDD <- resp_res.InterGroup %>%
+    mutate(across(where(is.numeric), ~ round(., 3)))
+DT::datatable(resp_res.InterGroupRNDD, options = list(pageLength = 10), filter = "top", escape = FALSE)
+```
+##### Count
+```{r, InterGroup Count table - Rearing, echo=TRUE, eval=TRUE}
+count_res.InterGroupRNDD <- count_res.InterGroup %>%
+    mutate(across(where(is.numeric), ~ round(., 3)))
+DT::datatable(count_res.InterGroupRNDD, options = list(pageLength = 10), filter = "top", escape = FALSE)
+```
+
+#### Inter-Week Comparisons
+##### Emmeans
+```{r, InterWeek Emmeans table - Rearing, echo=TRUE, eval=TRUE}
+emm_res.InterWeekRNDD <- emm_res.InterWeek %>%
+    mutate(across(where(is.numeric), ~ round(., 3)))
+DT::datatable(emm_res.InterWeekRNDD, options = list(pageLength = 10), filter = "top", escape = FALSE)
+```
+##### Response
+```{r, InterWeek Response table - Rearing, echo=TRUE, eval=TRUE}
+resp_res.InterWeekRNDD <- resp_res.InterWeek %>%
+    mutate(across(where(is.numeric), ~ round(., 3)))
+DT::datatable(resp_res.InterWeekRNDD, options = list(pageLength = 10), filter = "top", escape = FALSE)
+```
+##### Count
+```{r, InterWeek Count table - Rearing, echo=TRUE, eval=TRUE}
+count_res.InterWeekRNDD <- count_res.InterWeek %>%
+    mutate(across(where(is.numeric), ~ round(., 3)))
+DT::datatable(count_res.InterWeekRNDD, options = list(pageLength = 10), filter = "top", escape = FALSE)
+```
+
+
+
+## Sniffing {.tabset .tabset-pills}
+### Model Fitting
+```{r, Sniffing Model Fitting, echo=TRUE, eval=TRUE}
+measure <- "Sniffing"
+filtered_data_and_models <- filter_data_fit_models(OAdata, measure, variable_names)
+
+data.filtered <- filtered_data_and_models[[1]]
+models <- filtered_data_and_models[[2]] 
+```
+
+
+### Model Selection
+```{r, Model Comparison for Sniffing using AICc, echo=TRUE, eval=TRUE}
+modelComparisons <- AICcmodavg::aictab(models)
+print(modelComparisons)
+```
+
+### Check Assumptions
+```{r, Sniffing Assumptions Check, echo=TRUE, eval=TRUE}
+best_model <- get_best_model(modelComparisons, models)
+check_model_error_normality(best_model)
+```
+
+### Model Diagnostics
+```{r, Sniffing Model Diagnostics, echo=TRUE, eval=TRUE}
+Anova(best_model, type = "III")
+
+simulationOutput <- DHARMa::simulateResiduals(best_model, n = 1000, seed = 123, plot = F)
+
+plot(simulationOutput, quantreg = TRUE)
+
+#residuals(simulationOutput)
+
+####### Individual tests #######
+
+# KS test for correct distribution of residuals
+testUniformity(simulationOutput)
+
+# KS test for correct distribution within and between groups
+testCategorical(simulationOutput, data.filtered$Time_Point)
+testCategorical(simulationOutput, data.filtered$Group)
+
+# Dispersion test - for details see ?testDispersion
+testDispersion(simulationOutput) # tests under and overdispersion
+
+# Outlier test (number of observations outside simulation envelope)
+# Use type = "boostrap" for exact values, see ?testOutliers
+testOutliers(simulationOutput, type = "bootstrap")
+
+# testing zero inflation
+testZeroInflation(simulationOutput)
+
+```
+
+### Pairwise Comparisons
+### Predictions vs Observations
+
+## Sniffing-Active {.tabset .tabset-pills}
+### Model Fitting
+### Model Selection
+### Model Diagnostics
+### Pairwise Comparisons
+### Predictions vs Observations
+
+## Sniffing-Stationary {.tabset .tabset-pills}
+### Model Fitting
+### Model Selection
+### Model Diagnostics
+### Pairwise Comparisons
+### Predictions vs Observations
+
+## Walking {.tabset .tabset-pills}
+### Model Fitting
+### Model Selection
+### Model Diagnostics
+### Pairwise Comparisons
+### Predictions vs Observations
+
+## Walking-Quick {.tabset .tabset-pills}
+### Model Fitting
+### Model Selection
+### Model Diagnostics
+### Pairwise Comparisons
+### Predictions vs Observations
+
+## Stationary {.tabset .tabset-pills}
+### Model Fitting
+### Model Selection
+### Model Diagnostics
+### Pairwise Comparisons
+### Predictions vs Observations
+
+# Motif Analysis
+```{r, Motif Analysis, echo=TRUE, eval=TRUE}
+
+library(rstatix)
+
+summed_data.DB <- data %>%
+    group_by(Desc_Behavior, Time_Point, Animal_ID) %>%
+    summarise(SumValue = sum(Value)) 
+
+DB.sum <- summed_data.DB %>%
+    left_join(data, by = c("Desc_Behavior", "Time_Point", "Animal_ID")) %>%
+    dplyr::select(-c("X", "Value","Motif", "Time_Point_Int")) %>%
+    unique()
+
+# Rename the SumValue column to Value
+
+
+
+analysis_level <- "Desc_Behavior"
+
+path <- paste0("/Users/adanredwine/Library/CloudStorage/OneDrive-UniversityofNebraska-Lincoln/ONE Lab - New/Personnel/Adan/Experimental Plans & Data/2022_Rat Antiobiotic + LBP Study/Open Arena/Statistics/", analysis_level, "_Analysis")
+
+rework_all <- FALSE
+
+if (!dir.exists(path)) {
+    dir.create(path, recursive = TRUE)
+}
+
+for (i in unique(OAdata$Desc_Behavior)) {
+    measure <- i
+    crnt_path <- paste0(path, "/", measure)
+
+    if (dir.exists(crnt_path)) {
+        files <- list.files(crnt_path)
+        if (length(files) < 23) {
+            file.remove(paste0(crnt_path, "/", files))
+        } else if (length(files) == 23) {
+            print(paste("All files are present for", measure, "analysis"))
+            next
+        }
+    }
+    if (!dir.exists(crnt_path)) {
+        dir.create(crnt_path, recursive = TRUE)
+    }
+
+    # if (rework_all) {
+    #    files <- list.files(crnt_path)
+    #    file.remove(paste0(crnt_path, "/", files))
+    # }
+
+
+    print(paste("Fitting models for ", analysis_level, ":", measure, "data..."))
+    filtered_data_and_models <- filter_data_fit_models(OAdata, measure, variable_names)
+    data.filtered <- filtered_data_and_models[[1]]
+
+    models <- filtered_data_and_models[[2]] 
+
+    # Remove any models without a name
+    models <- models[sapply(models, function(x) is.list(x) && !is.null(x$call[[2]]))]
+    modelComparisons <- AICcmodavg::aictab(models)
+    
+    # Save the model comparison table
+    write.csv(modelComparisons, file = paste0(crnt_path, "/modelComparisons.csv"))
+
+    best_model <- get_best_model(modelComparisons, models)
+
+    # Check normality of random effects
+    norm_RFX_plt <- check_model_error_normality(best_model)
+
+    # Save the plot
+    ggsave(paste0(crnt_path, "/Normality_of_Random_Effects.png"), norm_RFX_plt, width = 10, height = 6, dpi = 300)
+
+    #Anova(best_model, type = "III")
+
+    simulationOutput <- DHARMa::simulateResiduals(best_model, n = 1000, seed = 123, plot = F)
+    png(filename = paste0(crnt_path, "/Simulation_Output.png"), width = 10, height = 6, units = "in", res = 300)
+    plot(simulationOutput, quantreg = TRUE)
+    dev.off()
+
+    # KS test for correct distribution within and between groups
+    png(filename = paste0(crnt_path, "/Kolmogorov-Smirnov_TP.png"), width = 10, height = 6, units = "in", res = 300)
+    KS_TP <- testCategorical(simulationOutput, data.filtered$Time_Point)
+    dev.off()
+    output_path <- paste0(crnt_path, "/Kolmogorov-Smirnov_TP_list.txt")
+    KS_TP_output <- capture.output(print(KS_TP))
+    writeLines(KS_TP_output, output_path)
+
+    png(filename = paste0(crnt_path, "/Kolmogorov-Smirnov_Group.png"), width = 10, height = 6, units = "in", res = 300)
+    KS_WK <- testCategorical(simulationOutput, data.filtered$Group)
+    dev.off()
+    output_path <- paste0(crnt_path, "/Kolmogorov-Smirnov_Group_list.txt")
+    KS_WK_output <- capture.output(print(KS_WK))
+    writeLines(KS_WK_output, output_path)
+
+    # Dispersion test - for details see ?testDispersion
+    png(filename = paste0(crnt_path, "/Dispersion_Test.png"), width = 10, height = 6, units = "in", res = 300)
+    dispersion_test <- testDispersion(simulationOutput) # tests under and overdispersion
+    dev.off()
+    output_path <- paste0(crnt_path, "/Dispersion_Test.txt")
+    dispersion_test_output <- capture.output(print(dispersion_test))
+    writeLines(dispersion_test_output, output_path)
+
+    # Outlier test (number of observations outside simulation envelope)
+    # Use type = "boostrap" for exact values, see ?testOutliers
+    png(filename = paste0(crnt_path, "/Outlier_Test.png"), width = 10, height = 6, units = "in", res = 300)
+    outlier_test <- testOutliers(simulationOutput, type = "bootstrap")
+    dev.off()
+    output_path <- paste0(crnt_path, "/Outlier_Test.txt")
+    outlier_test_output <- capture.output(print(outlier_test))
+    writeLines(outlier_test_output, output_path)
+
+    smmry <- summary(best_model)
+    output_path <- paste0(crnt_path, "/Model_Summary.txt")
+    smmry_output <- capture.output(print(smmry))
+    writeLines(smmry_output, output_path)
+    ### Pairwise Comparisons
+
+    emm_res <- extract_emmeans(best_model, data.filtered, type = NULL)
+    resp_res <- extract_emmeans(best_model, data.filtered, type = "response")
+    count_res <- extract_emmeans(best_model, data.filtered, type = "count")
+
+    emmeans_df_organized <- extract_emmeans_organized(best_model, data.filtered, type = NULL)
+    write.csv(emmeans_df_organized, file = paste0(crnt_path, "/emmeans_df_organized.csv"))
+    response_df_organized <- extract_emmeans_organized(best_model, data.filtered, type = "response")
+    write.csv(response_df_organized, file = paste0(crnt_path, "/response_df_organized.csv"))
+    count_df_organized <- extract_emmeans_organized(best_model, data.filtered, type = "count")
+    write.csv(count_df_organized, file = paste0(crnt_path, "/count_df_organized.csv"))
+
+    #p1 <- make_emmeans_plot(emmeans_df_organized, type = NULL)
+    #p2 <- make_emmeans_plot(response_df_organized, type = "response")
+    #p3 <- make_emmeans_plot(count_df_organized, type = "count")
+
+    #cowplot::plot_grid(p1, p2, p3, nrow = 3)
+
+    data.filtered.mean <- add_mean_SE_CI_to_data(data.filtered, grouping = rlang::syms(c("Group", "Time_Point")))
+
+    plt_df <- prep_dfs_for_estimatedVSactual_plotting(data.filtered.mean, response_df_organized)
+
+    plt <- create_estimatedVSactual_plt(plt_df, measure)
+
+    # Save the plot
+    ggsave(paste0(crnt_path, "/Estimated_vs_Actual_Values.png"), plt, width = 10, height = 6, dpi = 600)
+
+    emm_res.InterGroup <- emmeans_pairwise_comparisons(emm_res, type = NULL, group_OR_week_Comparisons = "group")
+    emm_res.InterWeek <- emmeans_pairwise_comparisons(emm_res, type = NULL, group_OR_week_Comparisons = "week")
+    resp_res.InterGroup <- emmeans_pairwise_comparisons(resp_res, type = "response", group_OR_week_Comparisons = "group")
+    resp_res.InterWeek <- emmeans_pairwise_comparisons(resp_res, type = "response", group_OR_week_Comparisons = "week")
+    count_res.InterGroup <- emmeans_pairwise_comparisons(count_res, type = "count", group_OR_week_Comparisons = "group")
+    count_res.InterWeek <- emmeans_pairwise_comparisons(count_res, type = "count", group_OR_week_Comparisons = "week")
+
+    # Save the results
+    write.csv(emm_res.InterGroup, file = paste0(crnt_path, "/emm_res_InterGroup.csv"))
+    write.csv(emm_res.InterWeek, file = paste0(crnt_path, "/emm_res_InterWeek.csv"))
+    write.csv(resp_res.InterGroup, file = paste0(crnt_path, "/resp_res_InterGroup.csv"))
+    write.csv(resp_res.InterWeek, file = paste0(crnt_path, "/resp_res_InterWeek.csv"))
+    write.csv(count_res.InterGroup, file = paste0(crnt_path, "/count_res_InterGroup.csv"))
+    write.csv(count_res.InterWeek, file = paste0(crnt_path, "/count_res_InterWeek.csv"))
+
+    # Plotting the data
+
+    # Step 1: Baseline Normalization
+    # Calculate the baseline values for each group at Time_Point = 0
+    baseline_values <- data.filtered %>%
+        filter(Time_Point == 0) %>%
+        group_by(Group) %>%
+        summarize(baseline = mean(Value, na.rm = TRUE))
+    
+    data.filtered <- data.filtered %>%
+        left_join(baseline_values, by = "Group") %>%
+        mutate(baseline_normalized_value = Value / baseline)
+
+    # Step 2: Sham Normalization at Each Time Point
+    # Calculate the mean of the baseline-normalized values for the Sham group at each time point
+    sham_values <- data.filtered %>%
+        filter(Group == "Sham") %>%
+        group_by(Time_Point) %>%
+        summarize(sham_mean = mean(baseline_normalized_value, na.rm = TRUE))
+
+    data.filtered <- data.filtered %>%
+        left_join(sham_values, by = "Time_Point") %>%
+        mutate(final_normalized_value = baseline_normalized_value / sham_mean) %>%
+        dplyr::select(-baseline, -baseline_normalized_value, -sham_mean)
+
+
+    data.filtered.mean <- data.filtered %>%
+        group_by(Group, Time_Point) %>%
+        summarize(mean_normalized = mean(final_normalized_value), se_normalized = sd(final_normalized_value) / sqrt(n()), sd_normalized = sd(final_normalized_value))
+
+    data.filtered.mean$Time_Point <- as.numeric(as.character(data.filtered.mean$Time_Point))
+
+    legend_colors <- c("#2ca02c", "#d42163", "#b662ff", "#1f77b4")
+    legend_order <- c("Sham", "Injured", "Treated", "ABX")
+
+    print("Plotting the normalized data...")
+    plt <- ggplot(data.filtered.mean, aes(x = Time_Point, y = mean_normalized, color = Group)) +
+        geom_point() +
+        geom_errorbar(aes(ymin = mean_normalized - se_normalized, ymax = mean_normalized + se_normalized), width = 0.1, linewidth = 1.0) +
+        geom_line(linewidth = 1.0) +
+        theme_minimal() +
+        theme(panel.border = element_rect(colour = "black", fill = NA, size = 2)) +
+        scale_x_continuous(breaks = unique(data.filtered.mean$Time_Point)) +
+        scale_color_manual(values = legend_colors, limits = legend_order) +
+        labs(title = paste0(analysis_level, ": ", measure),
+            x = "Time Point",
+            y = "Normalized Value",
+            color = "Group"
+        )
+
+    # Save the plot
+    ggsave(paste0(crnt_path, "/Normalized_Plot.png"), plt, width = 10, height = 6, dpi = 300)
+}
+
+```
+
+# Evaluating the Results
+
+## Motif
+```{r, Evaluating Results - Motif, echo=TRUE, eval=TRUE}
+
+analysis_level <- "Motif"
+
+path <- paste0("/Users/adanredwine/Library/CloudStorage/OneDrive-UniversityofNebraska-Lincoln/ONE Lab - New/Personnel/Adan/Experimental Plans & Data/2022_Rat Antiobiotic + LBP Study/Open Arena/Statistics/", analysis_level, "_Analysis")
+
+# Get all the folder names in the directory
+folders <- list.dirs(path, full.names = FALSE, recursive = FALSE)
+
+print(folders)
+
+# Create an empty data frame to store the results
+motif_interWeek <- data.frame()
+motif_interGroup <- data.frame()
+
+# Loop through each folder
+for (folder in folders) {
+    # Get the path to the folder
+    folder_path <- paste0(path, "/", folder)
+
+    # Read the model comparison table
+    modelComparisons <- read.csv(file = paste0(folder_path, "/modelComparisons.csv"))
+
+    # Read the pairwise comparison tables
+    emm_res.InterGroup <- read.csv(file = paste0(folder_path, "/emm_res_InterGroup.csv"))
+    emm_res.InterWeek <- read.csv(file = paste0(folder_path, "/emm_res_InterWeek.csv"))
+
+    # Add the folder name to the tables
+    emm_res.InterGroup$Motif <- folder
+    emm_res.InterWeek$Motif <- folder
+
+    # Append the tables to the results data frames
+    motif_interGroup <- rbind(motif_interGroup, emm_res.InterGroup)
+    motif_interWeek <- rbind(motif_interWeek, emm_res.InterWeek)
+}
+
+# Drop the "X" column
+motif_interGroup <- motif_interGroup[, -1]
+motif_interWeek <- motif_interWeek[, -1]
+
+head(motif_interGroup)
+head(motif_interWeek)
+
+
+# Use the data dataframe to determine which "Motifs" belong to each "Desc_Behavior"
+behavior_motif <- data %>%
+    group_by(Desc_Behavior) %>%
+    summarise(Motifs = list(unique(Motif)))
+
+behavior_motif_df <- behavior_motif %>%
+    unnest(Motifs)
+
+# Rename the Motifs column to Motif
+behavior_motif_df <- behavior_motif_df %>%
+    rename(Motif = Motifs)
+
+motif_interGroup <- motif_interGroup %>%
+    mutate(Motif = as.character(Motif)) %>%
+    dplyr::left_join(behavior_motif_df, by = "Motif")
+
+motif_interWeek <- motif_interWeek %>%
+    mutate(Motif = as.character(Motif)) %>%
+    dplyr::left_join(behavior_motif_df, by = "Motif")
+
+# Save the results to CSV files
+write.csv(motif_interGroup, file = paste0(path, "/all_motif_interGroup.csv"))
+write.csv(motif_interWeek, file = paste0(path, "/all_motif_interWeek.csv"))
+
+# Print the significant pairwise comparisons
+print("Significant Inter-Group Comparisons:")
+print(motif_interGroup[motif_interGroup$p.value < 0.05, ])
+
+print("Significant Inter-Week Comparisons:")
+print(motif_interWeek[motif_interWeek$p.value < 0.05, ])
+
+motif_interWeek_sig <- motif_interWeek[motif_interWeek$p.value < 0.05, ]
+motif_interGroup_sig <- motif_interGroup[motif_interGroup$p.value < 0.05, ]
+
+
+OA.mean <- OAdata %>%
+    group_by(Group, Time_Point, Motif) %>%
+    summarize(mean = mean(Value, na.rm = TRUE), se = sd(Value, na.rm = TRUE) / sqrt(n()), sd = sd(Value, na.rm = TRUE))
+
+
+OA.mean <- OAdata %>%
+    group_by(Group, Time_Point, Desc_Behavior) %>%
+    summarize(mean = mean(Value, na.rm = TRUE), se = sd(Value, na.rm = TRUE) / sqrt(n()), sd = sd(Value, na.rm = TRUE))
+
+OA.mean$Time_Point <- as.numeric(as.character(OA.mean$Time_Point))
+
+ggplot(OA.mean, aes(x = Time_Point, y = mean, color = Group)) +
+    geom_point() +
+    geom_errorbar(aes(ymin = mean - se, ymax = mean + se), width = 0.1, linewidth = 1.0) +
+    geom_line(linewidth = 1.0) +
+    theme_minimal() +
+    theme(panel.border = element_rect(colour = "black", fill = NA, size = 2)) +
+    scale_x_continuous(breaks = unique(OA.mean$Time_Point)) +
+    scale_color_manual(values = legend_colors, limits = legend_order) +
+    labs(
+        title = "Motif: All Data",
+        x = "Time Point",
+        y = "Value",
+        color = "Group"
+    ) +
+    facet_grid(Desc_Behavior~., scales = "free")
+
+OAdata %>%
+    group_by(Animal_ID, Time_Point) %>%
+    summarise(total_value = sum(Value, na.rm = TRUE))
+
+# Add sum of each animals grouped by behavior
+# Find mean of summed between each group at each time point
+
+# Run kruskall-wallis across the grouped things
+
+```
+
+```{r, Summing Data and Running Krusal Wallis, echo=TRUE, eval=TRUE}
+
+library(dunn.test)
+
+
+sum_at_level <- function(data, analysis_level) {
+    summed_data <- data %>%
+        group_by(.data[[analysis_level]], Time_Point, Animal_ID) %>%
+        summarise(SumValue = sum(Value)) 
+
+    sum <- summed_data %>%
+        left_join(data, by = setNames(
+            c(analysis_level, "Time_Point", "Animal_ID"),
+            c(analysis_level, "Time_Point", "Animal_ID")
+        )) %>%
+        dplyr::select(-c("X", "Value", "Motif", "Time_Point_Int")) %>%
+        unique()
+    
+    return(sum)
+}
+
+data %>%
+    group_by(Predominant_Behavior, Time_Point, Animal_ID)
+
+
+pairwise_group <- function(sum, analysis_level) {
+    pairwise_df <- data.frame()
+
+    for (t in unique(sum$Time_Point)) {
+        sum.t <- sum %>%
+            filter(Time_Point == t)
+
+        for (b in unique(sum.t[[analysis_level]])) {
+            sum.tb <- sum.t %>%
+                filter(.data[[analysis_level]] == b)
+
+            kruskal_res <- kruskal.test(formula = SumValue ~ Group, data = sum.tb)
+            # print(kruskal_res)
+
+            # If the Kruskal-Wallis test is significant, perform pairwise comparisons
+            #if (kruskal_res$p.value < 0.05) {
+                # Run Dunns test with Bonferroni correction
+                pairwise_res <- dunn.test(sum.tb$SumValue, sum.tb$Group, method = "bonferroni", kw = TRUE, table = FALSE)
+                # pairwise_res <- pairwise.wilcox.test(PB.tb$SumValue, PB.tb$Group, p.adjust.method = "BH")
+
+                pairwise <- data.frame(
+                    Week = t,
+                    Behavior = b,
+                    Comparisons = pairwise_res$comparisons,
+                    Z = pairwise_res$Z,
+                    P = pairwise_res$P,
+                    P.adjusted = pairwise_res$P.adjusted
+                )
+                pairwise_df <- rbind(pairwise_df, pairwise)
+            #}
+        }
+    }
+    return(pairwise_df)
+}
+
+pairwise_week <- function(sum, analysis_level) {
+    pairwise_df <- data.frame()
+    for (g in unique(sum$Group)) {
+        sum.g <- sum %>%
+            filter(Group == g)
+
+        for (b in unique(sum.g[[analysis_level]])) {
+            sum.gb <- sum.g %>%
+                filter(.data[[analysis_level]] == b)
+
+            kruskal_res <- kruskal.test(formula = SumValue ~ Time_Point, data = sum.gb)
+            # print(kruskal_res)
+
+            # If the Kruskal-Wallis test is significant, perform pairwise comparisons
+            #if (kruskal_res$p.value < 0.05) {
+                # Run Dunns test with Bonferroni correction
+                pairwise_res <- dunn.test(sum.gb$SumValue, sum.gb$Time_Point, method = "bonferroni", kw = TRUE, table = TRUE)
+                # pairwise_res <- pairwise.wilcox.test(PB.tb$SumValue, PB.tb$Group, p.adjust.method = "BH")
+
+                pairwise <- data.frame(
+                    Group = g,
+                    Behavior = b,
+                    Comparisons = pairwise_res$comparisons,
+                    Z = pairwise_res$Z,
+                    P = pairwise_res$P,
+                    P.adjusted = pairwise_res$P.adjusted
+                )
+                pairwise_df <- rbind(pairwise_df, pairwise)
+            #}
+        }
+    }
+    return(pairwise_df)
+}
+
+analysis_level <- "Predominant_Behavior"
+
+path <- paste0("/Users/adanredwine/Library/CloudStorage/OneDrive-UniversityofNebraska-Lincoln/ONE Lab - New/Personnel/Adan/Experimental Plans & Data/2022_Rat Antiobiotic + LBP Study/Open Arena/Statistics/", analysis_level, "_Analysis")
+if (!dir.exists(path)) {
+    dir.create(path, recursive = TRUE)
+}
+summed_data <- sum_at_level(data, analysis_level)
+pairwise_gp <- pairwise_group(summed_data, analysis_level)
+pairwise_wk <- pairwise_week(summed_data, analysis_level)
+
+write.csv(pairwise_gp, file = paste0(path, "/pairwise_gp.csv"))
+write.csv(pairwise_wk, file = paste0(path, "/pairwise_wk.csv"))
+
+# Only keep the significant results
+pairwise_gp <- pairwise_gp[pairwise_gp$P.adjusted < 0.05, ]
+pairwise_wk <- pairwise_wk[pairwise_wk$P.adjusted < 0.05, ]
+
+# Adjust the rownames
+rownames(pairwise_gp) <- NULL
+rownames(pairwise_wk) <- NULL
+
+write.csv(pairwise_gp, file = paste0(path, "/pairwise_gp_sig.csv"))
+write.csv(pairwise_wk, file = paste0(path, "/pairwise_wk_sig.csv"))
+
+library(kableExtra)
+
+pairwise_gp %>%
+    # Round numerical columns to three decimal places
+    mutate(across(where(is.numeric), ~ round(., 3))) %>%
+    kbl(caption = "Significant Groupwise Comparisons") %>%
+    kable_classic(full_width = F, html_font = "Cambria") %>%
+    footnote(general = "Predominant Behavior",
+             general_title = "Level: ",
+             threeparttable = TRUE)
+
+pairwise_wk.Sham <- pairwise_wk %>%
+    filter(Group == "Sham")
+
+pairwise_wk.Injured <- pairwise_wk %>%
+    filter(Group == "Injured")
+
+pairwise_wk.Treated <- pairwise_wk %>%
+    filter(Group == "Treated")
+
+pairwise_wk.ABX <- pairwise_wk %>%
+    filter(Group == "ABX")
+
+pairwise_wk.Sham %>%
+    arrange(Behavior) %>%
+    # Round numerical columns to three decimal places
+    mutate(across(where(is.numeric), ~ round(., 3))) %>%
+    kbl(caption = "Significant Week-wise Comparisons") %>%
+    kable_classic(full_width = F, html_font = "Cambria") %>%
+    footnote(general = "Predominant Behavior",
+             general_title = "Level: ",
+             threeparttable = TRUE)
+
+pairwise_wk.Injured %>%
+    arrange(Behavior) %>%
+    # Round numerical columns to three decimal places
+    mutate(across(where(is.numeric), ~ round(., 3))) %>%
+    kbl(caption = "Significant Week-wise Comparisons") %>%
+    kable_classic(full_width = F, html_font = "Cambria") %>%
+    footnote(general = "Predominant Behavior",
+             general_title = "Level: ",
+             threeparttable = TRUE)
+
+pairwise_wk.Treated %>%
+    arrange(Behavior) %>%
+    # Round numerical columns to three decimal places
+    mutate(across(where(is.numeric), ~ round(., 3))) %>%
+    kbl(caption = "Significant Week-wise Comparisons") %>%
+    kable_classic(full_width = F, html_font = "Cambria") %>%
+    footnote(
+        general = "Predominant Behavior",
+        general_title = "Level: ",
+        threeparttable = TRUE
+    )
+
+pairwise_wk.ABX %>%
+    arrange(Behavior) %>%
+    # Round numerical columns to three decimal places
+    mutate(across(where(is.numeric), ~ round(., 3))) %>%
+    kbl(caption = "Significant Week-wise Comparisons") %>%
+    kable_classic(full_width = F, html_font = "Cambria") %>%
+    footnote(
+        general = "Predominant Behavior",
+        general_title = "Level: ",
+        threeparttable = TRUE
+    )
+
+
+
+
+analysis_level <- "Desc_Behavior"
+path <- paste0("/Users/adanredwine/Library/CloudStorage/OneDrive-UniversityofNebraska-Lincoln/ONE Lab - New/Personnel/Adan/Experimental Plans & Data/2022_Rat Antiobiotic + LBP Study/Open Arena/Statistics/", analysis_level, "_Analysis")
+if (!dir.exists(path)) {
+    dir.create(path, recursive = TRUE)
+}
+
+summed_data <- sum_at_level(data, analysis_level)
+
+
+graphics.off()
+pairwise_gp <- pairwise_group(summed_data, analysis_level)
+pairwise_wk <- pairwise_week(summed_data, analysis_level)
+
+write.csv(pairwise_gp, file = paste0(path, "/pairwise_gp.csv"))
+write.csv(pairwise_wk, file = paste0(path, "/pairwise_wk.csv"))
+
+# Only keep the significant results
+pairwise_gp <- pairwise_gp[pairwise_gp$P.adjusted < 0.05, ]
+pairwise_wk <- pairwise_wk[pairwise_wk$P.adjusted < 0.05, ]
+
+rownames(pairwise_gp) <- NULL
+rownames(pairwise_wk) <- NULL
+
+write.csv(pairwise_gp, file = paste0(path, "/pairwise_gp_sig.csv"))
+write.csv(pairwise_wk, file = paste0(path, "/pairwise_wk_sig.csv"))
+
+pairwise_gp %>%
+    # Round numerical columns to three decimal places
+    mutate(across(where(is.numeric), ~ round(., 3))) %>%
+    kbl(caption = "Significant Groupwise Comparisons") %>%
+    kable_classic(full_width = F, html_font = "Cambria") %>%
+    footnote(general = "Descriptive Behavior",
+             general_title = "Level: ",
+             threeparttable = TRUE)
+
+pairwise_wk.Sham <- pairwise_wk %>%
+    filter(Group == "Sham")
+
+pairwise_wk.Injured <- pairwise_wk %>%
+    filter(Group == "Injured")
+
+pairwise_wk.Treated <- pairwise_wk %>%
+    filter(Group == "Treated")
+
+pairwise_wk.ABX <- pairwise_wk %>%
+    filter(Group == "ABX")
+
+pairwise_wk.Sham %>%
+    arrange(Behavior) %>%
+    # Round numerical columns to three decimal places
+    mutate(across(where(is.numeric), ~ round(., 3))) %>%
+    kbl(caption = "Significant Weekwise Comparisons") %>%
+    kable_classic(full_width = F, html_font = "Cambria") %>%
+    footnote(general = "Predominant Behavior",
+             general_title = "Level: ",
+             threeparttable = TRUE)
+
+pairwise_wk.Injured %>%
+    arrange(Behavior) %>%
+    # Round numerical columns to three decimal places
+    mutate(across(where(is.numeric), ~ round(., 3))) %>%
+    kbl(caption = "Significant Weekwise Comparisons") %>%
+    kable_classic(full_width = F, html_font = "Cambria") %>%
+    footnote(general = "Predominant Behavior",
+             general_title = "Level: ",
+             threeparttable = TRUE)
+
+pairwise_wk.Treated %>%
+    arrange(Behavior) %>%
+    # Round numerical columns to three decimal places
+    mutate(across(where(is.numeric), ~ round(., 3))) %>%
+    kbl(caption = "Significant Weekwise Comparisons") %>%
+    kable_classic(full_width = F, html_font = "Cambria") %>%
+    footnote(
+        general = "Predominant Behavior",
+        general_title = "Level: ",
+        threeparttable = TRUE
+    )
+
+pairwise_wk.ABX %>%
+    arrange(Behavior) %>%
+    # Round numerical columns to three decimal places
+    mutate(across(where(is.numeric), ~ round(., 3))) %>%
+    kbl(caption = "Significant Weekwise Comparisons") %>%
+    kable_classic(full_width = F, html_font = "Cambria") %>%
+    footnote(
+        general = "Predominant Behavior",
+        general_title = "Level: ",
+        threeparttable = TRUE
+    )
+
+
+summed_data.mean <- summed_data %>%
+    group_by(Group, Time_Point, Desc_Behavior) %>%
+    summarize(mean = mean(SumValue, na.rm = TRUE), se = sd(SumValue, na.rm = TRUE) / sqrt(n()), sd = sd(SumValue, na.rm = TRUE))
+
+summed_data.mean <- summed_data %>%
+    group_by(Group, Time_Point, Predominant_Behavior) %>%
+    summarize(mean = mean(SumValue, na.rm = TRUE), se = sd(SumValue, na.rm = TRUE) / sqrt(n()), sd = sd(SumValue, na.rm = TRUE))
+
+
+
+
+summed_data.mean$Time_Point <- as.numeric(as.character(summed_data.mean$Time_Point))
+ggplot(summed_data.mean, aes(x = Time_Point, y = mean, color = Group)) +
+    geom_point() +
+    geom_line() +
+    geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.1, linewidth = 1.0) +
+    facet_wrap(~Desc_Behavior, scales = "free_y") +
+    theme_minimal() +
+    theme(panel.border = element_rect(colour = "black", fill = NA, size = 2)) +
+    scale_x_continuous(breaks = unique(summed_data$Time_Point)) +
+    scale_color_manual(values = legend_colors, limits = legend_order) +
+    labs(title = "Descriptive Behavior",
+         x = "Time Point",
+         y = "Summed Mean Value",
+         color = "Group")
+
+ggplot(summed_data.mean, aes(x = Time_Point, y = mean, fill = Group)) +
+    geom_bar(stat = "identity", position = "dodge") +
+    geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.1, position = position_dodge(width = 0.9)) +
+    facet_wrap(~Desc_Behavior, scales = "free_y")
+
+legend_colors <- c("#2ca02c", "#d42163", "#b662ff", "#1f77b4")
+legend_order <- c("Sham", "Injured", "Treated", "ABX")
+
+ggplot(summed_data.mean, aes(x = Time_Point, y = mean, fill = Group)) +
+    geom_bar(stat = "identity", position = position_dodge(width = 1.75)) +
+    geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.5, position = position_dodge(width = 1.75)) +
+    facet_wrap(~Predominant_Behavior, scales = "free_y") +
+    theme_minimal() +
+    theme(panel.border = element_rect(colour = "black", fill = NA, size = 2)) +
+    scale_x_continuous(breaks = unique(summed_data.mean$Time_Point)) +
+    scale_fill_manual(values = legend_colors, limits = legend_order)
+
+
+ggplot(summed_data.mean, aes(x = Time_Point, y = mean, fill = Group)) +
+    geom_bar(stat = "identity", position = position_dodge(width = 1.75)) +
+    geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.5, position = position_dodge(width = 1.75)) +
+    facet_grid(Group ~ Predominant_Behavior, scales = "free_y") +
+    theme_minimal() +
+    theme(panel.border = element_rect(colour = "black", fill = NA, size = 2)) +
+    scale_x_continuous(breaks = unique(summed_data.mean$Time_Point)) +
+    scale_fill_manual(values = legend_colors, limits = legend_order) +
+    labs(title = "Predominant Behavior",
+         x = "Week",
+         y = "Mean Summed Value",
+         fill = "Group")
+
+
+
+
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

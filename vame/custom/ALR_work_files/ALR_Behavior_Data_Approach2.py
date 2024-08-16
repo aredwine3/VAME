@@ -45,7 +45,8 @@ config = "D:\\Users\\tywin\\VAME\\config.yaml"
 
 df_hmm_650: Union[pl.DataFrame, pd.DataFrame] = AlHf.create_andOR_get_master_df(
     config, fps=30, create_new_df=False, df_kind="pandas"
-)
+) # If you have never ran this function, set create_new_df to True
+
 
 # Drop A1
 df_hmm_650 = df_hmm_650.query("rat_id != 'A1'")
@@ -65,9 +66,10 @@ classifications.rename(columns={"Motif": "motif"}, inplace=True)
 df_hmm_650 = df_hmm_650.merge(classifications, on="motif", how="left")
 
 # Save dmm_hmm_650 to a csv file
-df_hmm_650.to_csv("C:\\Users\\tywin\\VAME\\needed_files\\ALR_hmm_650.csv")
-
 df_hmm_650.to_csv("/Users/adanredwine/Desktop/ALR_hmm_650.csv")
+
+# Get the mean of the 'speed column when the 'Moving_Quickly' column is both True and False
+df_hmm_650.groupby(['Moving_Quickly']).mean()
 
 """ Making motif_usages (if not imported )"""
 
