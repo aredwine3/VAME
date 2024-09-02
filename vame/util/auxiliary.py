@@ -73,7 +73,9 @@ def validate_and_correct_project_path(project_path):
             return modified_path
 
     print("Unable to validate the project path is correct.")
-    return None
+    
+    print(f"Project path: {project_path}") 
+    return project_path
 
 
 def create_config_template():

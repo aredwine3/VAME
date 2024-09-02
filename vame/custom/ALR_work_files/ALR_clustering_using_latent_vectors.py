@@ -6,6 +6,7 @@ from typing import Union
 import numpy as np
 import pandas as pd
 import polars as pl
+from regex import F
 
 import vame
 import vame.custom.ALR_analysis as ana
@@ -14,7 +15,9 @@ from vame.custom.ALR_latent_vector_cluster_functions import (
     calculate_mean_latent_vector_for_motifs,
     create_tsne_projection,
     create_umap_projection,
+    determine_optimal_clusters,
 )
+from vame.util.auxiliary import read_config
 
 config = '/work/wachslab/aredwine3/VAME_working/config_sweep_drawn-sweep-88_cpu_hmm-40-650.yaml'
 
@@ -136,5 +139,145 @@ np.savez('C:\\Users\\tywin\\UCODE\\dataset\\redwine_dataset.npz',
         label_mask=label_mask)
 
 
-#! TRYING WITH SPEED
-all_latent_vectors_all_idx, mean_latent_vectors_all_idx = calculate_mean_latent_vector_for_motifs(config, with_speed=True)
+#! TRYING WITHOUT SPEED
+all_latent_vectors_all_idx, mean_latent_vectors_all_idx = calculate_mean_latent_vector_for_motifs(config, with_speed=False)
+
+vectors = []
+labels = []
+for idx, latent_vectors in all_latent_vectors_all_idx.items():
+	vectors.extend(latent_vectors)
+	labels.extend([idx] * len(latent_vectors))
+vectors = np.array(vectors)
+labels = np.array(labels)
+
+
+optimal_n_clusters, cluster_labels = determine_optimal_clusters(vectors, clustering_method='kmeans')
+
+#* Labels are the indices of the motifs (ie which motif the latent vector belongs to)
+#* Vectors are the mean latent vectors for each motif for each file
+#* Cluster labels are the cluster that each vector belongs to
+
+
+np.shape(all_latent_vectors_all_idx[39]) # (438, 51) # 438 files, 51 dimensions of latent vector (50 + speed)
+
+mean_latent_vectors_all_idx.keys() # 0 to 39
+
+np.shape(labels) # (18142,)
+
+np.shape(vectors) # (18142, 51)
+np.shape(cluster_labels) # (18142,)
+
+np.shape(mean_latent_vectors_all_idx[39]) # (51,)
+
+# Get the unique motifs belonging to each cluster
+motif_clusters = {cluster: np.where(cluster_labels == cluster)[0] for cluster in np.unique(cluster_labels)}
+
+
+import umap
+import umap.umap_ as umap
+from mpl_toolkits.mplot3d import Axes3D
+from sklearn.manifold import TSNE
+
+# Visualizing cluster with all_latent_vectors_all_idx, then will try with mean_latent_vectors_all_idx
+tsne = TSNE(
+    n_components = 3,
+    perplexity = 50,
+    early_exaggeration=12,
+    n_jobs=-1,
+)
+
+embedding = tsne.fit_transform(vectors)
+
+import matplotlib.pyplot as plt
+
+fig = plt.figure(figsize=(10, 10))
+ax = fig.add_subplot(111, projection='3d')
+scatter = ax.scatter(
+    embedding[:, 0], embedding[:, 1], embedding[:, 2], c=cluster_labels, cmap="Spectral", s=5
+)
+
+plt.colorbar(
+            scatter,
+            label="Cluster Index",
+            ticks=np.unique(cluster_labels),
+            orientation="vertical",
+        )
+
+plt.gca().set_aspect("equal", "datalim")
+plt.title("t-SNE projection of the Latent Vectors", fontsize=24)
+
+ax.set_title("3D t-SNE projection of the Latent Vectors", fontsize=24)
+ax.set_xlabel("t-SNE Component 1")
+ax.set_ylabel("t-SNE Component 2")
+ax.set_zlabel("t-SNE Component 3")
+
+plt.show()
+
+import matplotlib.pyplot as plt
+
+#### USING UMAP
+import umap
+
+# Assuming 'vectors' is your high-dimensional data
+reducer = umap.UMAP(n_components=3, n_neighbors=15, min_dist=0.1, metric='euclidean')
+embedding = reducer.fit_transform(vectors)
+
+fig = plt.figure(figsize=(10, 10))
+ax = fig.add_subplot(111, projection='3d')
+scatter = ax.scatter(
+    embedding[:, 0], embedding[:, 1], embedding[:, 2], c=cluster_labels, cmap="Spectral", s=5
+)
+
+plt.colorbar(scatter, label="Cluster Index", ticks=np.unique(cluster_labels), orientation="vertical")
+ax.set_title("3D UMAP projection of the Latent Vectors", fontsize=24)
+ax.set_xlabel("UMAP Component 1")
+ax.set_ylabel("UMAP Component 2")
+ax.set_zlabel("UMAP Component 3")
+
+plt.show()
+
+### Using Hierarchical Clustering
+from pathlib import Path
+
+# Using PaCMAP
+import pacmap
+
+embedding = pacmap.PaCMAP(n_components=3, n_neighbors=10, MN_ratio=0.5, FP_ratio=2.0)
+X_transformed = embedding.fit_transform(vectors, init="pca")
+
+# Create a 3D scatter plot
+fig = plt.figure(figsize=(10, 10))
+ax = fig.add_subplot(111, projection='3d')
+scatter = ax.scatter(X_transformed[:, 0], X_transformed[:, 1], X_transformed[:, 2], c=cluster_labels, cmap="Spectral", s=5)
+
+ax.set_title("3D PaCMAP projection of the Latent Vectors", fontsize=24)
+ax.set_xlabel("PaCMAP Component 1")
+ax.set_ylabel("PaCMAP Component 2")
+ax.set_zlabel("PaCMAP Component 3")
+
+plt.show()
+
+config_file = Path(config).resolve()
+cfg = read_config(config_file)
+model_name = cfg['model_name']
+n_cluster = cfg['n_cluster']
+load_data = cfg['load_data']
+hmm_iters = cfg['hmm_iters']
+parameterization = cfg['parameterization']
+
+transition_matrices = []
+labels = []
+
+files = AlHf.get_files(config)
+#labels = get_labels(cfg, files, model_name, n_cluster)
+
+for file in files:
+    label = ana.get_label(cfg, file, model_name, n_cluster)
+    trans_mat, _ = ana.create_transition_matrix(label, n_cluster)
+    labels.append(label)
+    transition_matrices.append(trans_mat)
+
+#transition_matrices = compute_transition_matrices(files, labels, n_cluster)
+
+communities_all, motif_to_community_all, clusters_all, clusters_wSpeed_all = ana.community_detection(config,  labels, files, transition_matrices)
+aggregated_community_sizes = ana.get_aggregated_community_sizes(files, motif_to_community_all)
